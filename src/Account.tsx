@@ -6,6 +6,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ShoppingCart, Search, Menu, X, ChevronDown, User, Heart, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import validadeForm from './utils/validateForm.tsx';
+import {
+  usePostUser,
+  usePutUser
+} from '@/api/userQuery';
+import { Link } from 'react-router-dom';
 
 const Account = ({ onSubmit }) => {
 	const [passwordVisible, setPasswordVisible] = useState(false);
@@ -53,12 +58,17 @@ const Account = ({ onSubmit }) => {
     return errors;
   };
 
+  const { mutate } = usePostUser();
+
 	 const handleSubmit = (e) => {
     e.preventDefault();
     const errors = validateForm();
     
     if (Object.keys(errors).length === 0) {
       // Aqui seria feita a chamada para API para registrar o usuário
+      console.log(formData)
+      mutate({name: formData?.nome, nickname: formData?.sobrenome, 
+              email: formData?.email, password: formData?.senha});
       alert("Cadastro realizado com sucesso!");
       setIsSignupDialogOpen(false);
       // Limpar formulário
@@ -191,7 +201,7 @@ return (<>
             </div>
             
             <div className="text-center text-sm text-gray-700 mt-4">
-              Já tem uma conta? <button type="button" className="text-green-700 hover:underline">Entrar</button>
+              Já tem uma conta? <Link to={'/Login'}><button type="button" className="text-green-700 hover:underline">Entrar</button></Link>
             </div>
           </form>
         </DialogContent>

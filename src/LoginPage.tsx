@@ -27,7 +27,7 @@ const LoginPage = () => {
       
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center text-gray-800">Bem-vindo(a) de volta</CardTitle>
+          <CardTitle className="text-2xl text-center text-gray-800">Bem-vindo(a)</CardTitle>
           <CardDescription className="text-center text-gray-500">
             Faça login para agendar sua quadra
           </CardDescription>

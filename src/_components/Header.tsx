@@ -19,6 +19,7 @@ import { PiCourtBasketballFill } from "react-icons/pi";
 import Footer from './_components/Footer.tsx';
 import Account from './../Account.tsx';
 import validadeForm from './../utils/validateForm.tsx';
+import { Link } from 'react-router-dom';
 
 const Header = ({ onSearch }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -88,9 +89,10 @@ const Header = ({ onSearch }) => {
             <div className="flex items-center space-x-3">
             <p class="underline cursor-pointer">Como agendar?</p>
               <Account onSubmit={handleSubmit}/>
-              <button type="button" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">Entrar</button>
-              {/* Adicionado botão de usuário para mobile */}
-              
+              <Link to={'/Login'}>
+                <button type="button" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">Entrar</button>
+                {/* Adicionado botão de usuário para mobile */}
+              </Link>
             </div>
           </div>
           

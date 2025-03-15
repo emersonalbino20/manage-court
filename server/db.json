@@ -1,7 +1,7 @@
 {
   "reservations": [
     {
-      "id": 1,
+      "id": "1",
       "user": "João Silva",
       "field": "Quadra A",
       "date": "2025-03-12",
@@ -9,7 +9,7 @@
       "status": "confirmed"
     },
     {
-      "id": 2,
+      "id": "2",
       "user": "Maria Santos",
       "field": "Quadra B",
       "date": "2025-03-14",
@@ -19,14 +19,32 @@
   ],
   "users": [
     {
-      "id": 1,
-      "name": "João Silva",
-      "email": "joao@example.com"
+      "id": "1",
+      "name": "João",
+      "nickname": "Silva",
+      "email": "joao@example.com",
+      "password": "joao?!"
     },
     {
-      "id": 2,
-      "name": "Maria Santos",
-      "email": "maria@example.com"
+      "id": "2",
+      "name": "Maria",
+      "nickname": "Santos",
+      "email": "maria@example.com",
+      "password": "santosmaria"
+    },
+    {
+      "id": "94c2",
+      "name": "Eum in tempore debi",
+      "nickname": "Labore quo dolorum r",
+      "email": "pivi@mailinator.com",
+      "password": "Pa$$w0rd!"
+    },
+    {
+      "id": "c201",
+      "name": "Quo dolor pariatur ",
+      "nickname": "Tenetur sint impedit",
+      "email": "mukopamegy@mailinator.com",
+      "password": "Pa$$w0rd!"
     }
   ]
 }

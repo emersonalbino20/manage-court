@@ -1,0 +1,32 @@
+{
+  "reservations": [
+    {
+      "id": 1,
+      "user": "João Silva",
+      "field": "Quadra A",
+      "date": "2025-03-12",
+      "time": "14:00",
+      "status": "confirmed"
+    },
+    {
+      "id": 2,
+      "user": "Maria Santos",
+      "field": "Quadra B",
+      "date": "2025-03-14",
+      "time": "16:00",
+      "status": "pending"
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "João Silva",
+      "email": "joao@example.com"
+    },
+    {
+      "id": 2,
+      "name": "Maria Santos",
+      "email": "maria@example.com"
+    }
+  ]
+}

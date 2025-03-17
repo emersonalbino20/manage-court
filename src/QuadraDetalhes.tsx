@@ -191,7 +191,7 @@ const QuadraDetalhes = () => {
         </div>
       )}
       {/* Page Content */}
-      <main className="container mx-auto px-4 pt-32 pb-16">
+      <main className="container mx-auto px-4 pt-48 pb-16">
         {/* Breadcrumb */}
         <div className="flex items-center mb-6 text-sm">
         <Link to="/">

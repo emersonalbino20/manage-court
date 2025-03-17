@@ -292,7 +292,7 @@ return (
     </div>
     
     {/* Layout principal - Formulário à esquerda e Produtos à direita */}
-    <div className="flex flex-col md:flex-row gap-6">
+    <div className="flex flex-col md:flex-row gap-6 pt-44">
       {/* Formulário de Filtro (à esquerda) */}
       <aside className="w-full md:w-64 lg:w-72 flex-shrink-0">
         <Card className="sticky top-24">

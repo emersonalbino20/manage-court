@@ -18,8 +18,6 @@ import { PiCourtBasketballFill } from "react-icons/pi";
 import { Link } from 'react-router-dom';
 import UserBookingsSection from './UserBookingsSection';
 import LOGO from './assets/images/LOGO.png';
-import "swiper/css";
-import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
 
 const QuadraDetalhes = () => {

@@ -157,7 +157,7 @@ const renderStars = (rating) => {
   };
 
 return (
- <main className="container mx-auto px-4 pt-32 pb-16">
+ <main className="min-h-screen bg-white">
  <header className="bg-white border-b border-gray-200 fixed w-full top-0 z-50">
         <div className="container mx-auto px-4">
           {/* Top Bar */}

@@ -28,17 +28,29 @@ import { FaBasketballBall } from "react-icons/fa";
 import { IoIosTennisball } from "react-icons/io";
 <IoIosTennisball />
 import { PiCourtBasketballFill } from "react-icons/pi";
-
+import Account from './Account.tsx';
+import validadeForm from './../utils/validateForm.tsx';
+import { Link } from 'react-router-dom';
+import { FaTrophy } from "react-icons/fa6";
+import { FaTableTennisPaddleBall } from "react-icons/fa6";
+import { GiHockey } from "react-icons/gi";
+import { FaBaseball } from "react-icons/fa6";
+import { FaHandPaper } from "react-icons/fa";
 
 const Format = () => {
     const [activeCategory, setActiveCategory] = useState('destaques');
    const categories = [
     { id: 'destaques', name: 'Destaques' },
     { id: 'futebol', icon: <IoMdFootball />, name: 'Futebol' },
-    { id: 'hendbol', icon: <MdSportsHandball />, name: 'Hendbol' },
     { id: 'basquete', icon: <FaBasketballBall />, name: 'Basquete' },
+    { id: 'futsal', icon: <FaTrophy />, name: 'Futsal' },
     { id: 'volei', icon: <FaVolleyball />, name: 'Vôlei' },
-    { id: 'tenis', icon: <IoIosTennisball />, name: 'Tênis' }
+    { id: 'tenis', icon: <FaTableTennisPaddleBall />, name: 'Tênis' },
+    { id: 'hoquei', icon: <GiHockey />, name: 'Hóquei Patins' },
+    { id: 'basebol', icon: <FaBaseball />, name: 'Basebol' },
+    { id: 'hendbol', icon: <FaHandPaper />, name: 'Handebol' },
+    
+    
   ];
 
   const products = [
@@ -117,8 +129,144 @@ const renderStars = (rating) => {
   );
 };
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSignupDialogOpen, setIsSignupDialogOpen] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const errors = validateForm();
+    
+    if (Object.keys(errors).length === 0) {
+      // Aqui seria feita a chamada para API para registrar o usuário
+      alert("Cadastro realizado com sucesso!");
+      setIsSignupDialogOpen(false);
+      // Limpar formulário
+      setFormData({
+        nome: '',
+        sobrenome: '',
+        email: '',
+        senha: '',
+        confirmarSenha: ''
+      });
+      setFormErrors({});
+    } else {
+      setFormErrors(errors);
+    }
+  };
+
 return (
  <main className="container mx-auto px-4 pt-32 pb-16">
+ <header className="bg-white border-b border-gray-200 fixed w-full top-0 z-50">
+        <div className="container mx-auto px-4">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between py-3">
+            <button 
+              className="md:hidden text-gray-700"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            
+            <div className="flex items-center text-2xl font-bold text-green-700">
+              <PiCourtBasketballFill /> <span>Agenda de Quadra</span>
+            </div>
+            
+            <div className="hidden md:flex flex-1 max-w-md mx-4">
+              <div className="relative w-full">
+                <Input 
+                  type="text" 
+                  placeholder="Buscar quadras..." 
+                  onChange={(e) => onSearch(e.target.value)}
+                  className="pl-3 pr-10 py-2 border border-gray-300 rounded-lg w-full"
+                />
+                <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+            <p class="underline cursor-pointer">Como agendar?</p>
+              <Link to={'/Login'}>
+                <button type="button" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">Entrar</button>
+                {/* Adicionado botão de usuário para mobile */}
+              </Link>
+            </div>
+          </div>
+          
+          {/* Search Bar Mobile */}
+          <div className="pb-3 md:hidden">
+            <div className="relative w-full">
+              <Input 
+                type="text" 
+                placeholder="Buscar quadras..." 
+                className="pl-3 pr-10 py-2 border border-gray-300 rounded-lg w-full"
+              />
+              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+          
+          {/* Main Navigation - Desktop */}
+          <nav className="hidden md:flex py-3">
+            <ul className="flex space-x-6">
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <button 
+                    className={`flex items-center gap-2 font-medium relative ${activeCategory === category.id ? 'text-green-700' : 'text-gray-700 hover:text-green-700'}`}
+                    onClick={() => setActiveCategory(category.id)}
+                  >
+                    {category.icon}
+                    <span>{category.name}</span>
+                    {activeCategory === category.id && (
+                      <span className="absolute bottom-0 left-0 w-full h-0.5 bg-green-700"></span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </header>
+
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-white pt-16 px-4 md:hidden">
+          <div className="space-y-4 py-4 text-lg">
+            <div className="border-b pb-2">
+              <button 
+                className="flex items-center space-x-2 text-gray-700 hover:text-green-700"
+                onClick={() => {
+                  setIsSignupDialogOpen(true);
+                  setIsMenuOpen(false);
+                }}
+              >
+                <User size={20} />
+                <span>Cadastrar / Entrar</span>
+              </button>
+            </div>
+            <div className="border-b pb-2">
+              <button className="flex items-center space-x-2 text-gray-700 hover:text-green-700">
+                <Heart size={20} />
+                <span>Favoritos</span>
+              </button>
+            </div>
+            
+            <div className="text-lg font-medium text-gray-900 pb-1">Categorias</div>
+            <ul className="space-y-3">
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <button 
+                    className={`${activeCategory === category.id ? 'text-green-700 font-medium' : 'text-gray-700'}`}
+                    onClick={() => {
+                      setActiveCategory(category.id);
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    {category.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     {/* Categorias visíveis apenas em dispositivos móveis */}
     <div className="flex overflow-x-auto pb-4 md:hidden space-x-2">
       {categories.map((category) => (
@@ -169,11 +317,28 @@ return (
                 onValueChange={setSelectedLocation}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione a localização" />
+                  <SelectValue placeholder="Selecione a província" />
                 </SelectTrigger>
                 <SelectContent>
                   {/* Corrigido para usar "todas" em vez de string vazia */}
-                  <SelectItem value="todas">Todas as localizações</SelectItem>
+                  <SelectItem value="todas">províncias</SelectItem>
+                  {locations.map(location => (
+                    <SelectItem key={location} value={location}>
+                      {location}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select 
+                value={selectedLocation} 
+                onValueChange={setSelectedLocation}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione a cidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  {/* Corrigido para usar "todas" em vez de string vazia */}
+                  <SelectItem value="todas">cidades</SelectItem>
                   {locations.map(location => (
                     <SelectItem key={location} value={location}>
                       {location}
@@ -204,7 +369,7 @@ return (
                 </Select>
               </div>
               
-              {/* Filtrar por Desconto */}
+              {/* Filtrar por Desconto 
               <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="discount" 
@@ -214,7 +379,7 @@ return (
                 <Label htmlFor="discount" className="cursor-pointer">
                   Apenas com desconto
                 </Label>
-              </div>
+              </div>*/}
               
               {/* Classificação Mínima */}
               <div className="space-y-4">
@@ -256,32 +421,6 @@ return (
       
       {/* Seção de Produtos (à direita) */}
       <div className="flex-1">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {categories.find(c => c.id === activeCategory)?.name}
-          </h2>
-          <Button variant="ghost" className="text-green-700 hover:text-green-600">
-            Ver todos <ChevronDown className="ml-1 h-4 w-4" />
-          </Button>
-        </div>
-        
-        {/* Categorias visíveis apenas em desktop */}
-        <div className="hidden md:flex mb-6 space-x-2">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm ${
-                activeCategory === category.id
-                  ? 'bg-green-700 text-white'
-                  : 'bg-gray-100 text-gray-700'
-              }`}
-              onClick={() => setActiveCategory(category.id)}
-            >
-              {category.icon && <span className="mr-1">{category.icon}</span>}
-              {category.name}
-            </button>
-          ))}
-        </div>
         
         {/* Grade de Produtos */}
         {filteredProducts.length > 0 ? (
@@ -294,11 +433,11 @@ return (
                     alt={product.name}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
-                  {product.discount && (
+                  {/*product.discount && (
                     <Badge className="absolute top-2 left-2 bg-green-700 hover:bg-green-600">
                       -{product.discount}
                     </Badge>
-                  )}
+                  )*/}
                 </div>
                 <CardContent className="p-4">
                   <h3 className="font-medium text-gray-900 mb-1">{product.name}</h3>
@@ -306,9 +445,11 @@ return (
                   {/* Adicionando a classificação por estrelas */}
                   {renderStars(product.rating)}
                   <div className="text-lg font-bold text-green-700 mt-1">{product.price}/Hora</div>
-                  <Button className="w-full mt-3 bg-green-700 hover:bg-green-600">
-                    Ver Detalhes
-                  </Button>
+                  <Link to="/quadra">
+                    <Button className="w-full mt-3 bg-green-700 hover:bg-green-600">
+                      Agendar
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}

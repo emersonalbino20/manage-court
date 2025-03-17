@@ -20,6 +20,11 @@ import Footer from './_components/Footer.tsx';
 import Account from './../Account.tsx';
 import validadeForm from './../utils/validateForm.tsx';
 import { Link } from 'react-router-dom';
+import { FaTrophy } from "react-icons/fa6";
+import { FaTableTennisPaddleBall } from "react-icons/fa6";
+import { GiHockey } from "react-icons/gi";
+import { FaBaseball } from "react-icons/fa6";
+import { FaHandPaper } from "react-icons/fa";
 
 const Header = ({ onSearch }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,10 +35,13 @@ const Header = ({ onSearch }) => {
   const categories = [
     { id: 'destaques', name: 'Destaques' },
     { id: 'futebol', icon: <IoMdFootball />, name: 'Futebol' },
-    { id: 'hendbol', icon: <MdSportsHandball />, name: 'Hendbol' },
     { id: 'basquete', icon: <FaBasketballBall />, name: 'Basquete' },
+    { id: 'futsal', icon: <FaTrophy />, name: 'Futsal' },
     { id: 'volei', icon: <FaVolleyball />, name: 'Vôlei' },
-    { id: 'tenis', icon: <IoIosTennisball />, name: 'Tênis' }
+    { id: 'tenis', icon: <FaTableTennisPaddleBall />, name: 'Tênis' },
+    { id: 'hoquei', icon: <GiHockey />, name: 'Hóquei Patins' },
+    { id: 'basebol', icon: <FaBaseball />, name: 'Basebol' },
+    { id: 'hendbol', icon: <FaHandPaper />, name: 'Handebol' },
   ];
 
   const handleSubmit = (e) => {

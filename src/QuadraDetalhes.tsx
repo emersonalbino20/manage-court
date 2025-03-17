@@ -14,77 +14,24 @@ import Futebol_2 from './assets/images/teste.jpg';
 import Futebol_1 from './assets/images/court-football-small.jpg';
 import Header from './_components/Header.tsx';
 import Footer from './_components/Footer.tsx';
+import { PiCourtBasketballFill } from "react-icons/pi";
+import { Link } from 'react-router-dom';
+import UserBookingsSection from './UserBookingsSection';
 
 const QuadraDetalhes = () => {
   const [termoPesquisa, setTermoPesquisa] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('destaques');
+  const [activeCategory, setActiveCategory] = useState('agendar');
   const [isSignupDialogOpen, setIsSignupDialogOpen] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const [formData, setFormData] = useState({
-    nome: '',
-    sobrenome: '',
-    email: '',
-    senha: '',
-    confirmarSenha: ''
-  });
-  const [formErrors, setFormErrors] = useState({});
+  
+  const categories = [
+    { id: 'agendar', name: 'Agendar' },
+    { id: 'agendadas', name: 'Quadras Agendadas' },
+    ];
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
 
-  const validateForm = () => {
-    const errors = {};
-    
-    if (!formData.nome) errors.nome = "Nome é obrigatório";
-    if (!formData.sobrenome) errors.sobrenome = "Sobrenome é obrigatório";
-    
-    if (!formData.email) {
-      errors.email = "Email é obrigatório";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Email inválido";
-    }
-    
-    if (!formData.senha) {
-      errors.senha = "Senha é obrigatória";
-    } else if (formData.senha.length < 6) {
-      errors.senha = "Senha deve ter pelo menos 6 caracteres";
-    }
-    
-    if (formData.senha !== formData.confirmarSenha) {
-      errors.confirmarSenha = "As senhas não coincidem";
-    }
-    
-    return errors;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const errors = validateForm();
-    
-    if (Object.keys(errors).length === 0) {
-      // Aqui seria feita a chamada para API para registrar o usuário
-      alert("Cadastro realizado com sucesso!");
-      setIsSignupDialogOpen(false);
-      // Limpar formulário
-      setFormData({
-        nome: '',
-        sobrenome: '',
-        email: '',
-        senha: '',
-        confirmarSenha: ''
-      });
-      setFormErrors({});
-    } else {
-      setFormErrors(errors);
-    }
-  };
 
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
@@ -103,21 +50,136 @@ const QuadraDetalhes = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header onSearch={setTermoPesquisa}/>
+      <header className="bg-white border-b border-gray-200 fixed w-full top-0 z-50">
+        <div className="container mx-auto px-4">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between py-3">
+            <button 
+              className="md:hidden text-gray-700"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            
+            <div className="flex items-center text-2xl font-bold text-green-700">
+              <PiCourtBasketballFill /> <span>Agenda de Quadra</span>
+            </div>
+            
+            <div className="hidden md:flex flex-1 max-w-md mx-4">
+              <div className="relative w-full">
+                <Input 
+                  type="text" 
+                  placeholder="Buscar quadras..." 
+                  onChange={(e) => onSearch(e.target.value)}
+                  className="pl-3 pr-10 py-2 border border-gray-300 rounded-lg w-full"
+                />
+                <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+            <p class="underline cursor-pointer">Como agendar?</p>
+              
+              <Link to={'/Login'}>
+                <button type="button" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">Entrar</button>
+                {/* Adicionado botão de usuário para mobile */}
+              </Link>
+            </div>
+          </div>
+          
+          {/* Search Bar Mobile */}
+          <div className="pb-3 md:hidden">
+            <div className="relative w-full">
+              <Input 
+                type="text" 
+                placeholder="Buscar quadras..." 
+                className="pl-3 pr-10 py-2 border border-gray-300 rounded-lg w-full"
+              />
+              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+          
+          {/* Main Navigation - Desktop */}
+          <nav className="hidden md:flex py-3">
+            <ul className="flex space-x-6">
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <button 
+                    className={`flex items-center gap-2 font-medium relative ${activeCategory === category.id ? 'text-green-700' : 'text-gray-700 hover:text-green-700'}`}
+                    onClick={() => setActiveCategory(category.id)}
+                  >
+                    {category.icon}
+                    <span>{category.name}</span>
+                    {activeCategory === category.id && (
+                      <span className="absolute bottom-0 left-0 w-full h-0.5 bg-green-700"></span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </header>
+      
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-white pt-16 px-4 md:hidden">
+          <div className="space-y-4 py-4 text-lg">
+            <div className="border-b pb-2">
+              <button 
+                className="flex items-center space-x-2 text-gray-700 hover:text-green-700"
+                onClick={() => {
+                  setIsSignupDialogOpen(true);
+                  setIsMenuOpen(false);
+                }}
+              >
+                <User size={20} />
+                <span>Cadastrar / Entrar</span>
+              </button>
+            </div>
+            <div className="border-b pb-2">
+              <button className="flex items-center space-x-2 text-gray-700 hover:text-green-700">
+                <Heart size={20} />
+                <span>Favoritos</span>
+              </button>
+            </div>
+            
+            <div className="text-lg font-medium text-gray-900 pb-1">Categorias</div>
+            <ul className="space-y-3">
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <button 
+                    className={`${activeCategory === category.id ? 'text-green-700 font-medium' : 'text-gray-700'}`}
+                    onClick={() => {
+                      setActiveCategory(category.id);
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    {category.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
       {/* Page Content */}
       <main className="container mx-auto px-4 pt-32 pb-16">
         {/* Breadcrumb */}
         <div className="flex items-center mb-6 text-sm">
+        <Link to="/">
           <Button variant="ghost" className="p-0 mr-2">
             <ArrowLeft size={16} className="mr-1" />
             Voltar
           </Button>
+        </Link>
           <span className="text-gray-500">
             Home / Futebol / Quadra de Futebol
           </span>
         </div>
-        
         {/* Detalhes da Quadra */}
+        {activeCategory === 'agendar' && (
+        
         <div className="grid grid-cols-1  md:grid-cols-2 gap-8">
           {/* Card da Quadra */}
           <div>
@@ -128,9 +190,6 @@ const QuadraDetalhes = () => {
                   alt="Quadra de Futebol"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                <Badge className="absolute top-4 left-4 bg-green-700 hover:bg-green-600">
-                  -20%
-                </Badge>
               </div>
               
               <CardContent className="p-6">
@@ -146,10 +205,11 @@ const QuadraDetalhes = () => {
                 </div>
                 
                 <Tabs defaultValue="descricao">
-                  <TabsList className="grid grid-cols-3 mb-4">
+                  <TabsList className="grid grid-cols-4 mb-4">
                     <TabsTrigger value="descricao">Descrição</TabsTrigger>
                     <TabsTrigger value="caracteristicas">Características</TabsTrigger>
                     <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
+                    <TabsTrigger value="localizacao">Localização</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="descricao" className="text-gray-700">
@@ -215,6 +275,14 @@ const QuadraDetalhes = () => {
                       </div>
                     </div>
                   </TabsContent>
+
+                  <TabsContent value="localizacao">
+                    <div className="space-y-4">
+                      <div className="border-b pb-4">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d504611.99701970594!2d12.955099362113803!3d-8.853388698461458!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1a51f15cdc8d2c7d%3A0x850c1c5c5ecc5a92!2sLuanda!5e0!3m2!1spt-PT!2sao!4v1742207738636!5m2!1spt-PT!2sao" width="400" height="300" style={{ border: "0" }}  allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                      </div>
+                    </div>
+                  </TabsContent>
                 </Tabs>
               </CardContent>
             </Card>
@@ -227,20 +295,6 @@ const QuadraDetalhes = () => {
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Agendar Quadra</h2>
                 
                 <form onSubmit={handleReserva} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nome">Nome Completo</Label>
-                    <Input id="nome" placeholder="Seu nome completo" required />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">E-mail</Label>
-                    <Input id="email" type="email" placeholder="seu@email.com" required />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="telefone">Telefone</Label>
-                    <Input id="telefone" placeholder="(+244) 000 000 000" required />
-                  </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="data">Data</Label>
@@ -287,27 +341,6 @@ const QuadraDetalhes = () => {
                     </select>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="participantes">Número de Participantes</Label>
-                    <Input 
-                      id="participantes" 
-                      type="number" 
-                      min="1" 
-                      placeholder="Número de jogadores" 
-                      required 
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="observacoes">Observações Adicionais</Label>
-                    <textarea 
-                      id="observacoes" 
-                      className="w-full border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-700"
-                      rows="3"
-                      placeholder="Alguma informação adicional?"
-                    ></textarea>
-                  </div>
-                  
                   <div className="pt-4">
                     <Button 
                       type="submit" 
@@ -321,6 +354,10 @@ const QuadraDetalhes = () => {
             </Card>
           </div>
         </div>
+        )}
+      {activeCategory === 'agendadas' && (
+        <UserBookingsSection/>
+        )}
       </main>
       
       {/* Dialog de Confirmação */}

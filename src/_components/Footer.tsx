@@ -38,7 +38,7 @@ const Footer = () => {
             </div>
           </div>
           <div className="border-t border-gray-200 mt-8 pt-6 text-center text-gray-700 text-sm">
-            &copy; 2025 FieldpPro. Todos os direitos reservados.
+            &copy; 2025 QuadraFácil. Todos os direitos reservados.
           </div>
         </div>
       </footer>

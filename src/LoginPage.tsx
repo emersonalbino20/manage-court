@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Link } from 'react-router-dom';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -102,28 +103,13 @@ const LoginPage = () => {
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-sm text-center text-gray-600">
             Não tem uma conta?{' '}
+            <Link to="/account">
             <a href="#" className="font-medium text-green-600 hover:text-green-700">
               Cadastre-se agora
             </a>
+            </Link>
           </div>
           
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-gray-500">Ou continue com</span>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="hover:bg-gray-50">
-              Google
-            </Button>
-            <Button variant="outline" className="hover:bg-gray-50">
-              Facebook
-            </Button>
-          </div>
         </CardFooter>
       </Card>
       

@@ -8,9 +8,7 @@ const [termoPesquisa, setTermoPesquisa] = useState("");
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-        <Header onSearch={setTermoPesquisa} />
-     
+           
       {/* Page Content */}
         <Format/>
 

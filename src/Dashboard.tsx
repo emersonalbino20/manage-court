@@ -13,10 +13,15 @@ import {
   X
 } from 'lucide-react';
 import { PiCourtBasketballFill } from "react-icons/pi";
+import { PiGlobeHemisphereWestFill } from "react-icons/pi";
+import { MdCategory } from "react-icons/md";
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ManageUsers from './ManageUsers'
 import ManageCourt from './ManageCourt'
 import { useGetUsersQuery } from '@/api/userQuery';
+import { MdPayment } from "react-icons/md";
+
 
 const Dashboard = () => {
 
@@ -28,9 +33,8 @@ const Dashboard = () => {
   // Dados estatísticos simulados
   const stats = [
     { title: "Usuários Ativos", value: "5,823", percentagem: "+12%", icon: <Users size={20} /> },
-    { title: "Eventos Agendados", value: "246", percentagem: "+8%", icon: <Calendar size={20} /> },
-    { title: "Visualizações", value: "43,210", percentagem: "+20%", icon: <BarChart3 size={20} /> },
-    { title: "Engajamento", value: "78%", percentagem: "+5%", icon: <Activity size={20} /> },
+    { title: "Quadras Agendadas", value: "246", percentagem: "+8%", icon: <Calendar size={20} /> },
+    
   ];
 
   // Dados dos esportes mais populares
@@ -61,22 +65,18 @@ const Dashboard = () => {
     <>
       <div className="p-4 flex items-center space-x-2">
         <Trophy size={24} className="text-green-500" />
-        <h1 className="font-bold text-xl">SportAgenda</h1>
+        <h1 className="font-bold text-xl">QuadraFácil</h1>
       </div>
       
       <nav className="mt-8 flex-1">
         <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase">Principal</div>
-        <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
-          <Home size={20} className="mr-3" />
-          <span>Ínicio</span>
-        </a>
         <a href="#" onClick={()=>{setSelect('dashboard')}} className={`flex items-center px-4 py-3 ${select === 'dashboard' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
           <BarChart3 size={20} className="mr-3" />
           <span>Dashboard</span>
         </a>
         <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
           <Calendar size={20} className="mr-3" />
-          <span>Eventos</span>
+          <span>Reservas</span>
         </a>
         <a href="#" onClick={()=>{setSelect('users')}} className={`flex items-center px-4 py-3 ${select === 'users' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
           <Users size={20} className="mr-3" />
@@ -86,7 +86,18 @@ const Dashboard = () => {
           <PiCourtBasketballFill size={20} className="mr-3" />
           <span>Quadras</span>
         </a>
-        
+        <a href="#" onClick={()=>{setSelect('regiao')}} className={`flex items-center px-4 py-3 ${select === 'regiao' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
+          <PiGlobeHemisphereWestFill size={20} className="mr-3" />
+          <span>Região</span>
+        </a>
+        <a href="#" onClick={()=>{setSelect('categoria')}} className={`flex items-center px-4 py-3 ${select === 'categoria' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
+          <MdCategory size={20} className="mr-3" />
+          <span>Tipos de Quadras</span>
+        </a>
+        <a href="#" onClick={()=>{setSelect('pagamentos')}} className={`flex items-center px-4 py-3 ${select === 'pagamentos' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
+          <MdPayment size={20} className="mr-3" />
+          <span>Pagamentos</span>
+        </a>
         <div className="px-4 py-2 mt-6 text-xs font-semibold text-gray-400 uppercase">Configurações</div>
         <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
           <Settings size={20} className="mr-3" />
@@ -141,7 +152,7 @@ const Dashboard = () => {
               </button>
               <div className="flex items-center lg:hidden">
                 <Trophy size={20} className="text-green-500 mr-2" />
-                <h2 className="text-xl font-semibold text-gray-800">SportAgenda</h2>
+                <h2 className="text-xl font-semibold text-gray-800">QuadraFácil</h2>
               </div>
               <h2 className="text-xl font-semibold text-gray-800 hidden lg:block">Painel Administrativo</h2>
             </div>
@@ -192,7 +203,7 @@ const Dashboard = () => {
             {/* Esportes Populares */}
             <Card className="lg:col-span-1">
               <CardHeader className="p-4 md:p-6">
-                <CardTitle>Esportes Populares</CardTitle>
+                <CardTitle>Quadras Populares</CardTitle>
               </CardHeader>
               <CardContent className="p-4 md:p-6 pt-0">
                 <div className="space-y-3 md:space-y-4">
@@ -217,7 +228,7 @@ const Dashboard = () => {
             {/* Eventos Recentes - Com scroll interno quando necessário */}
             <Card className="lg:col-span-2">
               <CardHeader className="p-4 md:p-6">
-                <CardTitle>Eventos Recentes</CardTitle>
+                <CardTitle>Reservas Recentes</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="md:p-6 p-4 pt-0">

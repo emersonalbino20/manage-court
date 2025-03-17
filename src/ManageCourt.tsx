@@ -17,9 +17,9 @@ const ManageCourt = () => {
 
   // Dados simulados de quadras
   const [quadras, setQuadras] = useState([
-    { id: 1, nome: 'Quadra Central', tipo: 'Futebol', local: 'Zona Sul', capacidade: '22 pessoas', preco: 'R$ 120/hora', status: 'Disponível' },
-    { id: 2, nome: 'Quadra Coberta', tipo: 'Basquete', local: 'Zona Oeste', capacidade: '10 pessoas', preco: 'R$ 100/hora', status: 'Em manutenção' },
-    { id: 3, nome: 'Arena Beach', tipo: 'Vôlei', local: 'Zona Norte', capacidade: '12 pessoas', preco: 'R$ 90/hora', status: 'Disponível' }
+    { id: 1, nome: 'Quadra Central', tipo: 'Futebol', local: 'Zona Sul', capacidade: '22 pessoas', preco: 'Kz 120/hora', status: 'Disponível' },
+    { id: 2, nome: 'Quadra Coberta', tipo: 'Basquete', local: 'Zona Oeste', capacidade: '10 pessoas', preco: 'Kz 100/hora', status: 'Em manutenção' },
+    { id: 3, nome: 'Arena Beach', tipo: 'Vôlei', local: 'Zona Norte', capacidade: '12 pessoas', preco: 'Kz 90/hora', status: 'Disponível' }
   ]);
 
   const handleTabChange = (tab) => {
@@ -90,7 +90,7 @@ const ManageCourt = () => {
       tipo: quadra.tipo,
       local: quadra.local,
       capacidade: quadra.capacidade.replace(' pessoas', ''),
-      preco: quadra.preco.replace('R$ ', '').replace('/hora', ''),
+      preco: quadra.preco.replace('Kz ', '').replace('/hora', ''),
       descricao: ''
     });
     setQuadraEditando(quadra);
@@ -210,7 +210,7 @@ const ManageCourt = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Preço por hora (R$)
+                    Preço por hora (Kz)
                   </label>
                   <input
                     type="text"

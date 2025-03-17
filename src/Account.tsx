@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import validadeForm from './utils/validateForm.tsx';
 import { Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-
+import LOGO from './assets/images/LOGO.png';
 import {
   usePostUser,
   usePutUser
@@ -95,9 +95,13 @@ const Account = ({ onSubmit }) => {
 return (<>
    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
       {/* Logo e nome do sistema */}
-      <div className="flex items-center mb-8">
-        <Calendar className="h-8 w-8 text-green-600 mr-2" />
-        <h1 className="text-2xl font-bold text-gray-800">QuadraFácil</h1>
+      <div className="flex flex-col items-center space-x-3 text-md sm:text-xl md:text-2xl font-bold text-green-700">
+        <img 
+          src={LOGO} 
+          className="h-12 w-12 sm:h-16 sm:w-16 md:h-28 md:w-28 object-contain" 
+          alt="Logo" 
+        />
+        <span>AgendaQuadra</span>
       </div>
       
       <Card className="w-full max-w-md shadow-lg">
@@ -227,7 +231,7 @@ return (<>
       </Card>
       
       <p className="mt-8 text-center text-sm text-gray-500">
-        © 2025 QuadraFácil. Todos os direitos reservados.
+        © 2025 AgendaQuadra. Todos os direitos reservados.
       </p>
     </div>
 	<button 

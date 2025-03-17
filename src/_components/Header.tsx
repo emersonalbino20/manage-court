@@ -25,6 +25,7 @@ import { FaTableTennisPaddleBall } from "react-icons/fa6";
 import { GiHockey } from "react-icons/gi";
 import { FaBaseball } from "react-icons/fa6";
 import { FaHandPaper } from "react-icons/fa";
+import LOGO from './../assets/images/LOGO.png';
 
 const Header = ({ onSearch }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -78,8 +79,13 @@ const Header = ({ onSearch }) => {
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
             
-            <div className="flex items-center text-2xl font-bold text-green-700">
-              <PiCourtBasketballFill /> <span>Agenda de Quadra</span>
+            <div className="flex items-center space-x-3 text-lg sm:text-xl md:text-2xl font-bold text-green-700">
+              <img 
+                src={LOGO} 
+                className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 object-contain" 
+                alt="Logo" 
+              />
+              <span>AgendaQuadra</span>
             </div>
             
             <div className="hidden md:flex flex-1 max-w-md mx-4">

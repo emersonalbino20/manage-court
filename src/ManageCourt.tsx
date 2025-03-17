@@ -160,7 +160,17 @@ const ManageCourt = () => {
                     required
                   />
                 </div>
-
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Imagem
+                  </label>
+                  <input
+                    type="file"
+                    name="nome"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    required
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Tipo

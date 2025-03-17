@@ -65,7 +65,7 @@ const Dashboard = () => {
     <>
       <div className="p-4 flex items-center space-x-2">
         <Trophy size={24} className="text-green-500" />
-        <h1 className="font-bold text-xl">QuadraFácil</h1>
+        <h1 className="font-bold text-xl">QuadraAgenda</h1>
       </div>
       
       <nav className="mt-8 flex-1">

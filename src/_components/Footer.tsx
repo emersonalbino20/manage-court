@@ -30,15 +30,15 @@ const Footer = () => {
             <div>
               <h3 className="text-lg font-bold text-gray-900 mb-4">Contacto</h3>
                <ul className="space-y-2 text-gray-600">
-                <li className="flex space-x-1 items-center hover:text-green-700"><MdOutlineMarkEmailRead className="text-xl"/><a href="#" >contacto@sport.com</a></li>
+                <li className="flex space-x-1 items-center hover:text-green-700"><MdOutlineMarkEmailRead className="text-xl"/><a href="#" >contacto@agendaquadra.com</a></li>
                 <li className="flex space-x-1 items-center hover:text-green-700"><FaWhatsapp className="text-xl"/><a href="#" >Suporte via Whatsapp</a></li>
-                <li className="flex space-x-1 items-center hover:text-green-700"><FaLocationDot className="text-xl"/><a href="#" >Camama, Golf 2</a></li>
+                <li className="flex space-x-1 items-center hover:text-green-700"><FaLocationDot className="text-xl"/><a href="#" >Kilamba Kiaxe</a></li>
               </ul>
               
             </div>
           </div>
           <div className="border-t border-gray-200 mt-8 pt-6 text-center text-gray-700 text-sm">
-            &copy; 2025 QuadraFácil. Todos os direitos reservados.
+            &copy; 2025 AgendaQuadra. Todos os direitos reservados.
           </div>
         </div>
       </footer>

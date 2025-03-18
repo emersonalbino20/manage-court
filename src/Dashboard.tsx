@@ -19,6 +19,7 @@ import { MdCategory } from "react-icons/md";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ManageUsers from './ManageUsers'
 import ManageCourt from './ManageCourt'
+import ManageSettings from './ManageSettings'
 import { useGetUsersQuery } from '@/api/userQuery';
 import { MdPayment } from "react-icons/md";
 
@@ -90,9 +91,9 @@ const Dashboard = () => {
           <PiGlobeHemisphereWestFill size={20} className="mr-3" />
           <span>Região</span>
         </a>
-        <a href="#" onClick={()=>{setSelect('categoria')}} className={`flex items-center px-4 py-3 ${select === 'categoria' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
+        <a href="#" onClick={()=>{setSelect('modulo')}} className={`flex items-center px-4 py-3 ${select === 'modulo' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
           <MdCategory size={20} className="mr-3" />
-          <span>Tipos de Quadras</span>
+          <span>Módulos</span>
         </a>
         <a href="#" onClick={()=>{setSelect('pagamentos')}} className={`flex items-center px-4 py-3 ${select === 'pagamentos' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
           <MdPayment size={20} className="mr-3" />
@@ -291,6 +292,11 @@ const Dashboard = () => {
       {/*Quadras Content*/}
       {select === 'quadras' && (
         <ManageCourt/>
+          )}
+
+      {/*Quadras Content*/}
+      {select === 'modulo' && (
+        <ManageSettings/>
           )}
       </div>
     </div>

@@ -5,12 +5,12 @@ import axios from 'axios';
 //Auxilary Functions
 /* Post */
 export const auxPostUser = (data) => {
-  return axios.post(`http://localhost:5000/users`, data);
+  return axios.post(`http://localhost:3000/users`, data);
 };
 
 /* Put */
 export const auxPutUser = (data) => {
-  return axios.put(`http://localhost:5000/users/${data.id}`, {
+  return axios.put(`http://localhost:3000/users/${data.id}`, {
     inicio: data.inicio,
     termino: data.termino,
     matriculaAberta: data.matriculaAberta,
@@ -52,7 +52,7 @@ export const usePutUser = () => {
 export const useGetUsersQuery = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['usuarios'],
-    queryFn: () => axios.get('http://localhost:5000/users'),
+    queryFn: () => axios.get('http://localhost:3000/users'),
   });
   return { data, isLoading, isError };
 };

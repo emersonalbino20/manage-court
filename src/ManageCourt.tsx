@@ -1,26 +1,35 @@
 import React, { useState } from 'react';
 import { MapPin, Edit, Trash2, Save, Layers } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  usePostCourt,
+  usePutCourt,
+  useGetCourtsQuery
+} from '@/api/courtQuery';
+import FeedbackDialog from './_components/FeedbackDialog';
 
 const ManageCourt = () => {
   const [activeTab, setActiveTab] = useState('cadastrar');
   const [formData, setFormData] = useState({
     nome: '',
     tipo: 'Futebol',
-    local: '',
-    capacidade: '',
-    preco: '',
-    descricao: ''
+    disponibilidade: 'Disponível',
+    descricao: '',
+    imagem: null
   });
   const [modoEdicao, setModoEdicao] = useState(false);
   const [quadraEditando, setQuadraEditando] = useState(null);
 
-  // Dados simulados de quadras
-  const [quadras, setQuadras] = useState([
-    { id: 1, nome: 'Quadra Central', tipo: 'Futebol', local: 'Zona Sul', capacidade: '22 pessoas', preco: 'Kz 120/hora', status: 'Disponível' },
-    { id: 2, nome: 'Quadra Coberta', tipo: 'Basquete', local: 'Zona Oeste', capacidade: '10 pessoas', preco: 'Kz 100/hora', status: 'Em manutenção' },
-    { id: 3, nome: 'Arena Beach', tipo: 'Vôlei', local: 'Zona Norte', capacidade: '12 pessoas', preco: 'Kz 90/hora', status: 'Disponível' }
-  ]);
+  // Dados da API
+  const { data: courtData } = useGetCourtsQuery();
+
+  // Estados para controlar o diálogo
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+
+  const { mutate: mutateCourt } = usePostCourt();
+  const { mutate: putCourt } = usePutCourt();
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -34,75 +43,94 @@ const ManageCourt = () => {
     setFormData({
       nome: '',
       tipo: 'Futebol',
-      local: '',
-      capacidade: '',
-      preco: '',
-      descricao: ''
+      disponibilidade: 'Disponível',
+      descricao: '',
+      imagem: null
     });
     setQuadraEditando(null);
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, files } = e.target;
+    
+    if (name === 'imagem' && files) {
+      setFormData(prev => ({ ...prev, [name]: files[0] }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (modoEdicao && quadraEditando) {
-      // Atualizar quadra existente
-      const updatedQuadras = quadras.map(q => 
-        q.id === quadraEditando.id ? 
-        { 
-          ...q, 
-          nome: formData.nome, 
-          tipo: formData.tipo, 
-          local: formData.local, 
-          capacidade: formData.capacidade, 
-          preco: formData.preco 
-        } : 
-        q
-      );
-      setQuadras(updatedQuadras);
+      // Criando o objeto da quadra editada
+      const quadraEditada = {
+        ...quadraEditando, 
+        nome: formData.nome, 
+        tipo: formData.tipo, 
+        disponibilidade: formData.disponibilidade,
+        descricao: formData.descricao
+        // A imagem seria tratada em um contexto real com upload
+      };
+
+      console.log("editado", quadraEditada);
+      putCourt(quadraEditada, {
+        onSuccess: (response) => {
+          setIsSuccess(true);
+          setFeedbackMessage("A quadra foi atualizada com sucesso!");
+          setDialogOpen(true);
+          resetForm();
+          setActiveTab('listar');
+        },
+        onError: (error) => {
+          setIsSuccess(false);
+          setFeedbackMessage("Não foi possível atualizar a quadra. Verifique seus dados e tente novamente.");
+          setDialogOpen(true);
+        }
+      });
       setModoEdicao(false);
     } else {
       // Adicionar nova quadra
       const novaQuadra = {
-        id: quadras.length + 1,
+        id: courtData?.data?.length + 1,
         nome: formData.nome,
         tipo: formData.tipo,
-        local: formData.local,
-        capacidade: formData.capacidade,
-        preco: formData.preco,
-        status: 'Disponível'
+        disponibilidade: formData.disponibilidade,
+        descricao: formData.descricao,
+        // Em um caso real, aqui trataria o upload da imagem e salvaria o URL
       };
-      setQuadras([...quadras, novaQuadra]);
-    }
 
-    resetForm();
-    setActiveTab('listar');
+      mutateCourt(novaQuadra, {
+        onSuccess: (response) => {
+          setIsSuccess(true);
+          setFeedbackMessage("A quadra foi cadastrada com sucesso!");
+          setDialogOpen(true);
+          resetForm();
+          setActiveTab('listar');
+        },
+        onError: (error) => {
+          setIsSuccess(false);
+          setFeedbackMessage("Não foi possível cadastrar a quadra. Verifique seus dados e tente novamente.");
+          setDialogOpen(true);
+        }
+      });
+    }
   };
 
   const iniciarEdicao = (quadra) => {
     setFormData({
       nome: quadra.nome,
       tipo: quadra.tipo,
-      local: quadra.local,
-      capacidade: quadra.capacidade.replace(' pessoas', ''),
-      preco: quadra.preco.replace('Kz ', '').replace('/hora', ''),
-      descricao: ''
+      disponibilidade: quadra.disponibilidade || 'Disponível',
+      descricao: quadra.descricao || '',
+      imagem: null // Não podemos definir o arquivo diretamente
     });
     setQuadraEditando(quadra);
     setModoEdicao(true);
     setActiveTab('cadastrar');
   };
 
-  const excluirQuadra = (id) => {
-    if (window.confirm('Tem certeza que deseja excluir esta quadra?')) {
-      setQuadras(quadras.filter(q => q.id !== id));
-    }
-  };
 
   return (
     <div className="p-4 md:p-6 overflow-x-hidden">
@@ -160,20 +188,10 @@ const ManageCourt = () => {
                     required
                   />
                 </div>
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Imagem
-                  </label>
-                  <input
-                    type="file"
-                    name="nome"
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tipo
+                    Tipo de Quadra
                   </label>
                   <select
                     name="tipo"
@@ -192,43 +210,31 @@ const ManageCourt = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Localização
+                    Disponibilidade
                   </label>
-                  <input
-                    type="text"
-                    name="local"
-                    value={formData.local}
+                  <select
+                    name="disponibilidade"
+                    value={formData.disponibilidade}
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     required
-                  />
+                  >
+                    <option value="Disponível">Disponível</option>
+                    <option value="Indisponível">Indisponível</option>
+                    <option value="Em Manutenção">Em Manutenção</option>
+                  </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Capacidade (pessoas)
+                    Imagem
                   </label>
                   <input
-                    type="number"
-                    name="capacidade"
-                    value={formData.capacidade}
+                    type="file"
+                    name="imagem"
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Preço por hora (Kz)
-                  </label>
-                  <input
-                    type="text"
-                    name="preco"
-                    value={formData.preco}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    required
+                    accept="image/*"
                   />
                 </div>
 
@@ -275,16 +281,10 @@ const ManageCourt = () => {
                       Tipo
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Local
+                      Disponibilidade
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Capacidade
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Preço
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Status
+                      Descrição
                     </th>
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
                       Ações
@@ -292,7 +292,7 @@ const ManageCourt = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {quadras.map((quadra) => (
+                  {courtData?.data?.map((quadra) => (
                     <tr key={quadra.id}>
                       <td className="px-4 py-2 whitespace-nowrap">
                         {quadra.nome}
@@ -304,20 +304,20 @@ const ManageCourt = () => {
                         </span>
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        {quadra.local}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        {quadra.capacidade}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        {quadra.preco}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs rounded-full ${
-                          quadra.status === 'Disponível' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          quadra.disponibilidade === 'Disponível' ? 'bg-green-100 text-green-800' : 
+                          quadra.disponibilidade === 'Em Manutenção' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
                         }`}>
-                          {quadra.status}
+                          {quadra.disponibilidade || 'Disponível'}
                         </span>
+                      </td>
+                      <td className="px-4 py-2">
+                        {quadra.descricao ? 
+                          (quadra.descricao.length > 50 ? 
+                            `${quadra.descricao.substring(0, 50)}...` : 
+                            quadra.descricao) : 
+                          '—'}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-right">
                         <button
@@ -325,12 +325,6 @@ const ManageCourt = () => {
                           className="text-blue-600 hover:text-blue-800 mr-3"
                         >
                           <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => excluirQuadra(quadra.id)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 size={16} />
                         </button>
                       </td>
                     </tr>
@@ -341,8 +335,18 @@ const ManageCourt = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Feedback Dialog */}
+      {dialogOpen && (
+        <FeedbackDialog
+          isOpen={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          isSuccess={isSuccess}
+          message={feedbackMessage}
+        />
+      )}
     </div>
   );
 };
 
-export default ManageCourt
+export default ManageCourt;

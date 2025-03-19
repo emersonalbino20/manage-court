@@ -19,96 +19,48 @@
   ],
   "users": [
     {
-      "id": "1",
-      "name": "João",
-      "nickname": "Silva",
-      "email": "joao@example.com",
-      "password": "joao?!"
-    },
-    {
-      "id": "2",
-      "name": "Maria",
-      "nickname": "Santos",
-      "email": "maria@example.com",
-      "password": "santosmaria"
-    },
-    {
-      "id": "94c2",
-      "name": "Eum in tempore debi",
-      "nickname": "Labore quo dolorum r",
-      "email": "pivi@mailinator.com",
-      "password": "Pa$$w0rd!"
-    },
-    {
-      "id": "c201",
-      "name": "Quo dolor pariatur ",
-      "nickname": "Tenetur sint impedit",
-      "email": "mukopamegy@mailinator.com",
-      "password": "Pa$$w0rd!"
-    },
-    {
-      "id": "f255",
-      "nome": "Magni sed sed quia c",
-      "email": "vicejiw@mailinator.com",
-      "senha": "Pa$$w0rd!",
-      "confirmarSenha": "Pa$$w0rd!",
-      "telefone": "+1 (955) 554-2218"
-    },
-    {
-      "id": "5c5b",
-      "nome": "Architecto eiusmod o",
-      "email": "wonyhibi@mailinator.com",
-      "senha": "Pa$$w0rd!",
-      "confirmarSenha": "Pa$$w0rd!",
-      "telefone": "+1 (849) 623-2624"
-    },
-    {
-      "id": "a091",
-      "nome": "Veniam culpa nobis ",
-      "email": "cedazagu@mailinator.com",
-      "senha": "Pa$$w0rd!",
-      "confirmarSenha": "Pa$$w0rd!",
-      "telefone": "+1 (879) 855-1474"
-    },
-    {
-      "id": "789a",
-      "nome": "Consectetur lorem la",
-      "email": "kumopesu@mailinator.com",
-      "senha": "Pa$$w0rd!",
-      "confirmarSenha": "Pa$$w0rd!",
-      "telefone": "+1 (567) 717-2533"
-    },
-    {
-      "id": "0c5e",
-      "nome": "Et labore maxime ani",
-      "email": "lokipogip@mailinator.com",
-      "senha": "Pa$$w0rd!",
-      "confirmarSenha": "Pa$$w0rd!",
-      "telefone": "+1 (765) 258-2745"
-    },
-    {
-      "id": "8a7f",
-      "nome": "Totam aliquid deseru",
-      "email": "dalun@mailinator.com",
-      "senha": "Pa$$w0rd!",
-      "confirmarSenha": "Pa$$w0rd!",
-      "telefone": "+1 (643) 486-2994"
-    },
-    {
-      "id": "1119",
-      "nome": "Nulla perferendis no",
-      "email": "tuwa@mailinator.com",
-      "senha": "Pa$$w0rd!",
-      "confirmarSenha": "Pa$$w0rd!",
-      "telefone": "+1 (669) 338-2713"
-    },
-    {
       "id": "3c3a",
       "nome": "Manuela Albino",
       "email": "tytedyquri@mailinator.com",
       "senha": "Pa$$w0rd!",
       "confirmarSenha": "Pa$$w0rd!",
       "telefone": "+1 (984) 845-1931"
+    }
+  ],
+  "court": [
+    {
+      "id": "4",
+      "nome": "Futebol",
+      "tipo": "Vôlei",
+      "disponibilidade": "Em Manutenção",
+      "descricao": "quadra de futebol"
+    },
+    {
+      "id": "2",
+      "nome": "Placeat ",
+      "tipo": "Futebol",
+      "local": "Harum doloremque exc",
+      "capacidade": "90",
+      "preco": "Saepe natus quisquam",
+      "status": "Disponível",
+      "disponibilidade": "Em Manutenção",
+      "descricao": ""
+    },
+    {
+      "id": "3",
+      "nome": "Minim lorem autem et",
+      "tipo": "Basquete",
+      "local": "Recusandae Tempora ",
+      "capacidade": "91",
+      "preco": "120.000",
+      "status": "Disponível"
+    },
+    {
+      "id": 4,
+      "nome": "Futebol",
+      "tipo": "Vôlei",
+      "disponibilidade": "Em Manutenção",
+      "descricao": "quadra de futebol"
     }
   ]
 }

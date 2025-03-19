@@ -4,53 +4,101 @@ import axios from 'axios';
 
 //Auxilary Functions
 /* Post */
+export const auxPostCourtType = (data) => {
+  return axios.post(`http://localhost:3000/field-types/`, data);
+};
+
 export const auxPostCourt = (data) => {
-  return axios.post(`http://localhost:5000/court`, data);
+  return axios.post(`http://localhost:5000/court/`, data);
 };
 
 /* Put */
 export const auxPutCourt = (data) => {
-  return axios.put(`http://localhost:5000/court/${data.id}`, {
-    nome: data.inicio
-  });
+  return axios.put(`http://localhost:5000/court/${data.id}`, 
+    data
+  );
 };
+
+export const auxPutCourtType = (data) => {
+  return axios.put(`http://localhost:3000/field-types/${data.id}`, data);
+};
+
 
 //main functions
 export const usePostCourt = () => {
   const queryClient = useQueryClient();
-  const { mutate } = useMutation({
+  const { mutate, isLoading } = useMutation({
     mutationFn: auxPostCourt,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['Court'] });
+      queryClient.invalidateQueries({ queryKey: ['courts'] });
       console.log('success');
     },
     onError: (error) => {
         console.log(error);
     }
   });
-  return { mutate };
+  return { mutate, isLoading };
+};
+
+export const usePostCourtType = () => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading } = useMutation({
+    mutationFn: auxPostCourtType,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courtstype'] });
+      console.log('success');
+    },
+    onError: (error) => {
+        console.log(error);
+    }
+  });
+  return { mutate, isLoading };
 };
 
 export const usePutCourt = () => {
   const queryClient = useQueryClient();
-  const { mutate } = useMutation({
+
+  return useMutation({
     mutationFn: auxPutCourt,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['Court'] });
-      console.log('success');
+      queryClient.invalidateQueries({ queryKey: ['courts'] });
+      console.log('Quadra atualizada com sucesso!');
     },
     onError: (error) => {
-        console.log(error);
-    }
+      console.error('Erro ao atualizar quadra:', error);
+    },
   });
-  return { mutate };
 };
+
+export const usePutCourtType = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: auxPutCourtType,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courtstype'] });
+      console.log('Quadra atualizada com sucesso!');
+    },
+    onError: (error) => {
+      console.error('Erro ao atualizar quadra:', error);
+    },
+  });
+};
+
 
 //Get
 export const useGetCourtsQuery = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['courts'],
-    queryFn: () => axios.get('http://localhost:5000/Courts'),
+    queryFn: () => axios.get('http://localhost:5000/court/'),
+  });
+  return { data, isLoading, isError };
+};
+
+export const useGetCourtsTypeQuery = () => {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['courtstype'],
+    queryFn: () => axios.get('http://localhost:3000/field-types/'),
   });
   return { data, isLoading, isError };
 };

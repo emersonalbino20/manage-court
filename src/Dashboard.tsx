@@ -87,10 +87,6 @@ const Dashboard = () => {
           <PiCourtBasketballFill size={20} className="mr-3" />
           <span>Quadras</span>
         </a>
-        <a href="#" onClick={()=>{setSelect('regiao')}} className={`flex items-center px-4 py-3 ${select === 'regiao' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
-          <PiGlobeHemisphereWestFill size={20} className="mr-3" />
-          <span>Região</span>
-        </a>
         <a href="#" onClick={()=>{setSelect('modulo')}} className={`flex items-center px-4 py-3 ${select === 'modulo' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
           <MdCategory size={20} className="mr-3" />
           <span>Módulos</span>

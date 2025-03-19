@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MapPin, Edit, Trash2, Save, Layers, PlusCircle, CheckCircle2, Building, Home } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -6,22 +6,50 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  usePostCourt,
-  usePutCourt
-} from '@/api/courtQuery';
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import FeedbackDialog from './_components/FeedbackDialog'; // Ajuste o caminho conforme necessário
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { schemeCourt } from './utils/validateForm.tsx';
+import {
+  usePostCourtType,
+  usePutCourtType,
+  useGetCourtsTypeQuery
+} from '@/api/courtQuery';
+import {
+  usePostProvince,
+  usePutProvince,
+  useGetProvincesQuery
+} from '@/api/provinceQuery';
+import {
+  usePostCity,
+  usePutCity,
+  useGetCitiesQuery
+} from '@/api/cityQuery';
+import { Link } from 'react-router-dom';
+import FeedbackDialog from './_components/FeedbackDialog'; // Ajuste o caminho conforme necessário
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { schemeCourtType } from './utils/validateForm.tsx';
+import { schemeProvince } from './utils/validateForm.tsx';
+import { schemeCity } from './utils/validateForm.tsx';
 
 const ManageSettings = () => {
 
   const formCourt = useForm({
-    resolver: zodResolver(schemeCourt),
+    resolver: zodResolver(schemeCourtType),
     defaultValues: {
-      nome: "",
+      name: "",
+    },
+  });
+
+const formProvince = useForm({
+    resolver: zodResolver(schemeProvince),
+    defaultValues: {
+      name: "",
+    },
+  });
+
+const formCity = useForm({
+    resolver: zodResolver(schemeCity),
+    defaultValues: {
+      name: "",
     },
   });
 
@@ -29,37 +57,122 @@ const ManageSettings = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [editandoTipo, setEditandoTipo] = useState("");
 
-  const { mutateCourt:  mutate , loadCourt: isLoading } = usePostCourt();
+  const { mutate: mutatePostCourt } = usePostCourtType();
+  const { mutate: mutatePutCourt } = usePutCourtType();
 
-  // Função modificada para prevenir explicitamente o comportamento padrão
-  function onSubmit(data: any, event) {
-    // Previne explicitamente o comportamento padrão
-    if (event) {
-      event.preventDefault();
-    }
-    
-    // Chama a mutação, mas não permite que o formulário seja enviado tradicionalmente
-    mutateCourt(data, {
+ function submitCourt(data: any, event?: React.FormEvent<HTMLFormElement>) {
+  event?.preventDefault(); // Garante que o evento seja prevenido se for passado
+  if (editandoTipo) {
+    mutatePutCourt(data, {
       onSuccess: (response) => {
-        console.log("Quadra cadastrada com sucesso!", response);
         setIsSuccess(true);
-        setFeedbackMessage("Sua quadra foi criada com sucesso!.");
+        setFeedbackMessage("A quadra foi editada com sucesso!");
+        setDialogOpen(true);
+        setEditandoTipo(null); // Reseta o estado após edição
+      },
+      onError: (error) => {
+        setIsSuccess(false);
+        setFeedbackMessage("Não foi possível editar a quadra.");
+        setDialogOpen(true);
+      }
+    });
+
+  } else {
+    mutatePostCourt(data, {
+      onSuccess: (response) => {
+        setIsSuccess(true);
+        setFeedbackMessage("A quadra foi cadastrada com sucesso!");
         setDialogOpen(true);
         formCourt.reset();
       },
       onError: (error) => {
-        console.error("Erro ao cadastrar quadra:", error);
         setIsSuccess(false);
-        setFeedbackMessage("Não foi possível criar quadra. Verifique seus dados e tente novamente.");
+        setFeedbackMessage("Não foi possível cadastrar a quadra.");
         setDialogOpen(true);
       }
     });
-    
-    // Retorna false para garantir que não haja recarregamento
-    return false;
-  }
 
+  }
+}
+
+const [editandoProvincia, setEditandoProvincia] = useState(null);
+const { mutate: mutatePostProvince } = usePostProvince();
+const { mutate: mutatePutProvince } = usePutProvince();
+function submitProvince(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
+     event?.preventDefault(); // Garante que o evento seja prevenido se for passado
+  if (editandoProvincia) {
+    mutatePutProvince(data, {
+      onSuccess: (response) => {
+        setIsSuccess(true);
+        setFeedbackMessage("A pronvíncia foi actualizada com sucesso!");
+        setDialogOpen(true);
+        setEditandoProvincia(null); // Reseta o estado após edição
+      },
+      onError: (error) => {
+        setIsSuccess(false);
+        setFeedbackMessage("Não foi possível actualizar a província. Verifique os dados e tente novamente.");
+        setDialogOpen(true);
+      }
+    });
+  }else{
+    mutatePostProvince(data, {
+      onSuccess: (response) => {
+        setIsSuccess(true);
+        setFeedbackMessage("A pronvíncia foi cadastrada com sucesso!");
+        setDialogOpen(true);
+        formProvince.reset();
+      },
+      onError: (error) => {
+        setIsSuccess(false);
+        setFeedbackMessage("Não foi possível cadastra a província. Verifique os dados e tente novamente.");
+        setDialogOpen(true);
+      }
+    });
+  }}
+
+const [editandoCidade, setEditandoCidade] = useState(null);
+const { mutate: mutatePostCity } = usePostCity();
+const { mutate: mutatePutCity } = usePutCity();
+function submitCity(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
+   event?.preventDefault(); // Garante que o evento seja prevenido se for passado
+  if (editandoCidade) {
+    mutatePutCity(data, {
+      onSuccess: (response) => {
+        setIsSuccess(true);
+        setFeedbackMessage("A cidade foi actualizada com sucesso!");
+        setDialogOpen(true);
+        setEditandoCidade(null); // Reseta o estado após edição
+      },
+      onError: (error) => {
+        setIsSuccess(false);
+        setFeedbackMessage("Não foi possível actualizar a cidade. Verifique os dados e tente novamente.");
+        setDialogOpen(true);
+      }
+    });
+  }else{
+    mutatePostCity(data, {
+      onSuccess: (response) => {
+        setIsSuccess(true);
+        setFeedbackMessage("A cidade foi cadastrada com sucesso!");
+        setDialogOpen(true);
+        formCity.reset();
+      },
+      onError: (error) => {
+        setIsSuccess(false);
+        setFeedbackMessage("Não foi possível cadastra a cidade. Verifique os dados e tente novamente.");
+        setDialogOpen(true);
+      }
+    });
+  }}
+
+  const [novaCidade, setNovaCidade] = useState({ nome: '', fk_provincia: '' });
+React.useEffect(() => {
+  if (novaCidade?.fk_provincia) {
+    formCity.setValue('provinceId', parseInt(novaCidade.fk_provincia, 10));
+  }
+}, [novaCidade?.fk_provincia]);
   const handleCloseDialog = () => {
     setDialogOpen(false);
   };
@@ -68,38 +181,16 @@ const ManageSettings = () => {
   const [activeTab, setActiveTab] = useState('tipos');
 
   // Estados para os dados
-  const [tiposCampo, setTiposCampo] = useState([
-    { id: 1, nome: 'Futebol' },
-    { id: 2, nome: 'Basquete' },
-    { id: 3, nome: 'Vôlei' },
-    { id: 4, nome: 'Tênis' },
-    { id: 5, nome: 'Futsal' }
-  ]);
-
-  const [provincias, setProvincias] = useState([
-    { id: 1, nome: 'Luanda' },
-    { id: 2, nome: 'Bengo' },
-    { id: 3, nome: 'Benguela' },
-  ]);
-
-  const [cidades, setCidades] = useState([
-    { id: 1, fk_provincia: 1, nome: 'Luanda' },
-    { id: 2, fk_provincia: 1, nome: 'Cacuaco' },
-    { id: 3, fk_provincia: 2, nome: 'Caxito' },
-    { id: 4, fk_provincia: 3, nome: 'Benguela' },
-    { id: 5, fk_provincia: 3, nome: 'Lobito' },
-  ]);
+  const { data: courtData } = useGetCourtsTypeQuery();
+  console.log(courtData?.data?.data);
+  
+  const { data: provinceData } = useGetProvincesQuery();
+  const { data: cityData } = useGetCitiesQuery();
 
   // Estados para formulários
   const [novoTipoCampo, setNovoTipoCampo] = useState('');
   const [novaProvincia, setNovaProvincia] = useState('');
-  const [novaCidade, setNovaCidade] = useState({ nome: '', fk_provincia: '' });
-
-  // Estados para edição
-  const [editandoTipo, setEditandoTipo] = useState(null);
-  const [editandoProvincia, setEditandoProvincia] = useState(null);
-  const [editandoCidade, setEditandoCidade] = useState(null);
-
+  
   // Estados para diálogos de confirmação
   const [dialogoConfirmacao, setDialogoConfirmacao] = useState({
     aberto: false,
@@ -113,183 +204,33 @@ const ManageSettings = () => {
   const [provinciaSelecionada, setProvinciaSelecionada] = useState('');
   const [cidadeSelecionada, setCidadeSelecionada] = useState('');
 
-  // Funções para tipos de campo
-  const adicionarTipoCampo = () => {
-    if (!novoTipoCampo.trim()) return;
-
-    if (editandoTipo) {
-      // Atualizar tipo existente
-      setTiposCampo(tiposCampo.map(tipo => 
-        tipo.id === editandoTipo.id ? { ...tipo, nome: novoTipoCampo } : tipo
-      ));
-      setEditandoTipo(null);
-    } else {
-      // Adicionar novo tipo
-      const novoId = tiposCampo.length > 0 ? Math.max(...tiposCampo.map(t => t.id)) + 1 : 1;
-      setTiposCampo([...tiposCampo, { id: novoId, nome: novoTipoCampo }]);
-    }
-    setNovoTipoCampo('');
-    setTipoSelecionado('');
-  };
-
+  // Funções vazias para futura implementação
+  const adicionarTipoCampo = () => {};
   const editarTipoCampo = (tipo) => {
-    setNovoTipoCampo(tipo.nome);
-    setEditandoTipo(tipo);
-    setTipoSelecionado('');
+    setEditandoTipo(tipo)
+    formCourt.setValue("id", tipo.id);
+    formCourt.setValue("name", tipo.name);
   };
-
-  const excluirTipoCampo = (id) => {
-    setDialogoConfirmacao({
-      aberto: true,
-      tipo: 'tipo',
-      id: id,
-      mensagem: 'Tem certeza que deseja excluir este tipo de campo?'
-    });
+  const editarProvincia = (province) => {
+    c
   };
-
-  // Funções para províncias
-  const adicionarProvincia = () => {
-    if (!novaProvincia.trim()) return;
-
-    if (editandoProvincia) {
-      // Atualizar província existente
-      setProvincias(provincias.map(prov => 
-        prov.id === editandoProvincia.id ? { ...prov, nome: novaProvincia } : prov
-      ));
-      setEditandoProvincia(null);
-    } else {
-      // Adicionar nova província
-      const novoId = provincias.length > 0 ? Math.max(...provincias.map(p => p.id)) + 1 : 1;
-      setProvincias([...provincias, { id: novoId, nome: novaProvincia }]);
-    }
-    setNovaProvincia('');
-    setProvinciaSelecionada('');
+  const excluirProvincia = () => {};
+  const adicionarCidade = () => {};
+  const editarCidade = (cidade, pr) => {
+    setEditandoCidade(cidade)
+    formCity.setValue("id", cidade.id);
+    formCity.setValue("provinceId", pr);
+    formCity.setValue("name", cidade.name);
   };
-
-  const editarProvincia = (provincia) => {
-    setNovaProvincia(provincia.nome);
-    setEditandoProvincia(provincia);
-    setProvinciaSelecionada('');
-  };
-
-  const excluirProvincia = (id) => {
-    // Verificar se existem cidades associadas a esta província
-    const cidadesAssociadas = cidades.filter(cidade => cidade.fk_provincia === id);
-    
-    if (cidadesAssociadas.length > 0) {
-      setDialogoConfirmacao({
-        aberto: true,
-        tipo: 'provinciaComCidades',
-        id: id,
-        mensagem: `Esta província possui ${cidadesAssociadas.length} cidade(s) associada(s). Excluir a província também excluirá todas as cidades associadas. Deseja continuar?`
-      });
-    } else {
-      setDialogoConfirmacao({
-        aberto: true,
-        tipo: 'provincia',
-        id: id,
-        mensagem: 'Tem certeza que deseja excluir esta província?'
-      });
-    }
-  };
-
-  // Funções para cidades
-  const adicionarCidade = () => {
-    if (!novaCidade.nome.trim() || !novaCidade.fk_provincia) return;
-
-    if (editandoCidade) {
-      // Atualizar cidade existente
-      setCidades(cidades.map(cidade => 
-        cidade.id === editandoCidade.id ? { ...cidade, nome: novaCidade.nome, fk_provincia: parseInt(novaCidade.fk_provincia) } : cidade
-      ));
-      setEditandoCidade(null);
-    } else {
-      // Adicionar nova cidade
-      const novoId = cidades.length > 0 ? Math.max(...cidades.map(c => c.id)) + 1 : 1;
-      setCidades([...cidades, { id: novoId, nome: novaCidade.nome, fk_provincia: parseInt(novaCidade.fk_provincia) }]);
-    }
-    setNovaCidade({ nome: '', fk_provincia: '' });
-    setCidadeSelecionada('');
-  };
-
-  const editarCidade = (cidade) => {
-    setNovaCidade({ nome: cidade.nome, fk_provincia: cidade.fk_provincia.toString() });
-    setEditandoCidade(cidade);
-    setCidadeSelecionada('');
-  };
-
-  const excluirCidade = (id) => {
-    setDialogoConfirmacao({
-      aberto: true,
-      tipo: 'cidade',
-      id: id,
-      mensagem: 'Tem certeza que deseja excluir esta cidade?'
-    });
-  };
-
-  // Função para confirmar exclusão
-  const confirmarExclusao = () => {
-    const { tipo, id } = dialogoConfirmacao;
-    
-    if (tipo === 'tipo') {
-      setTiposCampo(tiposCampo.filter(t => t.id !== id));
-    } else if (tipo === 'provincia' || tipo === 'provinciaComCidades') {
-      setProvincias(provincias.filter(p => p.id !== id));
-      
-      if (tipo === 'provinciaComCidades') {
-        // Excluir também as cidades associadas
-        setCidades(cidades.filter(c => c.fk_provincia !== id));
-      }
-    } else if (tipo === 'cidade') {
-      setCidades(cidades.filter(c => c.id !== id));
-    }
-    
-    fecharDialogoConfirmacao();
-  };
-
-  const fecharDialogoConfirmacao = () => {
-    setDialogoConfirmacao({ aberto: false, tipo: '', id: null, mensagem: '' });
-  };
-
-  // Efeitos para carregar item selecionado para edição
-  useEffect(() => {
-    if (tipoSelecionado) {
-      const tipo = tiposCampo.find(t => t.id === parseInt(tipoSelecionado));
-      if (tipo) {
-        setNovoTipoCampo(tipo.nome);
-        setEditandoTipo(tipo);
-      }
-    }
-  }, [tipoSelecionado]);
-
-  useEffect(() => {
-    if (provinciaSelecionada) {
-      const provincia = provincias.find(p => p.id === parseInt(provinciaSelecionada));
-      if (provincia) {
-        setNovaProvincia(provincia.nome);
-        setEditandoProvincia(provincia);
-      }
-    }
-  }, [provinciaSelecionada]);
-
-  useEffect(() => {
-    if (cidadeSelecionada) {
-      const cidade = cidades.find(c => c.id === parseInt(cidadeSelecionada));
-      if (cidade) {
-        setNovaCidade({
-          nome: cidade.nome,
-          fk_provincia: cidade.fk_provincia.toString()
-        });
-        setEditandoCidade(cidade);
-      }
-    }
-  }, [cidadeSelecionada]);
+  const excluirCidade = () => {};
+  const confirmarExclusao = () => {};
+  const fecharDialogoConfirmacao = () => {};
 
   return (
     <div className="p-4 md:p-6 overflow-x-hidden">
       <div className="mb-4">
         <h1 className="text-xl font-bold text-gray-800 flex items-center">
-          <Layers className="mr-2" /> Configurações Modular
+          <Layers className="mr-2" /> Configurações do Sistema
         </h1>
       </div>
 
@@ -343,44 +284,38 @@ const ManageSettings = () => {
                   {editandoTipo ? 'Editar Tipo de Campo' : 'Novo Tipo de Campo'}
                 </h3>
                 <div className="space-y-4">
+            <Form {...formCourt}>
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                formCourt.handleSubmit((data) => submitCourt(data, e))();
+              }} 
+             
+            >
                   <div className="flex items-end gap-2">
                     <div className="flex-1">
-                      <Label htmlFor="tipo-campo">Nome do Tipo</Label>
-                      <Input
-                        id="tipo-campo"
-                        value={novoTipoCampo}
-                        onChange={(e) => setNovoTipoCampo(e.target.value)}
-                        placeholder="Ex: Basquete"
-                      />
+                     <FormField
+                    control={formCourt.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome do Tipo</FormLabel>
+                        <Input {...field} placeholder="Ex: Basquete"/>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                     </div>
                     <Button 
-                      onClick={adicionarTipoCampo}
+                    type="submit" 
                       className="bg-green-600 hover:bg-green-700"
                     >
                       <Save size={16} className="mr-1" />
-                      {editandoTipo ? 'Atualizar' : 'Salvar'}
+                      { editandoTipo ?  'Actualizar' : 'Salvar' }
                     </Button>
                   </div>
-
-                  {/* Seleção para edição rápida */}
-                  <div>
-                    <Label htmlFor="tipo-select">Editar Existente</Label>
-                    <Select 
-                      value={tipoSelecionado} 
-                      onValueChange={setTipoSelecionado}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {tiposCampo.map((tipo) => (
-                          <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                            {tipo.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  </form>
+                  </Form>
                 </div>
               </div>
 
@@ -388,7 +323,7 @@ const ManageSettings = () => {
               <div>
                 <h3 className="text-lg font-medium mb-4">Tipos Cadastrados</h3>
                 <div className="bg-gray-50 rounded-md p-4 max-h-96 overflow-y-auto">
-                  {tiposCampo.length > 0 ? (
+                  {courtData?.data?.data?.length > 0 ? (
                     <table className="min-w-full">
                       <thead>
                         <tr>
@@ -397,21 +332,15 @@ const ManageSettings = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {tiposCampo.map((tipo) => (
+                        {courtData?.data?.data?.map((tipo) => (
                           <tr key={tipo.id}>
-                            <td className="py-2">{tipo.nome}</td>
+                            <td className="py-2">{tipo.name}</td>
                             <td className="py-2 text-right">
                               <button
                                 onClick={() => editarTipoCampo(tipo)}
                                 className="text-blue-600 hover:text-blue-800 mr-2"
                               >
                                 <Edit size={16} />
-                              </button>
-                              <button
-                                onClick={() => excluirTipoCampo(tipo.id)}
-                                className="text-red-600 hover:text-red-800"
-                              >
-                                <Trash2 size={16} />
                               </button>
                             </td>
                           </tr>
@@ -445,44 +374,35 @@ const ManageSettings = () => {
                   {editandoProvincia ? 'Editar Província' : 'Nova Província'}
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-end gap-2">
-                    <div className="flex-1">
-                      <Label htmlFor="provincia">Nome da Província</Label>
-                      <Input
-                        id="provincia"
-                        value={novaProvincia}
-                        onChange={(e) => setNovaProvincia(e.target.value)}
-                        placeholder="Ex: Luanda"
-                      />
+               <Form {...formProvince}>
+                  <form 
+                    onSubmit={(e) => {   // ✅ Correto! Use `onSubmit`
+                      e.preventDefault();
+                      formProvince.handleSubmit((data) => submitProvince(data, e))();
+                    }} 
+                  >
+                    <div className="flex items-end gap-2">
+                      <div className="flex-1">
+                        <FormField
+                          control={formProvince.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nome da Província</FormLabel>
+                              <Input {...field} placeholder="Ex: Luanda"/>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                        <Save size={16} className="mr-1" />
+                        {editandoProvincia ? 'Atualizar' : 'Salvar'}
+                      </Button>
                     </div>
-                    <Button 
-                      onClick={adicionarProvincia}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <Save size={16} className="mr-1" />
-                      {editandoProvincia ? 'Atualizar' : 'Salvar'}
-                    </Button>
-                  </div>
+                  </form>
+                </Form>
 
-                  {/* Seleção para edição rápida */}
-                  <div>
-                    <Label htmlFor="provincia-select">Editar Existente</Label>
-                    <Select 
-                      value={provinciaSelecionada} 
-                      onValueChange={setProvinciaSelecionada}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma província" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {provincias.map((provincia) => (
-                          <SelectItem key={provincia.id} value={provincia.id.toString()}>
-                            {provincia.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
               </div>
 
@@ -490,7 +410,7 @@ const ManageSettings = () => {
               <div>
                 <h3 className="text-lg font-medium mb-4">Províncias Cadastradas</h3>
                 <div className="bg-gray-50 rounded-md p-4 max-h-96 overflow-y-auto">
-                  {provincias.length > 0 ? (
+                  {provinceData?.data?.data?.length > 0 ? (
                     <table className="min-w-full">
                       <thead>
                         <tr>
@@ -499,21 +419,15 @@ const ManageSettings = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {provincias.map((provincia) => (
+                        {provinceData?.data?.data?.map((provincia) => (
                           <tr key={provincia.id}>
-                            <td className="py-2">{provincia.nome}</td>
+                            <td className="py-2">{provincia.name}</td>
                             <td className="py-2 text-right">
                               <button
                                 onClick={() => editarProvincia(provincia)}
                                 className="text-blue-600 hover:text-blue-800 mr-2"
                               >
                                 <Edit size={16} />
-                              </button>
-                              <button
-                                onClick={() => excluirProvincia(provincia.id)}
-                                className="text-red-600 hover:text-red-800"
-                              >
-                                <Trash2 size={16} />
                               </button>
                             </td>
                           </tr>
@@ -557,9 +471,9 @@ const ManageSettings = () => {
                         <SelectValue placeholder="Selecione uma província" />
                       </SelectTrigger>
                       <SelectContent>
-                        {provincias.map((provincia) => (
+                        {provinceData?.data?.data?.map((provincia) => (
                           <SelectItem key={provincia.id} value={provincia.id.toString()}>
-                            {provincia.nome}
+                            {provincia.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -570,50 +484,41 @@ const ManageSettings = () => {
                       </p>
                     )}
                   </div>
-
+                <Form {...formCity}>
+                    <form 
+                        onSubmit={(e) => {   // ✅ Correto! Use `onSubmit`
+                       e.preventDefault();
+                         formCity.handleSubmit((data) => submitCity(data, e))();
+                    }} 
+              >
                   <div className="flex items-end gap-2">
+                  
                     <div className="flex-1">
-                      <Label htmlFor="cidade-nome">Nome da Cidade</Label>
-                      <Input
-                        id="cidade-nome"
-                        value={novaCidade.nome}
-                        onChange={(e) => setNovaCidade({...novaCidade, nome: e.target.value})}
-                        placeholder="Ex: Luanda"
-                        disabled={!novaCidade.fk_provincia}
+                      <FormField
+                        control={formCity.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome da Cidade</FormLabel>
+                            <Input {...field} placeholder="Ex: Talatona"/>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                     <Button 
-                      onClick={adicionarCidade}
+                      type='submit'
                       className="bg-green-600 hover:bg-green-700"
-                      disabled={!novaCidade.fk_provincia || !novaCidade.nome.trim()}
                     >
                       <Save size={16} className="mr-1" />
                       {editandoCidade ? 'Atualizar' : 'Salvar'}
                     </Button>
-                  </div>
+                    
+                    </div>
+                    </form>
+                    </Form>
+                  
 
-                  {/* Seleção para edição rápida */}
-                  <div>
-                    <Label htmlFor="cidade-select">Editar Existente</Label>
-                    <Select 
-                      value={cidadeSelecionada} 
-                      onValueChange={setCidadeSelecionada}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma cidade" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {cidades.map((cidade) => {
-                          const provincia = provincias.find(p => p.id === cidade.fk_provincia);
-                          return (
-                            <SelectItem key={cidade.id} value={cidade.id.toString()}>
-                              {cidade.nome} ({provincia ? provincia.nome : 'Província desconhecida'})
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
               </div>
 
@@ -621,7 +526,7 @@ const ManageSettings = () => {
               <div>
                 <h3 className="text-lg font-medium mb-4">Cidades Cadastradas</h3>
                 <div className="bg-gray-50 rounded-md p-4 max-h-96 overflow-y-auto">
-                  {cidades.length > 0 ? (
+                  {cityData?.data?.data?.length > 0 ? (
                     <table className="min-w-full">
                       <thead>
                         <tr>
@@ -631,24 +536,18 @@ const ManageSettings = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {cidades.map((cidade) => {
-                          const provincia = provincias.find(p => p.id === cidade.fk_provincia);
+                        {cityData?.data?.data?.map((cidade) => {
+                          const provincia = provinceData?.data?.data?.find(p => p.id === cidade?.provinceId);
                           return (
                             <tr key={cidade.id}>
-                              <td className="py-2">{cidade.nome}</td>
-                              <td className="py-2">{provincia ? provincia.nome : 'Desconhecida'}</td>
+                              <td className="py-2">{cidade.name}</td>
+                              <td className="py-2">{provincia ? provincia?.name : 'Desconhecida'}</td>
                               <td className="py-2 text-right">
                                 <button
-                                  onClick={() => editarCidade(cidade)}
+                                  onClick={() => editarCidade(cidade, provincia.provinceId)}
                                   className="text-blue-600 hover:text-blue-800 mr-2"
                                 >
                                   <Edit size={16} />
-                                </button>
-                                <button
-                                  onClick={() => excluirCidade(cidade.id)}
-                                  className="text-red-600 hover:text-red-800"
-                                >
-                                  <Trash2 size={16} />
                                 </button>
                               </td>
                             </tr>
@@ -691,6 +590,13 @@ const ManageSettings = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Diálogo de feedback */}
+      <FeedbackDialog 
+        isOpen={dialogOpen}
+        onClose={handleCloseDialog}
+        success={isSuccess}
+        message={feedbackMessage}
+      />
     </div>
   );
 };

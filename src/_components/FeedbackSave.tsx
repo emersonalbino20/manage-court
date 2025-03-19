@@ -11,7 +11,7 @@ interface FeedbackDialogProps {
   message?: string;
 }
 
-const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
+const FeedbackSave: React.FC<FeedbackDialogProps> = ({
   isOpen,
   onClose,
   success,
@@ -41,10 +41,11 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
         
         <DialogFooter className="sm:justify-center">
           {success ? (
-            
-              <Button onClick={onClose}className="bg-green-700 hover:bg-green-600">
-                Ok
+            <Link to="/login">
+              <Button className="bg-green-700 hover:bg-green-600">
+                Fazer Login
               </Button>
+            </Link>
           ) : (
             <Button onClick={onClose} className="bg-red-600 hover:bg-red-700">
               Tentar Novamente
@@ -56,4 +57,4 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
   );
 };
 
-export default FeedbackDialog;
+export default FeedbackSave;

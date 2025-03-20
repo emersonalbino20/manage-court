@@ -143,7 +143,7 @@ function submitCity(data: any, event: React.FormEvent<HTMLFormElement> | undefin
         setIsSuccess(true);
         setFeedbackMessage("A cidade foi actualizada com sucesso!");
         setDialogOpen(true);
-        setEditandoCidade(null); // Reseta o estado após edição
+        setEditandoProvincia(null); // Reseta o estado após edição
       },
       onError: (error) => {
         setIsSuccess(false);
@@ -182,8 +182,6 @@ React.useEffect(() => {
 
   // Estados para os dados
   const { data: courtData } = useGetCourtsTypeQuery();
-  console.log(courtData?.data?.data);
-  
   const { data: provinceData } = useGetProvincesQuery();
   const { data: cityData } = useGetCitiesQuery();
 
@@ -212,7 +210,9 @@ React.useEffect(() => {
     formCourt.setValue("name", tipo.name);
   };
   const editarProvincia = (province) => {
-    c
+     setEditandoProvincia(province)
+    formProvince.setValue("id", province.id);
+    formProvince.setValue("name", province.name);
   };
   const excluirProvincia = () => {};
   const adicionarCidade = () => {};
@@ -505,7 +505,21 @@ React.useEffect(() => {
                           </FormItem>
                         )}
                       />
-                    </div>
+                      <FormField
+                        control={formCity.control}
+                        name="provinceId"
+                        render={({ field }) => (
+                          <FormItem>
+                              <Input 
+                            type="hidden" 
+                            value={novaCidade?.fk_provincia}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} // ⬅️ Evita `NaN`
+                          />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      </div>
                     <Button 
                       type='submit'
                       className="bg-green-600 hover:bg-green-700"

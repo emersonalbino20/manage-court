@@ -6,23 +6,41 @@ import {
   usePutCourt,
   useGetCourtsQuery
 } from '@/api/courtQuery';
+import {
+  useGetCourtsTypeQuery
+} from '@/api/courtQuery';
 import FeedbackDialog from './_components/FeedbackDialog';
+import {receiveCentFront, sendCoinBeck} from './utils/methods';
+import {
+  useGetProvincesQuery
+} from '@/api/provinceQuery';
+import {
+  useGetCitiesQuery
+} from '@/api/cityQuery';
 
 const ManageCourt = () => {
+
   const [activeTab, setActiveTab] = useState('cadastrar');
   const [formData, setFormData] = useState({
-    nome: '',
-    tipo: 'Futebol',
-    disponibilidade: 'Disponível',
-    descricao: '',
-    imagem: null
+    fieldTypeId: 1,
+    name: '',
+    description: '',
+    hourlyRate: 0,
+    address: {
+      street: '',
+      cityId: 1,
+      provinceId: 1,
+      latitude: 0,
+      longitude: 0
+    },
+    thumbnailUrl: ''
   });
   const [modoEdicao, setModoEdicao] = useState(false);
   const [quadraEditando, setQuadraEditando] = useState(null);
 
   // Dados da API
   const { data: courtData } = useGetCourtsQuery();
-
+  console.log(courtData?.data)
   // Estados para controlar o diálogo
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -41,24 +59,63 @@ const ManageCourt = () => {
 
   const resetForm = () => {
     setFormData({
-      nome: '',
-      tipo: 'Futebol',
-      disponibilidade: 'Disponível',
-      descricao: '',
-      imagem: null
+      fieldTypeId: 1,
+      name: '',
+      description: '',
+      hourlyRate: 0,
+      address: {
+        street: '',
+        cityId: 1,
+        provinceId: 1,
+        latitude: 0,
+        longitude: 0
+      },
+      thumbnailUrl: ''
     });
     setQuadraEditando(null);
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
-    
-    if (name === 'imagem' && files) {
-      setFormData(prev => ({ ...prev, [name]: files[0] }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+const [thumbnailUrl, setThumbnailUrl] = useState('');
+const handleInputChange = (e) => {
+  const { name, value, files } = e.target;
+  if (name === 'thumbnailUrl' && files) {
+    const file = files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setThumbnailUrl(url);
+      setFormData(prev => ({ ...prev, [name]: url }));
     }
-  };
+  } else if (name === 'address.cityId') {
+    // Encontrar a província associada à cidade selecionada
+    const selectedCity = cityData?.data?.data?.find(city => city.id === parseInt(value));
+    const provinceId = selectedCity ? selectedCity.provinceId : "";
+
+    // Atualizar cityId e provinceId no formData
+    setFormData(prev => ({
+      ...prev,
+      address: {
+        ...prev.address,
+        cityId: parseInt(value),
+        provinceId: provinceId
+      }
+    }));
+  } else if (name.includes('.')) {
+    const [parent, child] = name.split('.');
+    setFormData(prev => ({
+      ...prev,
+      [parent]: {
+        ...prev[parent],
+        [child]: ["address.latitude", "address.longitude", "address.cityId", "address.provinceId"].includes(name) 
+          ? parseFloat(value) 
+          : value
+      }
+    }));
+  } else if (name === 'hourlyRate' || name === 'fieldTypeId') {
+    setFormData(prev => ({ ...prev, [name]: parseFloat(value) }));
+  } else {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  }
+};
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -66,15 +123,10 @@ const ManageCourt = () => {
     if (modoEdicao && quadraEditando) {
       // Criando o objeto da quadra editada
       const quadraEditada = {
-        ...quadraEditando, 
-        nome: formData.nome, 
-        tipo: formData.tipo, 
-        disponibilidade: formData.disponibilidade,
-        descricao: formData.descricao
-        // A imagem seria tratada em um contexto real com upload
+        ...quadraEditando,
+        ...formData
       };
 
-      console.log("editado", quadraEditada);
       putCourt(quadraEditada, {
         onSuccess: (response) => {
           setIsSuccess(true);
@@ -84,6 +136,7 @@ const ManageCourt = () => {
           setActiveTab('listar');
         },
         onError: (error) => {
+          console.log(error)
           setIsSuccess(false);
           setFeedbackMessage("Não foi possível atualizar a quadra. Verifique seus dados e tente novamente.");
           setDialogOpen(true);
@@ -93,15 +146,25 @@ const ManageCourt = () => {
     } else {
       // Adicionar nova quadra
       const novaQuadra = {
-        id: courtData?.data?.length + 1,
-        nome: formData.nome,
-        tipo: formData.tipo,
-        disponibilidade: formData.disponibilidade,
-        descricao: formData.descricao,
-        // Em um caso real, aqui trataria o upload da imagem e salvaria o URL
+        ...formData,
+        id: courtData?.data?.data?.fields?.length + 1
       };
-
-      mutateCourt(novaQuadra, {
+      
+      const value = sendCoinBeck(formData?.hourlyRate);
+      console.log(sendCoinBeck)
+      mutateCourt({
+      fieldTypeId: formData?.fieldTypeId,
+      name: formData?.name,
+      description: formData?.description,
+      hourlyRate: value,
+      address: {
+        street: formData?.address?.street,
+        cityId: 1,
+        provinceId: 1,
+        latitude: formData?.address?.latitude,
+        longitude: formData?.address?.longitude
+      },
+      thumbnailUrl: formData?.thumbnailUrl}, {
         onSuccess: (response) => {
           setIsSuccess(true);
           setFeedbackMessage("A quadra foi cadastrada com sucesso!");
@@ -117,20 +180,32 @@ const ManageCourt = () => {
       });
     }
   };
-
+const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
   const iniciarEdicao = (quadra) => {
     setFormData({
-      nome: quadra.nome,
-      tipo: quadra.tipo,
-      disponibilidade: quadra.disponibilidade || 'Disponível',
-      descricao: quadra.descricao || '',
-      imagem: null // Não podemos definir o arquivo diretamente
+      fieldTypeId: quadra.fieldTypeId || 1,
+      name: quadra.name || '',
+      description: quadra.description || '',
+      hourlyRate: quadra.hourlyRate || 0,
+      address: {
+        street: quadra.address?.street || '',
+        cityId: quadra.address?.cityId || 1,
+        provinceId: quadra.address?.provinceId || 1,
+        latitude: quadra.address?.latitude || 0,
+        longitude: quadra.address?.longitude || 0
+      },
+      thumbnailUrl: quadra.thumbnailUrl || ''
     });
     setQuadraEditando(quadra);
     setModoEdicao(true);
     setActiveTab('cadastrar');
   };
 
+  const { data: typeData } = useGetCourtsTypeQuery();
+  const { data: provinceData } = useGetProvincesQuery();
+  const { data: cityData } = useGetCitiesQuery();
 
   return (
     <div className="p-4 md:p-6 overflow-x-hidden">
@@ -181,8 +256,8 @@ const ManageCourt = () => {
                   </label>
                   <input
                     type="text"
-                    name="nome"
-                    value={formData.nome}
+                    name="name"
+                    value={formData.name}
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     required
@@ -194,44 +269,44 @@ const ManageCourt = () => {
                     Tipo de Quadra
                   </label>
                   <select
-                    name="tipo"
-                    value={formData.tipo}
+                    name="fieldTypeId"
+                    value={formData.fieldTypeId}
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     required
                   >
-                    <option value="Futebol">Futebol</option>
-                    <option value="Basquete">Basquete</option>
-                    <option value="Vôlei">Vôlei</option>
-                    <option value="Tênis">Tênis</option>
-                    <option value="Futsal">Futsal</option>
+                   <option value="">Selecione o tipo de quadra</option>
+                      {typeData?.data?.data?.map((courttype)=>{
+                          return(
+                            <option value={courttype?.id}>{courttype?.name}</option>
+                          )}
+                        )}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Disponibilidade
+                    Valor por Hora (Kz)
                   </label>
-                  <select
-                    name="disponibilidade"
-                    value={formData.disponibilidade}
+                  <input
+                    type="number"
+                    name="hourlyRate"
+                    value={formData.hourlyRate}
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
+                    min="0"
+                    step="0.01"
                     required
-                  >
-                    <option value="Disponível">Disponível</option>
-                    <option value="Indisponível">Indisponível</option>
-                    <option value="Em Manutenção">Em Manutenção</option>
-                  </select>
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Imagem
+                    Imagem da Quadra
                   </label>
                   <input
                     type="file"
-                    name="imagem"
+                    name="thumbnailUrl"
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     accept="image/*"
@@ -243,12 +318,86 @@ const ManageCourt = () => {
                     Descrição
                   </label>
                   <textarea
-                    name="descricao"
-                    value={formData.descricao}
+                    name="description"
+                    value={formData.description}
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     rows="3"
                   ></textarea>
+                </div>
+
+                <div className="md:col-span-2">
+                  <h3 className="font-medium text-gray-700 mb-2">Endereço</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Rua
+                      </label>
+                      <input
+                        type="text"
+                        name="address.street"
+                        value={formData.address.street}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Cidade /provincia
+                      </label>
+                      <select
+                        name="address.cityId"
+                        value={formData.address.cityId}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        required
+                      >
+                      <option value="">Selecione a cidade</option>
+                      {cityData?.data?.data?.map((cidade)=>{
+                        const provincia = provinceData?.data?.data?.find(p => p.id === cidade?.provinceId);
+                          return(
+                            <option value={cidade?.id}>{cidade?.name} ({provincia ? provincia?.name : 'Desconhecida'})</option>
+                          )}
+                        )}
+                       </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Latitude
+                      </label>
+                      <input
+                        type="number"
+                        name="address.latitude"
+                        value={formData.address.latitude}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        min="-90"
+                        max="90"
+                        step="0.000001"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Longitude
+                      </label>
+                      <input
+                        type="number"
+                        name="address.longitude"
+                        value={formData.address.longitude}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        min="-180"
+                        max="180"
+                        step="0.000001"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -281,7 +430,10 @@ const ManageCourt = () => {
                       Tipo
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Disponibilidade
+                      Valor/Hora
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Endereço
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Descrição
@@ -292,31 +444,30 @@ const ManageCourt = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {courtData?.data?.map((quadra) => (
+                  {courtData?.data?.data?.fields?.map((quadra) => {
+                    const court_type = typeData?.data?.data?.find(p => p.id === quadra?.fieldTypeId);
+                    return(
                     <tr key={quadra.id}>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        {quadra.nome}
+                        {quadra.name}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         <span className="flex items-center">
                           <Layers size={14} className="mr-1" />
-                          {quadra.tipo}
+                          {court_type.name}
                         </span>
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          quadra.disponibilidade === 'Disponível' ? 'bg-green-100 text-green-800' : 
-                          quadra.disponibilidade === 'Em Manutenção' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {quadra.disponibilidade || 'Disponível'}
-                        </span>
+                        Kz {quadra.hourlyRate?.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        {quadra.address?.street}
                       </td>
                       <td className="px-4 py-2">
-                        {quadra.descricao ? 
-                          (quadra.descricao.length > 50 ? 
-                            `${quadra.descricao.substring(0, 50)}...` : 
-                            quadra.descricao) : 
+                        {quadra.description ? 
+                          (quadra.description.length > 50 ? 
+                            `${quadra.description.substring(0, 50)}...` : 
+                            quadra.description) : 
                           '—'}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-right">
@@ -328,7 +479,7 @@ const ManageCourt = () => {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
             </div>
@@ -337,16 +488,28 @@ const ManageCourt = () => {
       )}
 
       {/* Feedback Dialog */}
-      {dialogOpen && (
-        <FeedbackDialog
-          isOpen={dialogOpen}
-          onClose={() => setDialogOpen(false)}
-          isSuccess={isSuccess}
-          message={feedbackMessage}
-        />
-      )}
+    <FeedbackDialog 
+        isOpen={dialogOpen}
+        onClose={handleCloseDialog}
+        success={isSuccess}
+        message={feedbackMessage}
+      />
     </div>
   );
 };
+
+// Helper functions to get names from IDs
+const getFieldTypeName = (id) => {
+  const types = {
+    1: 'Futebol',
+    2: 'Basquete',
+    3: 'Vôlei',
+    4: 'Tênis',
+    5: 'Futsal'
+  };
+  return types[id] || 'Desconhecido';
+};
+
+
 
 export default ManageCourt;

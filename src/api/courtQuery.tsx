@@ -9,12 +9,12 @@ export const auxPostCourtType = (data) => {
 };
 
 export const auxPostCourt = (data) => {
-  return axios.post(`http://localhost:5000/court/`, data);
+  return axios.post(`http://localhost:3000/fields/`, data);
 };
 
 /* Put */
 export const auxPutCourt = (data) => {
-  return axios.put(`http://localhost:5000/court/${data.id}`, 
+  return axios.put(`http://localhost:3000/fields/${data.id}`, 
     data
   );
 };
@@ -30,7 +30,7 @@ export const usePostCourt = () => {
   const { mutate, isLoading } = useMutation({
     mutationFn: auxPostCourt,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courts'] });
+      queryClient.invalidateQueries({ queryKey: ['fields'] });
       console.log('success');
     },
     onError: (error) => {
@@ -45,7 +45,7 @@ export const usePostCourtType = () => {
   const { mutate, isLoading } = useMutation({
     mutationFn: auxPostCourtType,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courtstype'] });
+      queryClient.invalidateQueries({ queryKey: ['field-type'] });
       console.log('success');
     },
     onError: (error) => {
@@ -61,7 +61,7 @@ export const usePutCourt = () => {
   return useMutation({
     mutationFn: auxPutCourt,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courts'] });
+      queryClient.invalidateQueries({ queryKey: ['fields'] });
       console.log('Quadra atualizada com sucesso!');
     },
     onError: (error) => {
@@ -76,7 +76,7 @@ export const usePutCourtType = () => {
   return useMutation({
     mutationFn: auxPutCourtType,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courtstype'] });
+      queryClient.invalidateQueries({ queryKey: ['field-type'] });
       console.log('Quadra atualizada com sucesso!');
     },
     onError: (error) => {
@@ -89,15 +89,15 @@ export const usePutCourtType = () => {
 //Get
 export const useGetCourtsQuery = () => {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['courts'],
-    queryFn: () => axios.get('http://localhost:5000/court/'),
+    queryKey: ['fields'],
+    queryFn: () => axios.get('http://localhost:3000/fields/'),
   });
   return { data, isLoading, isError };
 };
 
 export const useGetCourtsTypeQuery = () => {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['courtstype'],
+    queryKey: ['field-type'],
     queryFn: () => axios.get('http://localhost:3000/field-types/'),
   });
   return { data, isLoading, isError };

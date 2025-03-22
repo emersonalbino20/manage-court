@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
 import { MapPin, Edit, Trash2, Save, Layers } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  useGetProvincesQuery
+} from '@/api/provinceQuery';
+import {
+  useGetCitiesQuery
+} from '@/api/cityQuery';
 import {
   usePostCourt,
+  usePatchFields,
   usePutCourt,
   useGetCourtsQuery
 } from '@/api/courtQuery';
@@ -11,17 +21,28 @@ import {
 } from '@/api/courtQuery';
 import FeedbackDialog from './_components/FeedbackDialog';
 import {receiveCentFront, sendCoinBeck} from './utils/methods';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { schemeCourt } from './utils/validateForm.tsx';
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form";
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
-  useGetProvincesQuery
-} from '@/api/provinceQuery';
-import {
-  useGetCitiesQuery
-} from '@/api/cityQuery';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const ManageCourt = () => {
 
-  const [activeTab, setActiveTab] = useState('cadastrar');
-  const [formData, setFormData] = useState({
+const formCourt = useForm({
+    resolver: zodResolver(schemeCourt),
+    defaultValues: {
     fieldTypeId: 1,
     name: '',
     description: '',
@@ -34,17 +55,28 @@ const ManageCourt = () => {
       longitude: 0
     },
     thumbnailUrl: ''
+    },
   });
+
+  const [activeTab, setActiveTab] = useState('cadastrar');
+  
   const [modoEdicao, setModoEdicao] = useState(false);
   const [quadraEditando, setQuadraEditando] = useState(null);
 
   // Dados da API
   const { data: courtData } = useGetCourtsQuery();
-  console.log(courtData?.data)
   // Estados para controlar o diálogo
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
+
+  // Estados para o diálogo de confirmação de exclusão
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [quadraParaExcluir, setQuadraParaExcluir] = useState(null);
+
+  const { data: typeData } = useGetCourtsTypeQuery();
+  const { data: provinceData } = useGetProvincesQuery();
+  const { data: cityData } = useGetCitiesQuery();
 
   const { mutate: mutateCourt } = usePostCourt();
   const { mutate: putCourt } = usePutCourt();
@@ -53,86 +85,53 @@ const ManageCourt = () => {
     setActiveTab(tab);
     if (tab === 'cadastrar') {
       setModoEdicao(false);
-      resetForm();
+      formCourt.reset();
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      fieldTypeId: 1,
-      name: '',
-      description: '',
-      hourlyRate: 0,
-      address: {
-        street: '',
-        cityId: 1,
-        provinceId: 1,
-        latitude: 0,
-        longitude: 0
+  //Patch
+  const { mutate: patchFields } = usePatchFields();
+
+  const handleSubmitPatchFields = (id) => {
+    patchFields({ id: id, isDeleted: true }, {
+      onSuccess: () => {
+        setIsSuccess(true);
+        setFeedbackMessage("A quadra foi deletada com sucesso!");
+        setDialogOpen(true);
       },
-      thumbnailUrl: ''
+      onError: (error) => {
+        setIsSuccess(false);
+        setFeedbackMessage("Não foi possível deletar a quadra. Tente novamente mais tarde.");
+        setDialogOpen(true);
+      }
     });
-    setQuadraEditando(null);
   };
 
-const [thumbnailUrl, setThumbnailUrl] = useState('');
-const handleInputChange = (e) => {
-  const { name, value, files } = e.target;
-  if (name === 'thumbnailUrl' && files) {
-    const file = files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setThumbnailUrl(url);
-      setFormData(prev => ({ ...prev, [name]: url }));
+  // Função para abrir o diálogo de confirmação
+  const openDeleteDialog = (quadra) => {
+    setQuadraParaExcluir(quadra);
+    setDeleteDialogOpen(true);
+  };
+
+  // Função para confirmar a exclusão
+  const confirmDelete = () => {
+    if (quadraParaExcluir) {
+      handleSubmitPatchFields(quadraParaExcluir.id);
     }
-  } else if (name === 'address.cityId') {
-    // Encontrar a província associada à cidade selecionada
-    const selectedCity = cityData?.data?.data?.find(city => city.id === parseInt(value));
-    const provinceId = selectedCity ? selectedCity.provinceId : "";
+    setDeleteDialogOpen(false);
+  };
 
-    // Atualizar cityId e provinceId no formData
-    setFormData(prev => ({
-      ...prev,
-      address: {
-        ...prev.address,
-        cityId: parseInt(value),
-        provinceId: provinceId
-      }
-    }));
-  } else if (name.includes('.')) {
-    const [parent, child] = name.split('.');
-    setFormData(prev => ({
-      ...prev,
-      [parent]: {
-        ...prev[parent],
-        [child]: ["address.latitude", "address.longitude", "address.cityId", "address.provinceId"].includes(name) 
-          ? parseFloat(value) 
-          : value
-      }
-    }));
-  } else if (name === 'hourlyRate' || name === 'fieldTypeId') {
-    setFormData(prev => ({ ...prev, [name]: parseFloat(value) }));
-  } else {
-    setFormData(prev => ({ ...prev, [name]: value }));
-  }
-};
+  function submitCourt(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
+    event?.preventDefault(); 
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (modoEdicao && quadraEditando) {
-      // Criando o objeto da quadra editada
-      const quadraEditada = {
-        ...quadraEditando,
-        ...formData
-      };
-
-      putCourt(quadraEditada, {
+    if (modoEdicao) {
+      
+      putCourt(data, {
         onSuccess: (response) => {
           setIsSuccess(true);
           setFeedbackMessage("A quadra foi atualizada com sucesso!");
           setDialogOpen(true);
-          resetForm();
+          formCourt.reset();
           setActiveTab('listar');
         },
         onError: (error) => {
@@ -140,39 +139,35 @@ const handleInputChange = (e) => {
           setIsSuccess(false);
           setFeedbackMessage("Não foi possível atualizar a quadra. Verifique seus dados e tente novamente.");
           setDialogOpen(true);
+          setModoEdicao(true);
+          setActiveTab('cadastrar');
         }
       });
       setModoEdicao(false);
     } else {
-      // Adicionar nova quadra
-      const novaQuadra = {
-        ...formData,
-        id: courtData?.data?.data?.fields?.length + 1
-      };
-      
-      const value = sendCoinBeck(formData?.hourlyRate);
-      console.log(sendCoinBeck)
-      mutateCourt({
-      fieldTypeId: formData?.fieldTypeId,
-      name: formData?.name,
-      description: formData?.description,
-      hourlyRate: value,
-      address: {
-        street: formData?.address?.street,
-        cityId: 1,
-        provinceId: 1,
-        latitude: formData?.address?.latitude,
-        longitude: formData?.address?.longitude
-      },
-      thumbnailUrl: formData?.thumbnailUrl}, {
+      const value = sendCoinBeck(data?.hourlyRate);
+      mutateCourt({ fieldTypeId: data?.fieldTypeId,
+                    name: data?.name,
+                    description: data?.description,
+                    hourlyRate: value,
+                    address: {
+                      street: data?.address?.street,
+                      cityId: data?.address?.cityId,
+                      provinceId: data?.address?.provinceId,
+                      latitude: data?.address?.latitude,
+                      longitude: data?.address?.longitude
+                    },
+                    thumbnailUrl: data?.thumbnailUrl
+                    }, {
         onSuccess: (response) => {
           setIsSuccess(true);
           setFeedbackMessage("A quadra foi cadastrada com sucesso!");
           setDialogOpen(true);
-          resetForm();
+          formCourt.reset();
           setActiveTab('listar');
         },
         onError: (error) => {
+          console.log(error)
           setIsSuccess(false);
           setFeedbackMessage("Não foi possível cadastrar a quadra. Verifique seus dados e tente novamente.");
           setDialogOpen(true);
@@ -183,29 +178,23 @@ const handleInputChange = (e) => {
 const handleCloseDialog = () => {
     setDialogOpen(false);
   };
-  const iniciarEdicao = (quadra) => {
-    setFormData({
-      fieldTypeId: quadra.fieldTypeId || 1,
-      name: quadra.name || '',
-      description: quadra.description || '',
-      hourlyRate: quadra.hourlyRate || 0,
-      address: {
-        street: quadra.address?.street || '',
-        cityId: quadra.address?.cityId || 1,
-        provinceId: quadra.address?.provinceId || 1,
-        latitude: quadra.address?.latitude || 0,
-        longitude: quadra.address?.longitude || 0
-      },
-      thumbnailUrl: quadra.thumbnailUrl || ''
-    });
-    setQuadraEditando(quadra);
+
+  const iniciarEdicao = (court) => {
+    setQuadraEditando(court);
+    formCourt.setValue("id", court.id);
+    formCourt.setValue("name", court.name);
+    formCourt.setValue("description", court.description);
+    formCourt.setValue("hourlyRate", court.hourlyRate);
+    formCourt.setValue("address.street", court.address.street);
+    formCourt.setValue("address.latitude", court.address.latitude);
+    formCourt.setValue("address.longitude", court.address.longitude);
+    formCourt.setValue("address.cityId", court.address.cityId);
+    formCourt.setValue("address.provinceId", court.address.provinceId);
     setModoEdicao(true);
     setActiveTab('cadastrar');
   };
 
-  const { data: typeData } = useGetCourtsTypeQuery();
-  const { data: provinceData } = useGetProvincesQuery();
-  const { data: cityData } = useGetCitiesQuery();
+  
 
   return (
     <div className="p-4 md:p-6 overflow-x-hidden">
@@ -248,159 +237,211 @@ const handleCloseDialog = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
-            <form onSubmit={handleSubmit}>
+          <Form {...formCourt}>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                formCourt.handleSubmit((data) => submitCourt(data, e))();
+              }} 
+             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nome da Quadra
-                  </label>
-                  <input
-                    type="text"
+                  <FormField
+                    control={formCourt.control}
                     name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    required
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="block text-sm font-medium text-gray-700 mb-1">Nome da Quadra</FormLabel>
+                        <FormControl>
+                        <Input {...field} 
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tipo de Quadra
-                  </label>
-                  <select
+                 <FormField
+                    control={formCourt.control}
                     name="fieldTypeId"
-                    value={formData.fieldTypeId}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    required
-                  >
-                   <option value="">Selecione o tipo de quadra</option>
-                      {typeData?.data?.data?.map((courttype)=>{
-                          return(
-                            <option value={courttype?.id}>{courttype?.name}</option>
-                          )}
-                        )}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Valor por Hora (Kz)
-                  </label>
-                  <input
-                    type="number"
-                    name="hourlyRate"
-                    value={formData.hourlyRate}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    min="0"
-                    step="0.01"
-                    required
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="block text-sm font-medium text-gray-700 mb-1">Tipo de Quadra</FormLabel>
+                        <FormControl>
+                          <select
+                            {...field}
+                           className="w-full p-2 border border-gray-300 rounded-md"
+                           onChange={(e) => {
+                                    field.onChange(parseInt(e.target.value));
+                                  }}>
+                             <option value="">Selecione o tipo de quadra</option>
+                              {typeData?.data?.data?.map((courttype)=>{
+                                  return(
+                                    <option key={courttype?.id} value={courttype?.id}>{courttype?.name}</option>
+                                  )}
+                                )}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Imagem da Quadra
-                  </label>
-                  <input
-                    type="file"
-                    name="thumbnailUrl"
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    accept="image/*"
-                  />
+                <FormField
+                  control={formCourt.control}
+                  name="hourlyRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="block text-sm font-medium text-gray-700 mb-1">
+                      Valor por Hora (Kz)</FormLabel>
+                      <FormControl>
+                      <Input type="number" {...field}
+                      step={0.01}
+                      onChange={(e) => {
+                          field.onChange(parseFloat(e.target.value));
+                        }}
+                      />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                </div>
+                <div>
+                 <FormField
+                  control={formCourt.control}
+                  name="thumbnailUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="block text-sm font-medium text-gray-700 mb-1">
+                      Imagem da Quadra</FormLabel>
+                      <Input type="file" {...field} multiple
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Descrição
-                  </label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
+                 <FormField
+                  control={formCourt.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="block text-sm font-medium text-gray-700 mb-1">
+                      Descrição</FormLabel>
+                     <Textarea 
+                    {...field}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     rows="3"
-                  ></textarea>
+                  />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 </div>
 
                 <div className="md:col-span-2">
                   <h3 className="font-medium text-gray-700 mb-2">Endereço</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Rua
-                      </label>
-                      <input
-                        type="text"
+                      <FormField
+                        control={formCourt.control}
                         name="address.street"
-                        value={formData.address.street}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Cidade /provincia
-                      </label>
-                      <select
-                        name="address.cityId"
-                        value={formData.address.cityId}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                        required
-                      >
-                      <option value="">Selecione a cidade</option>
-                      {cityData?.data?.data?.map((cidade)=>{
-                        const provincia = provinceData?.data?.data?.find(p => p.id === cidade?.provinceId);
-                          return(
-                            <option value={cidade?.id}>{cidade?.name} ({provincia ? provincia?.name : 'Desconhecida'})</option>
-                          )}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="block text-sm font-medium text-gray-700 mb-1">
+                            Rua</FormLabel>
+                           <Input type="text" 
+                          {...field}
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                            <FormMessage />
+                          </FormItem>
                         )}
-                       </select>
+                      />
+                    </div>
+                    <div>
+                     <FormField
+                    control={formCourt.control}
+                    name="address.cityId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="block text-sm font-medium text-gray-700 mb-1">Cidade / Província</FormLabel>
+                        <FormControl>
+                          <select
+                            {...field}
+                             onChange={(e) => {
+                                      field.onChange(parseInt(e.target.value));
+                                    }}
+                           className="w-full p-2 border border-gray-300 rounded-md"
+                            
+                          >
+                             <option value="">Selecione a cidade</option>
+                              {cityData?.data?.data?.map((cidade)=>{
+                                const provincia = provinceData?.data?.data?.find(p => p.id === cidade?.provinceId);
+                                return(
+                                    <option key={cidade?.id} value={`${cidade?.id}`}>{cidade?.name} ({provincia ? provincia?.name : 'Desconhecida'})</option>
+                                  )}
+                                )}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Latitude
-                      </label>
-                      <input
-                        type="number"
+                     <FormField
+                        control={formCourt.control}
                         name="address.latitude"
-                        value={formData.address.latitude}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                        min="-90"
-                        max="90"
-                        step="0.000001"
-                        required
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="block text-sm font-medium text-gray-700 mb-1">
+                            Latitude</FormLabel>
+                           <Input type="number" 
+                          {...field}
+                          min={-90}
+                          max={90}
+                          step="0.000001"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Longitude
-                      </label>
-                      <input
-                        type="number"
+                      <FormField
+                        control={formCourt.control}
                         name="address.longitude"
-                        value={formData.address.longitude}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                        min="-180"
-                        max="180"
-                        step="0.000001"
-                        required
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="block text-sm font-medium text-gray-700 mb-1">
+                            Longitude</FormLabel>
+                           <Input type="number" 
+                          {...field}
+                          min={-180}
+                          max={180}
+                          step="0.000001"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                   </div>
                 </div>
               </div>
-
               <div className="mt-4">
                 <button
                   type="submit"
@@ -411,6 +452,7 @@ const handleCloseDialog = () => {
                 </button>
               </div>
             </form>
+            </Form>
           </CardContent>
         </Card>
       ) : (
@@ -446,6 +488,7 @@ const handleCloseDialog = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {courtData?.data?.data?.fields?.map((quadra) => {
                     const court_type = typeData?.data?.data?.find(p => p.id === quadra?.fieldTypeId);
+                    const price = receiveCentFront(quadra.hourlyRate);
                     return(
                     <tr key={quadra.id}>
                       <td className="px-4 py-2 whitespace-nowrap">
@@ -458,7 +501,7 @@ const handleCloseDialog = () => {
                         </span>
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        Kz {quadra.hourlyRate?.toFixed(2)}
+                        Kz {price}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         {quadra.address?.street}
@@ -477,6 +520,12 @@ const handleCloseDialog = () => {
                         >
                           <Edit size={16} />
                         </button>
+                        <button
+                          onClick={() => openDeleteDialog(quadra)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </td>
                     </tr>
                   )})}
@@ -488,28 +537,36 @@ const handleCloseDialog = () => {
       )}
 
       {/* Feedback Dialog */}
-    <FeedbackDialog 
+      <FeedbackDialog 
         isOpen={dialogOpen}
         onClose={handleCloseDialog}
         success={isSuccess}
         message={feedbackMessage}
       />
+
+      {/* Confirmation Dialog for Delete */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja deletar a quadra "{quadraParaExcluir?.name}"? 
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Deletar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
-
-// Helper functions to get names from IDs
-const getFieldTypeName = (id) => {
-  const types = {
-    1: 'Futebol',
-    2: 'Basquete',
-    3: 'Vôlei',
-    4: 'Tênis',
-    5: 'Futsal'
-  };
-  return types[id] || 'Desconhecido';
-};
-
-
 
 export default ManageCourt;

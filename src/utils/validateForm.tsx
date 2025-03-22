@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const schemeAccount = z
   .object({
-    nome: z.string().min(3, "O nome deve ter pelo menos 3 caracteres"),
+    nome: z.string().min(4, "O nome deve ter pelo menos 5 caracteres"),
     email: z.string().email("Digite um e-mail válido"),
     senha: z.string()
       .min(6, "A senha deve ter no mínimo 6 caracteres")
@@ -17,57 +17,37 @@ export const schemeAccount = z
   });
 
 export const schemeCourt = z.object({
-  id: z.number().int().positive().max(32_767),
+  id: z.string().ulid().optional(),
+  fieldTypeId: z.number({message: 'opção inválida'}).int({message: 'Opção inválida'}).positive().max(32_767),
   name: z
     .string({
       required_error: 'O nome da quadra é obrigatório.',
       invalid_type_error: 'O nome da quadra deve ser uma string.',
     })
     .trim()
-    .min(4, { message: 'O nome da quadra deve ter pelo menos 4 caracteres.' })
+    .min(3, { message: 'O nome da quadra deve ter pelo menos 3 caracteres.' })
     .max(25, { message: 'O nome da quadra deve ter no máximo 25 caracteres.' })
     .regex(/^[a-zA-ZÀ-ÿ]+(?:\s[a-zA-ZÀ-ÿ]+)*$/, {
       message: 'O nome da quadra deve conter apenas letras e espaços e não pode começar ou terminar com espaço.',
     }),
-
-  tipo: z
-    .enum(['Futebol', 'Basquete', 'Vôlei', 'Tênis'], {
-      errorMap: () => ({ message: 'Tipo de quadra inválido.' }),
-    })
-    .default('Futebol'),
-
-  local: z
-    .string({
-      required_error: 'O local é obrigatório.',
-      invalid_type_error: 'O local deve ser uma string.',
-    })
-    .trim()
-    .min(3, { message: 'O local deve ter pelo menos 3 caracteres.' })
-    .max(50, { message: 'O local deve ter no máximo 50 caracteres.' }),
-
-  capacidade: z
-    .number({
-      required_error: 'A capacidade é obrigatória.',
-      invalid_type_error: 'A capacidade deve ser um número.',
-    })
-    .int()
-    .positive()
-    .max(100_000, { message: 'A capacidade máxima permitida é 100.000 pessoas.' }),
-
-  preco: z
-    .number({
-      required_error: 'O preço é obrigatório.',
-      invalid_type_error: 'O preço deve ser um número.',
-    })
-    .positive()
-    .max(1_000_000, { message: 'O preço máximo permitido é 1.000.000.' }),
-
-  descricao: z
+  description: z
     .string()
     .trim()
-    .max(200, { message: 'A descrição pode ter no máximo 200 caracteres.' })
+    .min(10, {message: 'A descrição deve ter no mínimo 10 caracteres'})
+    .max(100, { message: 'A descrição pode ter no máximo 100 caracteres.' })
     .optional(),
-});
+  hourlyRate: z.number({message: "O campo recebe números inteiros e decimais ex: 20,20"}).min(0),
+  thumbnailUrl: z.string().url({message: 'Imagem inválida'}).max(255),
+  address: z.object({
+    street: z.string().trim().min(1, {message: "O nome da rua deve ter pelo menos 1 letra"}).max(80).regex(/^[a-zA-ZÀ-ÿ]+(?:\s[a-zA-ZÀ-ÿ]+)*$/, {
+      message: 'O nome da rua deve conter apenas letras e espaços e não pode começar ou terminar com espaço.',
+    }),
+    cityId: z.number().int().positive(),
+    provinceId: z.number().int().positive(),
+    latitude: z.coerce.number().min(-90).max(90).optional(),
+    longitude: z.coerce.number().min(-180).max(180).optional(),
+  })
+})
 
 
  export const schemeCourtType = z.object({
@@ -78,7 +58,7 @@ export const schemeCourt = z.object({
     invalid_type_error: 'O nome da quadra deve ser uma string.',
   })
   .trim()
-  .min(4, {
+  .min(3, {
     message: 'O nome da quadra deve ter pelo menos 3 caracteres.',
   })
   .max(25, {
@@ -116,7 +96,7 @@ id: z.number().int().positive().max(32_767),
   invalid_type_error: 'O nome da cidade deve ser uma string.',
 })
 .trim()
-.min(3, {  // ✅ Ajuste aqui, se deseja permitir 3 caracteres
+.min(3, { 
   message: 'O nome da cidade deve ter pelo menos 3 caracteres.',
 })
 .max(25, {
@@ -155,3 +135,53 @@ export const validateAccountForm = () => {
     
     return errors;
   };
+
+
+
+const customZod = z.string().superRefine((val, ctx) => {
+  // Validação para formato de data (YYYY-MM-DD)
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  
+  // Validação para formato de hora (HH:MM)
+  const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+
+  return {
+    date: () => {
+      return customZod.refine(
+        (val) => dateRegex.test(val),
+        { message: "Data deve estar no formato YYYY-MM-DD" }
+      );
+    },
+    time: () => {
+      return customZod.refine(
+        (val) => timeRegex.test(val),
+        { message: "Hora deve estar no formato HH:MM" }
+      );
+    },
+    ulid: () => {
+      return customZod.refine(
+        (val) => val.length === 26 && /^[0-9A-Z]+$/.test(val),
+        { message: "ULID inválido" }
+      );
+    },
+  };
+});
+
+// Novo esquema de validação para o formulário de agendamento
+export const schemeCourtAvailability = z.object({
+  id: z.number().int().positive({
+    message: "O ID deve ser um número inteiro positivo.",
+  }).optional(),
+  fieldId: z.string().ulid({
+    message: "O ID do campo deve ser um ULID válido.",
+  }).optional(),
+  day: z.string().date({
+    message: "O dia deve estar no formato de data válido (YYYY-MM-DD).",
+  }),
+  startTime: z.string().time({
+    message: "O horário de início deve estar no formato HH:MM:SS.",
+  }),
+  endTime: z.string().time({
+    message: "O horário de término deve estar no formato HH:MM:SS.",
+  }),
+});

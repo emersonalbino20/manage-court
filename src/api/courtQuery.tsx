@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { sendCoinBeck } from '@/utils/methods';
 import axios from 'axios';
 
 //Auxilary Functions
@@ -12,17 +13,46 @@ export const auxPostCourt = (data) => {
   return axios.post(`http://localhost:3000/fields/`, data);
 };
 
+export const auxPostCourtAvailabilities = (data) => {
+  return axios.post(`http://localhost:3000/field-availabilities/${data.fieldId}`, {
+    day: data.day,
+    startTime: data.startTime,
+    endTime: data.endTime
+  });
+};
+
+/* Patch */
+export const auxPatchFields = (data) => {
+  return axios.patch(`http://localhost:3000/fields/${data.id}`, {
+  isDeleted: data?.isDeleted
+});
+};
+
 /* Put */
 export const auxPutCourt = (data) => {
-  return axios.put(`http://localhost:3000/fields/${data.id}`, 
-    data
-  );
+  const value = sendCoinBeck(data?.hourlyRate);
+  return axios.put(`http://localhost:3000/fields/${data.id}`,{ fieldTypeId: data?.fieldTypeId,
+      name: data?.name,
+      description: data?.description,
+      hourlyRate: value,
+      address: {
+        street: data?.address?.street,
+        cityId: data?.address?.cityId,
+        provinceId: data?.address?.provinceId,
+        latitude: data?.address?.latitude,
+        longitude: data?.address?.longitude
+      },
+      thumbnailUrl: data?.thumbnailUrl
+      });
 };
 
 export const auxPutCourtType = (data) => {
   return axios.put(`http://localhost:3000/field-types/${data.id}`, data);
 };
 
+export const auxPutCourtAvailabilities = (data) => {
+  return axios.put(`http://localhost:3000/field-availabilities/${data.id}`, data);
+};
 
 //main functions
 export const usePostCourt = () => {
@@ -55,6 +85,22 @@ export const usePostCourtType = () => {
   return { mutate, isLoading };
 };
 
+export const usePostCourtAvailabilities = () => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, variables } = useMutation({
+    mutationFn: auxPostCourtAvailabilities,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-availability', variables.fieldId] });
+      console.log('success');
+    },
+    onError: (error) => {
+        console.log(variables);
+        console.log(error);
+    }
+  });
+  return { mutate, isLoading };
+};
+
 export const usePutCourt = () => {
   const queryClient = useQueryClient();
 
@@ -69,6 +115,38 @@ export const usePutCourt = () => {
     },
   });
 };
+
+export const usePutCourtAvailabilities = () => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, variables } = useMutation({
+    mutationFn: auxPutCourtAvailabilities,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-availability', variables.fieldId] });
+      console.log('success');
+    },
+    onError: (error) => {
+        console.log(variables);
+        console.log(error);
+    }
+  });
+  return { mutate };
+};
+
+//Patch
+export const usePatchFields = () => {
+  const queryClient = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: auxPatchFields,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fields'] });
+    },
+    onError: (error) => {
+      console.log(error)
+    }
+  });
+  return { mutate };
+};
+
 
 export const usePutCourtType = () => {
   const queryClient = useQueryClient();
@@ -85,7 +163,6 @@ export const usePutCourtType = () => {
   });
 };
 
-
 //Get
 export const useGetCourtsQuery = () => {
   const { data, isLoading, isError } = useQuery({
@@ -101,4 +178,14 @@ export const useGetCourtsTypeQuery = () => {
     queryFn: () => axios.get('http://localhost:3000/field-types/'),
   });
   return { data, isLoading, isError };
+};
+
+export const useGetCourtIdAvailabilities = (fieldId) => {
+  const { data, isFetched } = useQuery({
+    queryKey: ['field-availability', fieldId],
+    queryFn: () => axios.get(`http://localhost:3000/field-availabilities/${fieldId}`),
+    enabled: !!fieldId,
+  });
+
+  return { data, isFetched };
 };

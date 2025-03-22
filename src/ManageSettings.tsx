@@ -143,6 +143,7 @@ function submitCity(data: any, event: React.FormEvent<HTMLFormElement> | undefin
         setIsSuccess(true);
         setFeedbackMessage("A cidade foi actualizada com sucesso!");
         setDialogOpen(true);
+        formCity.reset();
         setEditandoProvincia(null); // Reseta o estado após edição
       },
       onError: (error) => {
@@ -167,7 +168,7 @@ function submitCity(data: any, event: React.FormEvent<HTMLFormElement> | undefin
     });
   }}
 
-  const [novaCidade, setNovaCidade] = useState({ nome: '', fk_provincia: '' });
+const [novaCidade, setNovaCidade] = useState({ nome: '', fk_provincia: '' });
 React.useEffect(() => {
   if (novaCidade?.fk_provincia) {
     formCity.setValue('provinceId', parseInt(novaCidade.fk_provincia, 10));
@@ -185,25 +186,6 @@ React.useEffect(() => {
   const { data: provinceData } = useGetProvincesQuery();
   const { data: cityData } = useGetCitiesQuery();
 
-  // Estados para formulários
-  const [novoTipoCampo, setNovoTipoCampo] = useState('');
-  const [novaProvincia, setNovaProvincia] = useState('');
-  
-  // Estados para diálogos de confirmação
-  const [dialogoConfirmacao, setDialogoConfirmacao] = useState({
-    aberto: false,
-    tipo: '',
-    id: null,
-    mensagem: ''
-  });
-
-  // Estados para seleção
-  const [tipoSelecionado, setTipoSelecionado] = useState('');
-  const [provinciaSelecionada, setProvinciaSelecionada] = useState('');
-  const [cidadeSelecionada, setCidadeSelecionada] = useState('');
-
-  // Funções vazias para futura implementação
-  const adicionarTipoCampo = () => {};
   const editarTipoCampo = (tipo) => {
     setEditandoTipo(tipo)
     formCourt.setValue("id", tipo.id);
@@ -214,17 +196,14 @@ React.useEffect(() => {
     formProvince.setValue("id", province.id);
     formProvince.setValue("name", province.name);
   };
-  const excluirProvincia = () => {};
-  const adicionarCidade = () => {};
+  
   const editarCidade = (cidade, pr) => {
     setEditandoCidade(cidade)
     formCity.setValue("id", cidade.id);
     formCity.setValue("provinceId", pr);
     formCity.setValue("name", cidade.name);
   };
-  const excluirCidade = () => {};
-  const confirmarExclusao = () => {};
-  const fecharDialogoConfirmacao = () => {};
+
 
   return (
     <div className="p-4 md:p-6 overflow-x-hidden">
@@ -376,7 +355,7 @@ React.useEffect(() => {
                 <div className="space-y-4">
                <Form {...formProvince}>
                   <form 
-                    onSubmit={(e) => {   // ✅ Correto! Use `onSubmit`
+                    onSubmit={(e) => {   
                       e.preventDefault();
                       formProvince.handleSubmit((data) => submitProvince(data, e))();
                     }} 
@@ -510,7 +489,7 @@ React.useEffect(() => {
                         name="provinceId"
                         render={({ field }) => (
                           <FormItem>
-                              <Input 
+                            <Input 
                             type="hidden" 
                             value={novaCidade?.fk_provincia}
                             onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} // ⬅️ Evita `NaN`
@@ -581,29 +560,6 @@ React.useEffect(() => {
         </Card>
       )}
 
-      {/* Diálogo de Confirmação */}
-      <Dialog open={dialogoConfirmacao.aberto} onOpenChange={fecharDialogoConfirmacao}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmar Exclusão</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">{dialogoConfirmacao.mensagem}</div>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={fecharDialogoConfirmacao}
-            >
-              Cancelar
-            </Button>
-            <Button 
-              className="bg-red-600 hover:bg-red-700" 
-              onClick={confirmarExclusao}
-            >
-              Excluir
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       {/* Diálogo de feedback */}
       <FeedbackDialog 
         isOpen={dialogOpen}

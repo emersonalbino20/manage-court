@@ -1,4 +1,4 @@
-import {AppRoutes} from "./routes/AppRoutes";
+import AppRoutes from "@/CourtAvaibility";
 
 function App() {
   return <AppRoutes />;

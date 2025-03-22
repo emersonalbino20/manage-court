@@ -27,7 +27,6 @@ import { MdPayment } from "react-icons/md";
 const Dashboard = () => {
 
   const { data, isError, isLoading } = useGetUsersQuery();
-  console.log(data);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -149,7 +148,7 @@ const Dashboard = () => {
               </button>
               <div className="flex items-center lg:hidden">
                 <Trophy size={20} className="text-green-500 mr-2" />
-                <h2 className="text-xl font-semibold text-gray-800">QuadraFácil</h2>
+                <h2 className="text-xl font-semibold text-gray-800">QuadraAgenda</h2>
               </div>
               <h2 className="text-xl font-semibold text-gray-800 hidden lg:block">Painel Administrativo</h2>
             </div>

@@ -45,7 +45,8 @@ import { useAuth } from "@/hooks/AuthContext";
 
 const CourtDetails = () => {
   const { user, logout, token } = useAuth();
-  console.log(localStorage.getItem("token"));
+  //console.log(localStorage.getItem("token"));
+
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
@@ -90,7 +91,7 @@ const CourtDetails = () => {
 
   const categories = [
     { id: 'agendar', name: 'Agendar' },
-    { id: 'agendadas', name: 'Quadras Agendadas' },
+    token ? {id: 'agendadas', name: 'Quadras Agendadas'} : {} ,
     ];
 
   const [isReservaDialogOpen, setIsReservaDialogOpen] = useState(false);
@@ -109,7 +110,7 @@ const CourtDetails = () => {
       },
       onError: (error) => {
         setFailedDialog(true);
-        console.log(error);
+        //console.log(error);
       }
     })
   }
@@ -229,7 +230,7 @@ const CourtDetails = () => {
       {/* Page Content */}
       <main className="container mx-auto px-4 pt-20 pb-16">
         {/* Breadcrumb */}
-        <div className="flex items-center mb-6 text-sm">
+        <div className="flex items-center mb-6 mt-10 text-sm">
         <Link to="/">
           <Button variant="ghost" className="p-0 mr-2">
             <ArrowLeft size={16} className="mr-1" />
@@ -302,14 +303,13 @@ const CourtDetails = () => {
             
             <div className="flex items-center justify-between mb-6">
               <div className="text-2xl font-bold text-green-700">Kz {price}/Hora</div>
-              <div className="line-through text-gray-500">Kz {price*2}</div>
             </div>
             
             <Tabs defaultValue="descricao">
-              <TabsList className="grid grid-cols-4 mb-4">
+              <TabsList className="grid grid-cols-2 mb-4">
                 <TabsTrigger value="descricao">Descrição</TabsTrigger>
-                <TabsTrigger value="caracteristicas">Características</TabsTrigger>
-                <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
+                {/*<TabsTrigger value="caracteristicas">Características</TabsTrigger>*/}
+                {/*<TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>*/}
                 <TabsTrigger value="localizacao">Localização</TabsTrigger>
               </TabsList>
               
@@ -321,7 +321,7 @@ const CourtDetails = () => {
                                     Ambiente seguro e bem iluminado para jogos diurnos e noturnos.*/}
                 </p>
               </TabsContent>
-              
+              {/*
               <TabsContent value="caracteristicas">
                 <ul className="space-y-2">
                   <li className="flex items-center">
@@ -377,7 +377,7 @@ const CourtDetails = () => {
                   </div>
                 </div>
               </TabsContent>
-
+*/}
               <TabsContent value="localizacao">
                  <div className="space-y-4">
                     <div className="relative w-full h-[400px] overflow-hidden rounded-lg border border-gray-200">
@@ -515,12 +515,23 @@ const CourtDetails = () => {
         </div>
         {/* Botão de Agendar */}
         <div className="pt-2">
+        { token ? (
           <Button 
             type="submit" 
             className="w-full bg-green-700 hover:bg-green-600 text-white font-medium py-3 h-12 rounded-md transition duration-200"
           >
             Agendar Agora
           </Button>
+          ) :
+        (
+          <Link to="/register?status=true">
+          <Button 
+            className="w-full bg-green-700 hover:bg-green-600 text-white font-medium py-3 h-12 rounded-md transition duration-200"
+          >
+            Agendar Agora
+          </Button>
+        </Link>)
+      }
         </div>
       </form>
     </Form>
@@ -555,7 +566,7 @@ const CourtDetails = () => {
       <div className="space-y-3 text-center">
         <div>
           <p className="font-medium text-lg">Quadra de Futebol</p>
-          <p className="text-gray-600">Campo Society</p>
+          <p className="text-gray-600">{courtData?.data?.data.name}</p>
         </div>
         
         <div className="grid grid-cols-2 gap-2 text-sm">
@@ -572,16 +583,16 @@ const CourtDetails = () => {
         <div className="bg-gray-100 p-3 rounded-lg">
           <div className="flex justify-between mb-1">
             <span className="text-gray-700">Total a Pagar:</span>
-            <span className="font-semibold">Kz 75,00</span>
+            <span className="font-semibold">Kz {receiveCentFront(log?.data?.data?.price)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-700">Status:</span>
-            <span className="font-semibold text-yellow-600">Pendente</span>
+            <span className="font-semibold text-yellow-600">{log?.data?.data?.status}</span>
           </div>
         </div>
         
         <div className="text-sm text-gray-600">
-          <p>Email: joao.silva@exemplo.com</p>
+          <p>Email: {user?.email}</p>
         </div>
       </div>
     </div>
@@ -615,7 +626,7 @@ const CourtDetails = () => {
         
         <div className="flex justify-center">
           <Button 
-            onClick={() => setIsReservaDialogOpen(false)}
+            onClick={() => setFailedDialog(false)}
             className="bg-red-700 hover:bg-red-600"
           >
             Fechar

@@ -20,7 +20,7 @@ export const auxPostUsers = (data) => {
 
 
 export const auxPostLogin = (data) => {
-  return axios.post(`http://localhost:3000/auth/`, data);
+  return axios.post(`http://localhost:3000/auth/`, data, );
 };
 
 /* Put */
@@ -110,3 +110,4 @@ export const useGetUsersQuery = () => {
 
   return { data, isLoading, isError };
 };
+

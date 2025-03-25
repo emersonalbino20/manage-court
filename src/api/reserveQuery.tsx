@@ -23,6 +23,15 @@ const auxPatchReserve = (data) => {
       },
     })};
 
+/* Patch */
+export const auxPatchCancelReservation = (data) => {
+  return axios.patch(`http://localhost:3000/field-reservations/${data.id}`,{
+      headers: {
+        Authorization: `Bearer ${token}`, 
+        "Content-Type": "application/json",
+      },
+    });
+};
 
 //main functions
 export const usePostReserve = () => {
@@ -46,6 +55,33 @@ export const usePatchFields = () => {
     mutationFn: auxPatchReserve,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
+    },
+    onError: (error) => {
+      console.log(error)
+    }
+  });
+  return { mutate };
+};
+
+export const useGetUserResevationsQuery = () => {
+  const { data, isLoading, isError } = useQuery({
+    queryFn: () =>
+      axios.get("http://localhost:3000/me/field-reservations", {
+        headers: {
+          Authorization: `Bearer ${token}`, // Inclui o JWT no cabeçalho
+        },
+      }).then(res => res.data),
+  });
+  return { data, isLoading, isError };
+};
+
+//Patch
+export const usePatchCancelReservation = () => {
+  const queryClient = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: auxPatchCancelReservation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cancel-reservation'] });
     },
     onError: (error) => {
       console.log(error)

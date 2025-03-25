@@ -82,7 +82,7 @@ export const auxPutCourtType = (data) => {
 };
 
 export const auxPutCourtAvailabilities = (data) => {
-  return axios.put(`http://localhost:3000/field-availabilities/${data.id}`, data, {
+  return axios.put(`http://localhost:3000/field-availabilities/${data.id}?excludeReserved=true`, data, {
       headers: {
         Authorization: `Bearer ${token}`, 
         "Content-Type": "application/json",
@@ -230,7 +230,7 @@ const currentDate = new Date().toISOString().split('T')[0]
 export const useGetCourtIdAvailabilities = (fieldId, day) => {
   const { data, isFetched } = useQuery({
     queryKey: ['field-availability', fieldId, day],
-    queryFn: () => axios.get(`http://localhost:3000/field-availabilities/${fieldId}?day=${day}`),
+    queryFn: () => axios.get(`http://localhost:3000/field-availabilities/${fieldId}?day=${day}&excludeReserved=true`),
     enabled: !!day,
   });
 

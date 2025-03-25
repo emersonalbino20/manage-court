@@ -4,6 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import Volei_1 from '@/assets/images/court-volleyball.jpg';
+import {
+  useGetUserResevationsQuery, usePatchCancelReservation
+} from '@/api/reserveQuery';
+import {useGetCourtsQuery} from '@/api/courtQuery';
+import {receiveCentFront, sendCoinBeck} from '@/utils/methods';
+import {
+  useGetProvincesQuery
+} from '@/api/provinceQuery';
+import {
+  useGetCitiesQuery
+} from '@/api/cityQuery';
+import FeedbackDialog from '@/_components/FeedbackDialog'; // Ajuste o caminho conforme necessário
 
 const UserBookingsSection = () => {
   const [bookings, setBookings] = useState([
@@ -38,24 +50,48 @@ const UserBookingsSection = () => {
       status: 'pendente'
     }
   ]);
+  const { data: myResevations } = useGetUserResevationsQuery();
+  const { data: courts } = useGetCourtsQuery();
+  const { data: provinceData } = useGetProvincesQuery();
+  const { data: cityData } = useGetCitiesQuery();
 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
 
+  const [id, setId] = useState('');
+  const {mutate: cancelReservations} = usePatchCancelReservation();
   const handleCancelBooking = (bookingId) => {
-    setBookings(bookings.filter(booking => booking.id !== bookingId));
-    setIsCancelDialogOpen(false);
+     cancelReservations({id: bookingId},{
+      onSuccess: (response) => {
+        setFeedbackMessage("A sua reserva foi cancelada!");
+        setDialogOpen(true);
+        setIsCancelDialogOpen(false);
+      },
+      onError: (error) => {
+          setIsSuccess(false);
+        setFeedbackMessage("Erro ao cancelar a sua reserva");
+        console.log(error);
+      }})
+    
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
   };
 
   const openCancelDialog = (booking) => {
     setBookingToCancel(booking);
+    setId(booking.id);
     setIsCancelDialogOpen(true);
   };
 
   const getStatusBadge = (status) => {
-    if (status === 'confirmado') {
+    if (status === 'confirmed') {
       return <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Confirmado</span>;
-    } else if (status === 'pendente') {
+    } else if (status === 'pending') {
       return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Pendente</span>;
     } else {
       return <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Cancelado</span>;
@@ -68,7 +104,7 @@ const UserBookingsSection = () => {
         <h2 className="text-2xl font-bold text-gray-900">Meus Agendamentos</h2>
       </div>
 
-      {bookings.length === 0 ? (
+      {myResevations?.data.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-lg">
           <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-lg font-medium text-gray-900">Nenhum agendamento encontrado</h3>
@@ -81,12 +117,17 @@ const UserBookingsSection = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {bookings.map((booking) => (
+          {myResevations?.data.map((booking) => {
+            const court_data = courts?.data.data.fields.find(p => p.id === booking?.fieldId);
+            const province = provinceData?.data?.data?.find(p => p.id === court_data?.address.provinceId);
+            const city = cityData?.data?.data?.find(p => p.id === court_data?.address.cityId);
+            
+            return (
             <Card key={booking.id} className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-              <div className="relative pt-[56.25%]">
+              <div className="relative h-0 pt-[52%]">
                 <img 
-                  src={booking.image} 
-                  alt={booking.courtName}
+                  src={Volei_1} 
+                  alt={"Nothing"}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute top-2 right-2">
@@ -94,27 +135,27 @@ const UserBookingsSection = () => {
                 </div>
               </div>
               <CardContent className="p-4">
-                <h3 className="font-medium text-gray-900 mb-1">{booking.courtName}</h3>
+                <h3 className="font-medium text-gray-900 mb-1">{court_data?.name}</h3>
                 <div className="space-y-2 text-sm text-gray-700">
                   <div className="flex items-center">
                     <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{booking.location}</span>
+                    <span>{city.name} - {province.name}</span>
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{booking.date}</span>
+                    <span>{booking.fieldAvailability.day}</span>
                   </div>
                   <div className="flex items-center">
                     <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{booking.time}</span>
+                    <span>{booking.fieldAvailability.startTime} - {booking.fieldAvailability.endTime}</span>
                   </div>
                 </div>
-                <div className="mt-3 text-lg font-bold text-green-700">{booking.price}</div>
+                <div className="mt-3 text-lg font-bold text-green-700">Kz {receiveCentFront(booking.price)}</div>
                 <div className="mt-4 space-y-2">
                   <Button 
                     className="w-full bg-white text-red-700 border border-red-700 hover:bg-red-50"
                     variant="outline"
-                    onClick={() => openCancelDialog(booking)}
+                    onClick={()=>{openCancelDialog(booking)}}
                     disabled={booking.status === 'cancelado'}
                   >
                     Cancelar Agendamento
@@ -122,7 +163,7 @@ const UserBookingsSection = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )})}
         </div>
       )}
 
@@ -141,17 +182,17 @@ const UserBookingsSection = () => {
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0 w-16 h-16 relative">
                   <img 
-                    src={bookingToCancel.image} 
-                    alt={bookingToCancel.courtName}
+                    src={Volei_1} 
+                
                     className="w-full h-full object-cover rounded-md"
                   />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">{bookingToCancel.courtName}</p>
-                  <p className="text-sm text-gray-700">{bookingToCancel.date} • {bookingToCancel.time}</p>
-                  <p className="text-sm text-gray-700">{bookingToCancel.location}</p>
-                  <p className="text-sm font-bold text-green-700">{bookingToCancel.price}</p>
-                </div>
+                {/*<div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900">campo nome</p>
+                  <p className="text-sm text-gray-700">{bookingToCancel.fieldAvailability.startTime} - {bookingToCancel.fieldAvailability.endTime}</p>
+                  <p className="text-sm text-gray-700">local</p>
+                  <p className="text-sm font-bold text-green-700">Kz {receiveCentFront(bookingToCancel.price)}</p>
+                </div>*/}
               </div>
               
               <div className="mt-4 bg-yellow-50 p-3 rounded-md">
@@ -161,7 +202,7 @@ const UserBookingsSection = () => {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700">
-                      Política de cancelamento: Cancelamentos com até 24h de antecedência recebem reembolso integral.
+                  Política de cancelamento: Cancelamentos com até 24h de antecedencia.
                     </p>
                   </div>
                 </div>
@@ -187,6 +228,12 @@ const UserBookingsSection = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <FeedbackDialog 
+        isOpen={dialogOpen}
+        onClose={handleCloseDialog}
+        success={isSuccess}
+        message={feedbackMessage}
+      />
     </div>
   );
 };

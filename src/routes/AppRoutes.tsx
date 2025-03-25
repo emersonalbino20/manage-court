@@ -5,6 +5,7 @@ import Home from "./../pages/dashboard/Home";
 import Register from "./../pages/auth/Register";
 import CourtDetails from "./../pages/dashboard/CourtDetails";
 import Login from "./../pages/auth/Login";
+import ForgotPassword from "./../pages/auth/ForgotPassword";
 import Booking from "./../pages/dashboard/Booking";
 import AdminPanel from ".././pages/dashboard/AdminPanel";
 import NotFound from "./../pages/dashboard/NotFound";
@@ -18,6 +19,7 @@ export function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/courtdetails" element={<CourtDetails />} />
       <Route path="/booking" element={<Booking />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* Impede usuários logados de acessar Login/Register */}
       {!token && <Route path="/register" element={<Register />} />}

@@ -23,18 +23,23 @@ import { useGetCourtsTypeQuery } from '@/api/courtQuery';
 import { useGetCourtsQuery } from '@/api/courtQuery';
 import { receiveCentFront } from '@/utils/methods';
 import { useAuth } from "./../hooks/AuthContext";
+import { format, parse, isBefore, startOfDay } from 'date-fns';
+import { pt } from 'date-fns/locale';
+import { getCurrentAngolaDate,  formatToAngolaTime, convertToUtc} from '@/utils/methods'
 
 const ContentHome = () => {
 
     const { user, logout, token } = useAuth();
 
-    //console.log(localStorage.getItem("token"));
+  const today = startOfDay(new Date()); 
+
+  const todayFormatted = getCurrentAngolaDate();
 
     const [activeCategory, setActiveCategory] = useState('destaques');
     const [searchTerm, setSearchTerm] = useState('');
     
     const categories = [
-      { id: 'destaques', name: 'Destaques' },
+      { id: 'destaques', name: 'Todos' },
       { id: 'Futebol', icon: <IoMdFootball />, name: 'Futebol' },
       { id: 'Basquete', icon: <FaBasketballBall />, name: 'Basquete' },
       { id: 'Futsal', icon: <FaTrophy />, name: 'Futsal' },
@@ -256,6 +261,7 @@ const ContentHome = () => {
                       <Input 
                         type="date" 
                         className="w-full" 
+                        value={todayFormatted}
                         onChange={(e) => setSelectedDate(e.target.value)}
                       />
                     </div>
@@ -325,19 +331,11 @@ const ContentHome = () => {
                           <h3 className="font-medium text-gray-900 mb-1">{product.name}</h3>
                           <p className="text-sm text-gray-500">{cidade?.name || 'N/A'} - {province?.name || 'N/A'}</p>
                           <div className="text-lg font-bold text-green-700 mt-1">{price}/Hora</div>
-                          {token ? (
                           <Link to={`/courtdetails?id=${product.id}`}>
                             <Button className="w-full mt-3 bg-green-700 hover:bg-green-600">
                               Ver Mais
                             </Button>
                           </Link>
-                          ) : (
-                            <Link to={`/register?status=true`}>
-                            <Button className="w-full mt-3 bg-green-700 hover:bg-green-600">
-                              Ver Mais
-                            </Button>
-                          </Link>
-                          )}
                         </CardContent>
                       </Card>
                     );

@@ -14,6 +14,8 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { schemeLogin } from '@/utils/validateForm.tsx';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertTriangle } from 'lucide-react';
 
 const Login = () => {
 
@@ -32,7 +34,7 @@ const form = useForm({
   });
 
   const { mutate, isLoading } = usePostLogin();
-
+const [isFailedDialog, setFailedDialog] = useState(false);
   // Função modificada para prevenir explicitamente o comportamento padrão
   function onSubmit(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
     // Previne explicitamente o comportamento padrão
@@ -48,8 +50,7 @@ const form = useForm({
         form.reset();
       },
       onError: (error) => {
-        console.error("Erro ao logar:", error);
-        setIsSuccess(false);
+        setFailedDialog(true);
         setFeedbackMessage("Crendiais Inválidas.");
         setDialogOpen(true);
       }
@@ -113,9 +114,11 @@ const form = useForm({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Label htmlFor="password" className="text-gray-700">Senha</Label>
-                <a href="#" className="text-sm font-medium text-green-600 hover:text-green-700">
+                <Link to={'/forgot-password'} >
+                  <span>
                   Esqueceu a senha?
-                </a>
+                  </span>
+                </Link>
               </div>
               <div className="relative">
                 <FormField
@@ -164,7 +167,32 @@ const form = useForm({
           </form>
           </Form>
         </CardContent>
+         <Dialog open={isFailedDialog} onOpenChange={setFailedDialog}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-center text-red-600">Erro</DialogTitle>
+        </DialogHeader>
         
+        <div className="py-6 flex flex-col items-center justify-center">
+          <div className="rounded-full bg-red-100 p-3 mb-4">
+            <AlertTriangle size={32} className="text-red-700" />
+          </div>
+          
+          <p className="text-center text-gray-700">
+            Credenciais Inválidas
+          </p>
+        </div>
+        
+        <div className="flex justify-center">
+          <Button 
+            onClick={() => setFailedDialog(false)}
+            className="bg-red-700 hover:bg-red-600"
+          >
+            Fechar
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-sm text-center text-gray-600">
             Não tem uma conta?{' '}

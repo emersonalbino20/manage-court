@@ -20,16 +20,18 @@ import { z } from "zod";
 import { schemeCourtAvailability } from '@/utils/validateForm';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { format, parse } from 'date-fns';
+import { format, parse, isBefore, startOfDay } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import { getCurrentAngolaDate,  formatToAngolaTime, convertToUtc} from '@/utils/methods'
 
 const CourtAvailability = ({ulid}) => {
   // Estado para controlar a abertura do popover do calendário
   const [calendarOpen, setCalendarOpen] = useState(false);
   
-  const today = new Date();
-  // Garante que a data inicial seja exatamente a data atual, sem ajustes de fuso horário
-  const todayFormatted = format(today, 'yyyy-MM-dd');
+
+  const today = startOfDay(new Date()); 
+
+  const todayFormatted = getCurrentAngolaDate();
   
   const formCourt = useForm({
     resolver: zodResolver(schemeCourtAvailability),
@@ -77,6 +79,7 @@ const CourtAvailability = ({ulid}) => {
         }
       });
     } else {
+
       mutatePostCourt({
         fieldId: ulid,
         day: data.day,
@@ -111,15 +114,16 @@ const CourtAvailability = ({ulid}) => {
   
   const editarAgendamento = (agendamento) => {
     setEditandoTipo(agendamento);
+    const formattedDate = convertToUtc(agendamento.day);
     formCourt.setValue("id", agendamento.id);
-    formCourt.setValue("day", agendamento.day);
+    formCourt.setValue("day", formattedDate);
     formCourt.setValue("startTime", agendamento.startTime);
     formCourt.setValue("endTime", agendamento.endTime);
   };
 
   const handleDateSelect = (date) => {
     if (date) {
-      const formattedDate = format(date, 'yyyy-MM-dd');
+      const formattedDate = convertToUtc(date);
       formCourt.setValue("day", formattedDate);
       setCalendarOpen(false);
     }
@@ -173,12 +177,12 @@ const CourtAvailability = ({ulid}) => {
                               <PopoverContent className="w-auto p-0" align="start">
                                 <CalendarComponent
                                   mode="single"
-                                  selected={field.value ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
+                                  selected={field.value ? parse(field.value, "yyyy-MM-dd", new Date()) : undefined}
                                   onSelect={handleDateSelect}
-                                  disabled={(date) => date < today}
+                                  disabled={(date) => isBefore(startOfDay(date), today)} // Desabilita datas menores que hoje
                                   initialFocus
                                   locale={pt}
-                                />
+                                />;
                               </PopoverContent>
                             </Popover>
                             <FormMessage />

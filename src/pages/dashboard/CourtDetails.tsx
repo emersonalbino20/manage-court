@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format, parse} from 'date-fns';
 import Futebol_2 from '@/assets/images/court-football-full.jpg';
 import Futebol_1 from '@/assets/images/court-football-small.jpg';
 import Header from '@/_components/Header.tsx';
@@ -38,21 +37,25 @@ import { useGetPaymentMethodsQuery } from '@/api/paymentMethodsQuery';
 import { schemeBooking } from '@/utils/validateForm';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format, parse, isBefore, startOfDay } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import { getCurrentAngolaDate,  formatToAngolaTime, convertToUtc} from '@/utils/methods'
 import { usePostReserve } from '@/api/reserveQuery'
-
+import { useAuth } from "@/hooks/AuthContext";
 
 const CourtDetails = () => {
+  const { user, logout, token } = useAuth();
+  console.log(localStorage.getItem("token"));
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
  // Estado para controlar a abertura do popover do calendário
   const [calendarOpen, setCalendarOpen] = useState(false);
   
-  const today = new Date();
-  // Garante que a data inicial seja exatamente a data atual, sem ajustes de fuso horário
-  const todayFormatted = format(today, 'yyyy-MM-dd');
-  
+  const today = startOfDay(new Date()); 
+
+  const todayFormatted = getCurrentAngolaDate();
+
   const formBooking = useForm({
     resolver: zodResolver(schemeBooking),
     defaultValues: {
@@ -115,7 +118,7 @@ const CourtDetails = () => {
   const { data: methods} = useGetPaymentMethodsQuery();
    const handleDateSelect = (date) => {
     if (date) {
-      const formattedDate = format(date, 'yyyy-MM-dd');
+      const formattedDate = convertToUtc(date);
       formBooking.setValue("day", formattedDate);
       setCalendarOpen(false);
     }
@@ -166,10 +169,13 @@ const CourtDetails = () => {
             <Link to="/booking">
             <p class="underline cursor-pointer">Como agendar?</p>
               </Link>
-              <Link to={'/Login'}>
-                <button type="button" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">Entrar</button>
-                {/* Adicionado botão de usuário para mobile */}
-              </Link>
+              {token ? (
+                    <Button variant="destructive" onClick={logout}>Sair</Button>
+                  ) :
+                <Link to={'/Login'}>
+                  <Button variant="outline">Entrar</Button>
+                </Link>
+              }
             </div>
           </div>
           

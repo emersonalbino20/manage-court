@@ -29,7 +29,7 @@ export const auxPutUser = (data) => {
     inicio: data.inicio,
     termino: data.termino,
     matriculaAberta: data.matriculaAberta,
-  });
+  },);
 };
 
 //main functions
@@ -97,8 +97,6 @@ export const usePutUser = () => {
 };
 
 //Get
-
-
 export const useGetUsersQuery = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["users"],

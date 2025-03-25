@@ -59,11 +59,7 @@ export const usePutCity = () => {
 export const useGetCitiesQuery = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['cities'],
-    queryFn: () => axios.get('http://localhost:3000/cities/', {
-        headers: {
-          Authorization: `Bearer ${token}`, // Inclui o JWT no cabeçalho
-        },
-      }).then(res => res.data),
+    queryFn: () => axios.get('http://localhost:3000/cities/'),
     });
   return { data, isLoading, isError };
 };

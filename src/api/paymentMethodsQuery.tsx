@@ -6,7 +6,12 @@ const token = localStorage.getItem("token");
 //Auxilary Functions
 /* Post */
 export const auxPostPaymentMethods = (data) => {
-  return axios.post(`http://localhost:3000/payment-methods/`, data);
+  return axios.post(`http://localhost:3000/payment-methods/`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`, 
+        "Content-Type": "application/json",
+      },
+    });
 };
 
 /* Put */

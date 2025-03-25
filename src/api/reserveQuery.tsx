@@ -5,8 +5,8 @@ const token = localStorage.getItem("token");
 
 //Auxilary Functions
 /* Post */
-export const auxPostProvince = (data) => {
-  return axios.post(`http://localhost:3000/provinces/`, data,  {
+const auxPostReserve = (data) => {
+  return axios.post(`http://localhost:3000/field-reservations/${data.fieldId}`, data, {
       headers: {
         Authorization: `Bearer ${token}`, 
         "Content-Type": "application/json",
@@ -14,23 +14,23 @@ export const auxPostProvince = (data) => {
     });
 };
 
-/* Put */
-export const auxPutProvince = (data) => {
-  return axios.put(`http://localhost:3000/provinces/${data.id}`, data,  {
+/* Patch */
+const auxPatchReserve = (data) => {
+  return axios.patch(`http://localhost:3000/field-reservations/${data.id}`, data,  {
       headers: {
         Authorization: `Bearer ${token}`, 
         "Content-Type": "application/json",
       },
-    });
-};
+    })};
+
 
 //main functions
-export const usePostProvince = () => {
+export const usePostReserve = () => {
   const queryClient = useQueryClient();
   const { mutate, isLoading } = useMutation({
-    mutationFn: auxPostProvince,
+    mutationFn: auxPostReserve,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['Provinces'] });
+      queryClient.invalidateQueries({ queryKey: ['reservations'] });
       console.log('success');
     },
     onError: (error) => {
@@ -40,26 +40,16 @@ export const usePostProvince = () => {
   return { mutate, isLoading };
 };
 
-export const usePutProvince = () => {
+export const usePatchFields = () => {
   const queryClient = useQueryClient();
   const { mutate } = useMutation({
-    mutationFn: auxPutProvince,
+    mutationFn: auxPatchReserve,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['Provinces'] });
-      console.log('success');
+      queryClient.invalidateQueries({ queryKey: ['reservations'] });
     },
     onError: (error) => {
-        console.log(error);
+      console.log(error)
     }
   });
   return { mutate };
-};
-
-//Get
-export const useGetProvincesQuery = () => {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['Provinces'],
-    queryFn: () => axios.get('http://localhost:3000/provinces/'),
-  });
-  return { data, isLoading, isError };
 };

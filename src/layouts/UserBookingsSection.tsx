@@ -3,7 +3,7 @@ import { Calendar, Clock, MapPin, AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import Volei_1 from './assets/images/court-volleyball.jpg';
+import Volei_1 from '@/assets/images/court-volleyball.jpg';
 
 const UserBookingsSection = () => {
   const [bookings, setBookings] = useState([
@@ -111,13 +111,6 @@ const UserBookingsSection = () => {
                 </div>
                 <div className="mt-3 text-lg font-bold text-green-700">{booking.price}</div>
                 <div className="mt-4 space-y-2">
-                  <Button 
-                    className="w-full bg-green-700 hover:bg-green-600"
-                    variant="default"
-                    disabled={booking.status !== 'confirmado'}
-                  >
-                    Alterar Horário
-                  </Button>
                   <Button 
                     className="w-full bg-white text-red-700 border border-red-700 hover:bg-red-50"
                     variant="outline"

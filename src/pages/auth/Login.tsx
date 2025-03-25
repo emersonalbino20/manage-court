@@ -5,19 +5,59 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Link } from 'react-router-dom';
-import LOGO from './assets/images/LOGO.png';
+import { Link, useNavigate } from 'react-router-dom';
+import LOGO from '@/assets/images/LOGO.png';
+import { useAuth } from "./../../hooks/AuthContext";
+import { usePostLogin } from '@/api/userQuery';
+import FeedbackDialog from '@/_components/FeedbackDialog'; 
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { schemeLogin } from '@/utils/validateForm.tsx';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
-const LoginPage = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const Login = () => {
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Aqui seria implementada a lógica de autenticação
-    console.log('Login com:', email, password);
-  };
+const { login } = useAuth();
+const navigate = useNavigate();
+
+const [showPassword, setShowPassword] = useState(false);
+const [password, setPassword] = useState('');
+
+const form = useForm({
+    resolver: zodResolver(schemeLogin),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const { mutate, isLoading } = usePostLogin();
+
+  // Função modificada para prevenir explicitamente o comportamento padrão
+  function onSubmit(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
+    // Previne explicitamente o comportamento padrão
+    if (event) {
+      event.preventDefault();
+    }
+    
+    mutate(data, {
+      onSuccess: (response) => {
+        login(response); // Salva o token e usuário no contexto e localStorage
+        console.log(response)
+        navigate("/");
+        form.reset();
+      },
+      onError: (error) => {
+        console.error("Erro ao logar:", error);
+        setIsSuccess(false);
+        setFeedbackMessage("Crendiais Inválidas.");
+        setDialogOpen(true);
+      }
+    });
+    
+    // Retorna false para garantir que não haja recarregamento
+    return false;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
@@ -40,20 +80,33 @@ const LoginPage = () => {
         </CardHeader>
         
         <CardContent className="pt-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+           <Form {...form}>
+            {/* Modificado para passar o evento para onSubmit */}
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                form.handleSubmit((data) => onSubmit(data, e))();
+              }} 
+              className="space-y-4"
+            >
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-700">Email</Label>
               <div className="relative">
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="seu@email.com"
-                  className="pl-10"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <User className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem >
+                        <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="seu@email.com"
+                        {...field}
+                      />
+                      <FormMessage />
+                      </FormItem>
+                    )}
+                  />
               </div>
             </div>
             
@@ -65,16 +118,22 @@ const LoginPage = () => {
                 </a>
               </div>
               <div className="relative">
-                <Input 
-                  id="password" 
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  className="pl-10 pr-10"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <Calendar className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem >
+                        <Input 
+                        id="password" 
+                        type={showPassword ? "text" : "password"}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        {...field}
+                      />
+                      <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 <button 
                   type="button"
                   className="absolute right-3 top-1/2 transform -translate-y-1/2"
@@ -89,12 +148,12 @@ const LoginPage = () => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            {/*<div className="flex items-center space-x-2">
               <Checkbox id="remember" />
               <Label htmlFor="remember" className="text-sm text-gray-600">
                 Lembrar de mim
               </Label>
-            </div>
+            </div>*/}
             
             <Button 
               type="submit" 
@@ -103,12 +162,13 @@ const LoginPage = () => {
               Entrar
             </Button>
           </form>
+          </Form>
         </CardContent>
         
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-sm text-center text-gray-600">
             Não tem uma conta?{' '}
-            <Link to="/account">
+            <Link to="/register">
             <a href="#" className="font-medium text-green-600 hover:text-green-700">
               Cadastre-se agora
             </a>
@@ -125,4 +185,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default Login;

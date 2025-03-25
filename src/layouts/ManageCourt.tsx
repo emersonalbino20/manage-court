@@ -19,11 +19,11 @@ import {
 import {
   useGetCourtsTypeQuery
 } from '@/api/courtQuery';
-import FeedbackDialog from './_components/FeedbackDialog';
-import {receiveCentFront, sendCoinBeck} from './utils/methods';
+import FeedbackDialog from '@/_components/FeedbackDialog';
+import {receiveCentFront, sendCoinBeck} from '@/utils/methods';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { schemeCourt } from './utils/validateForm.tsx';
+import { schemeCourt } from '@/utils/validateForm.tsx';
 import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form";
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -37,6 +37,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import CourtAvailability from '@/_components/CourtAvailability';
+import { MdOutlineWatchLater } from "react-icons/md";
 
 const ManageCourt = () => {
 
@@ -180,11 +182,12 @@ const handleCloseDialog = () => {
   };
 
   const iniciarEdicao = (court) => {
+    const value = receiveCentFront(court?.hourlyRate);
     setQuadraEditando(court);
     formCourt.setValue("id", court.id);
     formCourt.setValue("name", court.name);
     formCourt.setValue("description", court.description);
-    formCourt.setValue("hourlyRate", court.hourlyRate);
+    formCourt.setValue("hourlyRate", parseInt(value));
     formCourt.setValue("address.street", court.address.street);
     formCourt.setValue("address.latitude", court.address.latitude);
     formCourt.setValue("address.longitude", court.address.longitude);
@@ -194,6 +197,7 @@ const handleCloseDialog = () => {
     setActiveTab('cadastrar');
   };
 
+  const [id, setId] = useState(null);
   
 
   return (
@@ -226,6 +230,16 @@ const handleCloseDialog = () => {
         >
           Quadras Cadastradas
         </button>
+        <button
+          className={`py-2 px-4 font-medium ${
+            activeTab === 'disponibilidade'
+              ? 'text-green-600 border-b-2 border-green-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => handleTabChange('disponibilidade')}
+        >
+          Disponibilidade
+        </button>
       </div>
 
       {/* Conteúdo das Abas */}
@@ -243,6 +257,7 @@ const handleCloseDialog = () => {
                 formCourt.handleSubmit((data) => submitCourt(data, e))();
               }} 
              >
+             
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <FormField
@@ -455,7 +470,7 @@ const handleCloseDialog = () => {
             </Form>
           </CardContent>
         </Card>
-      ) : (
+      ) : activeTab === 'listar' ? (
         <Card>
           <CardHeader className="p-4">
             <CardTitle>Quadras Cadastradas</CardTitle>
@@ -522,9 +537,18 @@ const handleCloseDialog = () => {
                         </button>
                         <button
                           onClick={() => openDeleteDialog(quadra)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 mr-3"
                         >
                           <Trash2 size={16} />
+                        </button>
+                      
+                      <button
+                          onClick={() =>{ handleTabChange('disponibilidade');
+                          setId(quadra.id);
+                        }}
+                          className="text-yellow-600 hover:text-yellow-800"
+                        >
+                          <MdOutlineWatchLater />
                         </button>
                       </td>
                     </tr>
@@ -534,6 +558,9 @@ const handleCloseDialog = () => {
             </div>
           </CardContent>
         </Card>
+      ) : (
+        // Conteúdo da aba Disponibilidade
+        <CourtAvailability ulid={id}/>
       )}
 
       {/* Feedback Dialog */}

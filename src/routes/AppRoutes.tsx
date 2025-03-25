@@ -1,24 +1,35 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LadingPage from "./../LadingPage";
-import Account from "./../Account";
-import Quadra from "./../QuadraDetalhes";
-import LoginPage from "./../LoginPage";
-import Booking from "./../Booking";
-import Dashboard from "./../Dashboard";
-import NotFound from "./../NotFoundPage";
+import { Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "./ProtectedRoute";
+import { useAuth } from "./../hooks/AuthContext";
+import Home from "./../pages/dashboard/Home";
+import Register from "./../pages/auth/Register";
+import CourtDetails from "./../pages/dashboard/CourtDetails";
+import Login from "./../pages/auth/Login";
+import Booking from "./../pages/dashboard/Booking";
+import AdminPanel from ".././pages/dashboard/AdminPanel";
+import NotFound from "./../pages/dashboard/NotFound";
 
 export function AppRoutes() {
+  const { token } = useAuth();
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LadingPage />} />
-        <Route path="/account" element={<Account />} />
-        <Route path="/quadra" element={<Quadra />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/booking" element={<Booking />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      {/* Rotas públicas */}
+      <Route path="/" element={<Home />} />
+      <Route path="/courtdetails" element={<CourtDetails />} />
+      <Route path="/booking" element={<Booking />} />
+
+      {/* Impede usuários logados de acessar Login/Register */}
+      {!token && <Route path="/register" element={<Register />} />}
+      {!token && <Route path="/login" element={<Login />} />}
+
+      {/* Rotas protegidas */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/admin" element={<AdminPanel />} />
+      </Route>
+
+      {/* Página 404 */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }

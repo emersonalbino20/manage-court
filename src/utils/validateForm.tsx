@@ -1,20 +1,48 @@
 import { z } from "zod";
 
-export const schemeAccount = z
+const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/;
+const phoneRegex = /^99|9[1-5]\d{7}$/gm;
+const passwordRegex =
+  /((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{6,255})/g;
+
+export const schemeRegister = z
   .object({
-    nome: z.string().min(4, "O nome deve ter pelo menos 5 caracteres"),
-    email: z.string().email("Digite um e-mail válido"),
-    senha: z.string()
-      .min(6, "A senha deve ter no mínimo 6 caracteres")
-      .regex(/[a-zA-Z]/, "A senha deve conter pelo menos uma letra")
-      .regex(/[0-9]/, "A senha deve conter pelo menos um número"),
-    confirmarSenha: z.string(),
-    telefone: z.string().min(9, "Digite um número de telefone válido"),
-  })
-  .refine((data) => data.senha === data.confirmarSenha, {
-    message: "As senhas não coincidem",
-    path: ["confirmarSenha"],
-  });
+    name: z.string().trim().min(4, "O nome deve ter pelo menos 4 caracteres"),
+    email: z.string().trim().email("Digite um e-mail válido"),
+  password: z
+    .string()
+    .trim()
+    .regex(passwordRegex, {
+      message:
+        "A senha deve ter pelo menos 6 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.",
+    })
+    .max(255, "A senha deve ter no máximo 255 caracteres"),
+  confirmPassword: z.string().optional(),
+  phone: z
+    .string()
+    .trim()
+    .length(9, { message: "O telefone deve possuir exatamente 9 dígitos" })
+    .regex(phoneRegex, {
+      message:
+        "Número de telefone inválido. Use um número que comece com 99 ou de 91 a 95.",
+    }),
+})
+.refine((data) => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem",
+  path: ["confirmPassword"],
+});
+
+export const schemeLogin = z
+  .object({
+    email: z.string().trim().email("Digite um e-mail válido"),
+    password: z
+    .string()
+    .trim()
+    .regex(passwordRegex, {
+      message:
+        "A senha deve ter pelo menos 6 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.",
+    })
+    .max(255, "A senha deve ter no máximo 255 caracteres")});
 
 export const schemeCourt = z.object({
   id: z.string().ulid().optional(),
@@ -34,7 +62,7 @@ export const schemeCourt = z.object({
     .string()
     .trim()
     .min(10, {message: 'A descrição deve ter no mínimo 10 caracteres'})
-    .max(100, { message: 'A descrição pode ter no máximo 100 caracteres.' })
+    .max(200, { message: 'A descrição pode ter no máximo 200 caracteres.' })
     .optional(),
   hourlyRate: z.number({message: "O campo recebe números inteiros e decimais ex: 20,20"}).min(0),
   thumbnailUrl: z.string().url({message: 'Imagem inválida'}).max(255),
@@ -49,9 +77,44 @@ export const schemeCourt = z.object({
   })
 })
 
+export const schemeUser = z.object({
+  id: z.string().trim().ulid({
+    message: "ID inválido",
+  }).optional(),
+  name: z
+    .string()
+    .trim()
+    .min(3, { message: "O nome deve ter pelo menos 3 caracteres" })
+    .max(100, { message: "O nome não pode ter mais de 100 caracteres" })
+    .regex(nameRegex, { message: "O nome contém caracteres inválidos" }),
+  email: z
+    .string()
+    .trim()
+    .email({ message: "Digite um e-mail válido" })
+    .max(255, { message: "O e-mail não pode ter mais de 255 caracteres" }),
+  phone: z
+    .string()
+    .trim()
+    .length(9, { message: "O telefone deve ter exatamente 9 dígitos" })
+    .regex(phoneRegex, { message: "Número de telefone inválido" }),
+  type: z
+    .enum(["administrator", "operator", "client"], {
+      message: "Tipo de usuário inválido",
+    })
+    .default("client"),
+  password: z
+    .string()
+    .trim()
+    .regex(passwordRegex, {
+      message:
+        "A senha deve ter pelo menos 6 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.",
+    })
+    .max(255, "A senha deve ter no máximo 255 caracteres")
+});
+
 
  export const schemeCourtType = z.object({
-  id: z.number().int().positive().max(32_767),
+  id: z.number().int().positive().max(32_767).optional(),
   name:z
   .string({
     required_error: 'O nome da quadra é obrigatório.',
@@ -70,7 +133,7 @@ export const schemeCourt = z.object({
   })})
 
  export const schemeProvince = z.object({
-id: z.number().int().positive().max(32_767),
+id: z.number().int().positive().max(32_767).optional(),
   name:z
   .string({
     required_error: 'O nome da província é obrigatório.',
@@ -89,7 +152,7 @@ id: z.number().int().positive().max(32_767),
   })})
 
  export const schemeCity = z.object({
-  id: z.number().int().positive().max(32_767),
+  id: z.number().int().positive().max(32_767).optional(),
   provinceId: z.number().int().positive().max(32_767),
    name: z.string({
   required_error: 'O nome da cidade é obrigatório.',
@@ -109,7 +172,36 @@ id: z.number().int().positive().max(32_767),
 
 } )
 
+export const schemePaymentMethods = z.object({
+  id: z.number().int().positive().max(32_767).optional(),
+ name: z.string({
+  required_error: 'O nome do método é obrigatório.',
+  invalid_type_error: 'O nome do método deve ser uma string.',
+})
+.trim()
+.min(3, { 
+  message: 'O nome do método deve ter pelo menos 3 caracteres.',
+})
+.max(15, {
+  message: 'O nome da método deve ter no máximo 15 caracteres.',
+})
+.regex(/^[a-zA-ZÀ-ÿ]+(?:\s[a-zA-ZÀ-ÿ]+)*$/, {
+  message:
+    'O nome da método deve conter apenas letras e espaços e não pode começar ou terminar com espaço.',
+})
 
+} )
+
+export const schemeBooking = z.object({
+  fieldId: z.string().ulid({
+    message: "O ID do campo deve ser um ULID válido.",
+  }).optional(),
+  day: z.string().date({
+    message: "O dia deve estar no formato de data válido (YYYY-MM-DD).",
+  }).optional(),
+  fieldAvailabilityId: z.number().int().positive(),
+  paymentMethodId: z.number().int().positive().max(32_767)
+ })
 
 export const validateAccountForm = () => {
     const errors = {};

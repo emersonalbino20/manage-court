@@ -5,18 +5,13 @@ const token = localStorage.getItem("token");
 
 //Auxilary Functions
 /* Post */
-export const auxPostProvince = (data) => {
-  return axios.post(`http://localhost:3000/provinces/`, data,  {
-      headers: {
-        Authorization: `Bearer ${token}`, 
-        "Content-Type": "application/json",
-      },
-    });
+export const auxPostPaymentMethods = (data) => {
+  return axios.post(`http://localhost:3000/payment-methods/`, data);
 };
 
 /* Put */
-export const auxPutProvince = (data) => {
-  return axios.put(`http://localhost:3000/provinces/${data.id}`, data,  {
+export const auxPutPaymentMethods = (data) => {
+  return axios.put(`http://localhost:3000/payment-methods/${data.id}`, data,  {
       headers: {
         Authorization: `Bearer ${token}`, 
         "Content-Type": "application/json",
@@ -25,12 +20,12 @@ export const auxPutProvince = (data) => {
 };
 
 //main functions
-export const usePostProvince = () => {
+export const usePostPaymentMethods = () => {
   const queryClient = useQueryClient();
   const { mutate, isLoading } = useMutation({
-    mutationFn: auxPostProvince,
+    mutationFn: auxPostPaymentMethods,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['Provinces'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
       console.log('success');
     },
     onError: (error) => {
@@ -40,12 +35,12 @@ export const usePostProvince = () => {
   return { mutate, isLoading };
 };
 
-export const usePutProvince = () => {
+export const usePutPaymentMethods = () => {
   const queryClient = useQueryClient();
   const { mutate } = useMutation({
-    mutationFn: auxPutProvince,
+    mutationFn: auxPutPaymentMethods,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['Provinces'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
       console.log('success');
     },
     onError: (error) => {
@@ -56,10 +51,10 @@ export const usePutProvince = () => {
 };
 
 //Get
-export const useGetProvincesQuery = () => {
+export const useGetPaymentMethodsQuery = () => {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['Provinces'],
-    queryFn: () => axios.get('http://localhost:3000/provinces/'),
+    queryKey: ['payment-methods'],
+    queryFn: () => axios.get('http://localhost:3000/payment-methods/'),
   });
   return { data, isLoading, isError };
 };

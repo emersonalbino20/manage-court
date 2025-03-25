@@ -2,15 +2,26 @@ import * as React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sendCoinBeck } from '@/utils/methods';
 import axios from 'axios';
+const token = localStorage.getItem("token");
 
 //Auxilary Functions
 /* Post */
 export const auxPostCourtType = (data) => {
-  return axios.post(`http://localhost:3000/field-types/`, data);
+  return axios.post(`http://localhost:3000/field-types/`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`, 
+        "Content-Type": "application/json",
+      },
+    });
 };
 
 export const auxPostCourt = (data) => {
-  return axios.post(`http://localhost:3000/fields/`, data);
+  return axios.post(`http://localhost:3000/fields/`, data,{
+      headers: {
+        Authorization: `Bearer ${token}`, 
+        "Content-Type": "application/json",
+      },
+    });
 };
 
 export const auxPostCourtAvailabilities = (data) => {
@@ -18,14 +29,24 @@ export const auxPostCourtAvailabilities = (data) => {
     day: data.day,
     startTime: data.startTime,
     endTime: data.endTime
-  });
+  },{
+      headers: {
+        Authorization: `Bearer ${token}`, 
+        "Content-Type": "application/json",
+      },
+    });
 };
 
 /* Patch */
 export const auxPatchFields = (data) => {
   return axios.patch(`http://localhost:3000/fields/${data.id}`, {
   isDeleted: data?.isDeleted
-});
+},{
+      headers: {
+        Authorization: `Bearer ${token}`, 
+        "Content-Type": "application/json",
+      },
+    });
 };
 
 /* Put */
@@ -43,15 +64,30 @@ export const auxPutCourt = (data) => {
         longitude: data?.address?.longitude
       },
       thumbnailUrl: data?.thumbnailUrl
-      });
+      }, {
+      headers: {
+        Authorization: `Bearer ${token}`, 
+        "Content-Type": "application/json",
+      },
+    });
 };
 
 export const auxPutCourtType = (data) => {
-  return axios.put(`http://localhost:3000/field-types/${data.id}`, data);
+  return axios.put(`http://localhost:3000/field-types/${data.id}`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`, 
+        "Content-Type": "application/json",
+      },
+    })
 };
 
 export const auxPutCourtAvailabilities = (data) => {
-  return axios.put(`http://localhost:3000/field-availabilities/${data.id}`, data);
+  return axios.put(`http://localhost:3000/field-availabilities/${data.id}`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`, 
+        "Content-Type": "application/json",
+      },
+    });
 };
 
 //main functions
@@ -165,26 +201,37 @@ export const usePutCourtType = () => {
 
 //Get
 export const useGetCourtsQuery = () => {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['fields'],
     queryFn: () => axios.get('http://localhost:3000/fields/'),
-  });
-  return { data, isLoading, isError };
+    });
+  return { data, isLoading, isError, refetch, isFetching };
 };
 
 export const useGetCourtsTypeQuery = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['field-type'],
-    queryFn: () => axios.get('http://localhost:3000/field-types/'),
-  });
+    queryFn: () => axios.get('http://localhost:3000/field-types/')
+    });
   return { data, isLoading, isError };
 };
 
-export const useGetCourtIdAvailabilities = (fieldId) => {
+export const useGetCourtId = (fieldId) => {
   const { data, isFetched } = useQuery({
-    queryKey: ['field-availability', fieldId],
-    queryFn: () => axios.get(`http://localhost:3000/field-availabilities/${fieldId}`),
+    queryKey: ['fields', fieldId],
+    queryFn: () => axios.get(`http://localhost:3000/fields/${fieldId}`),
     enabled: !!fieldId,
+  });
+  return { data, isFetched };
+};
+
+const currentDate = new Date().toISOString().split('T')[0]
+
+export const useGetCourtIdAvailabilities = (fieldId, day) => {
+  const { data, isFetched } = useQuery({
+    queryKey: ['field-availability', fieldId, day],
+    queryFn: () => axios.get(`http://localhost:3000/field-availabilities/${fieldId}?day=${day}`),
+    enabled: !!day,
   });
 
   return { data, isFetched };

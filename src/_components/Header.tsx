@@ -17,7 +17,6 @@ import { FaBasketballBall } from "react-icons/fa";
 import { IoIosTennisball } from "react-icons/io";
 import { PiCourtBasketballFill } from "react-icons/pi";
 import Footer from './_components/Footer.tsx';
-import Account from './../Account.tsx';
 import validadeForm from './../utils/validateForm.tsx';
 import { Link } from 'react-router-dom';
 import { FaTrophy } from "react-icons/fa6";
@@ -25,7 +24,7 @@ import { FaTableTennisPaddleBall } from "react-icons/fa6";
 import { GiHockey } from "react-icons/gi";
 import { FaBaseball } from "react-icons/fa6";
 import { FaHandPaper } from "react-icons/fa";
-import LOGO from './../assets/images/LOGO.png';
+import LOGO from '@/../assets/images/LOGO.png';
 
 const Header = ({ onSearch }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

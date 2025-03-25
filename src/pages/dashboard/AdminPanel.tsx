@@ -1,33 +1,21 @@
 import React, { useState } from 'react';
-import { 
-  BarChart3, 
-  Users, 
-  Calendar, 
-  Settings, 
-  LogOut, 
-  Home, 
-  Trophy, 
-  Activity, 
-  TrendingUp,
-  Menu,
-  X
-} from 'lucide-react';
+import { BarChart3, Users, Calendar, Settings, LogOut, Home, Trophy, Activity, TrendingUp, Menu, X } from 'lucide-react';
 import { PiCourtBasketballFill } from "react-icons/pi";
 import { PiGlobeHemisphereWestFill } from "react-icons/pi";
 import { MdCategory } from "react-icons/md";
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import ManageUsers from './ManageUsers'
-import ManageCourt from './ManageCourt'
-import ManageSettings from './ManageSettings'
+import ManageUsers from '@/layouts/ManageUsers'
+import ManageCourt from '@/layouts/ManageCourt'
+import ManageSettings from '@/layouts/ManageSettings'
+import PaymentMethods from '@/layouts/PaymentMethods'
 import { useGetUsersQuery } from '@/api/userQuery';
 import { MdPayment } from "react-icons/md";
+import { useAuth } from "@/hooks/AuthContext";
 
-
-const Dashboard = () => {
+const AdminPanel = () => {
+  const { user, logout, token } = useAuth();
 
   const { data, isError, isLoading } = useGetUsersQuery();
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Dados estatísticos simulados
@@ -99,7 +87,7 @@ const Dashboard = () => {
           <Settings size={20} className="mr-3" />
           <span>Configurações</span>
         </a>
-        <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors mt-auto">
+        <a href="#" onClick={logout} className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors mt-auto">
           <LogOut size={20} className="mr-3" />
           <span>Sair</span>
         </a>
@@ -289,13 +277,18 @@ const Dashboard = () => {
         <ManageCourt/>
           )}
 
-      {/*Quadras Content*/}
+      {/*Módulos Content*/}
       {select === 'modulo' && (
         <ManageSettings/>
+          )}
+
+      {/*Payments Content*/}
+      {select === 'pagamentos' && (
+        <PaymentMethods/>
           )}
       </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default AdminPanel;

@@ -5,31 +5,29 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ShoppingCart, Search, Menu, X, ChevronDown, User, Heart, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { schemeAccount } from './utils/validateForm.tsx';
+import { schemeRegister } from '@/utils/validateForm.tsx';
 import { Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import LOGO from './assets/images/LOGO.png';
-import {
-  usePostUser,
-  usePutUser
-} from '@/api/userQuery';
+import LOGO from '@/assets/images/LOGO.png';
+import { usePostClient } from '@/api/userQuery';
 import { Link } from 'react-router-dom';
-import FeedbackDialog from './_components/FeedbackDialog'; // Ajuste o caminho conforme necessário
-
-// Importando os componentes do formulário corretamente
+import FeedbackDialog from '@/_components/FeedbackDialog'; // Ajuste o caminho conforme necessário
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useSearchParams } from "react-router-dom";
 
 const Account = () => {
+  const [searchParams] = useSearchParams();
+  const status = searchParams.get("status");
   const form = useForm({
-    resolver: zodResolver(schemeAccount),
+    resolver: zodResolver(schemeRegister),
     defaultValues: {
-      nome: "",
+      name: "",
       email: "",
-      senha: "",
-      confirmarSenha: "",
-      telefone: "",
+      password: "",
+      confirmPassword: "",
+      phone: "",
     },
   });
 
@@ -38,7 +36,7 @@ const Account = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
-  const { mutate, isLoading } = usePostUser();
+  const { mutate, isLoading } = usePostClient();
 
   // Função modificada para prevenir explicitamente o comportamento padrão
   function onSubmit(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
@@ -88,7 +86,7 @@ const Account = () => {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center text-gray-800">Criar Conta</CardTitle>
           <CardDescription className="text-center text-gray-500">
-            Preencha os campos abaixo para se cadastrar
+           {status ? 'Cria à sua conta faça o Login e prossiga com o agendamento' : 'Preencha os campos abaixo para se cadastrar'} 
           </CardDescription>
         </CardHeader>
 
@@ -106,7 +104,7 @@ const Account = () => {
                 <div className="space-y-2">
                   <FormField
                     control={form.control}
-                    name="nome"
+                    name="name"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Nome</FormLabel>
@@ -120,11 +118,20 @@ const Account = () => {
                 <div className="space-y-2">
                   <FormField
                     control={form.control}
-                    name="telefone"
+                    name="phone"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Telefone</FormLabel>
-                        <Input type="tel" {...field} />
+                        <Input
+                        type="tel"
+                        {...field}
+                        maxLength={9}
+                        pattern="[0-9]*"
+                        inputMode="numeric"
+                        onInput={(e) => {
+                          e.target.value = e.target.value.replace(/\D/g, "").slice(0, 9);
+                        }}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -148,7 +155,7 @@ const Account = () => {
                 <div className="space-y-2">
                   <FormField
                     control={form.control}
-                    name="senha"
+                    name="password"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Senha</FormLabel>
@@ -162,7 +169,7 @@ const Account = () => {
                 <div className="space-y-2">
                   <FormField
                     control={form.control}
-                    name="confirmarSenha"
+                    name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Confirmar Senha</FormLabel>

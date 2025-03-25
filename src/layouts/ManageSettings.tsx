@@ -24,11 +24,11 @@ import {
   useGetCitiesQuery
 } from '@/api/cityQuery';
 import { Link } from 'react-router-dom';
-import FeedbackDialog from './_components/FeedbackDialog'; // Ajuste o caminho conforme necessário
+import FeedbackDialog from '@/_components/FeedbackDialog'; // Ajuste o caminho conforme necessário
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { schemeCourtType } from './utils/validateForm.tsx';
-import { schemeProvince } from './utils/validateForm.tsx';
-import { schemeCity } from './utils/validateForm.tsx';
+import { schemeCourtType } from '@/utils/validateForm.tsx';
+import { schemeProvince } from '@/utils/validateForm.tsx';
+import { schemeCity } from '@/utils/validateForm.tsx';
 
 const ManageSettings = () => {
 
@@ -480,20 +480,6 @@ React.useEffect(() => {
                           <FormItem>
                             <FormLabel>Nome da Cidade</FormLabel>
                             <Input {...field} placeholder="Ex: Talatona"/>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={formCity.control}
-                        name="provinceId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Input 
-                            type="hidden" 
-                            value={novaCidade?.fk_provincia}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} // ⬅️ Evita `NaN`
-                          />
                             <FormMessage />
                           </FormItem>
                         )}

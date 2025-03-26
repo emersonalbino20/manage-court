@@ -314,9 +314,9 @@ const CourtDetails = () => {
                                                     <FormItem> 
                                                         <FormLabel className="block font-medium text-gray-700 mb-2"> 
                                                             Horário 
-                                                            <button type="button" onClick={() => setAvailableTimeSlotsOpen(true)} className="ml-2 text-sm text-green-700 hover:underline" > 
+                                                            {/*<button type="button" onClick={() => setAvailableTimeSlotsOpen(true)} className="ml-2 text-sm text-green-700 hover:underline" > 
                                                                 Ver Horários 
-                                                            </button> 
+                                                            </button> */}
                                                         </FormLabel> 
                                                         <FormControl> 
                                                             <select {...field} className="w-full border border-gray-300 rounded-md px-4 py-2.5 h-11 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700" onChange={(e) => { 

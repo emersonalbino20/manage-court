@@ -82,10 +82,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
         const decodedToken = jwtDecode<TokenPayload>(accessToken);
         
         const currentTime = Date.now() / 1000;
-        if (decodedToken.exp < currentTime) {
-          logout();
-          return;
-        }
+        
         
         setToken(accessToken);
         setUser(decodedToken.user);

@@ -113,7 +113,7 @@ const form = useForm({
               <div className="flex justify-between">
                 <Label htmlFor="password" className="text-gray-700">Senha</Label>
                 <Link to={'/forgot-password'} >
-                  <span>
+                  <span className="font-medium text-green-600 hover:text-green-700">
                   Esqueceu a senha?
                   </span>
                 </Link>

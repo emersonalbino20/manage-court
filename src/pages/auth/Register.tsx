@@ -12,10 +12,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import LOGO from '@/assets/images/LOGO.png';
 import { usePostClient } from '@/api/userQuery';
-import { Link } from 'react-router-dom';
 import FeedbackDialog from '@/_components/FeedbackDialog'; // Ajuste o caminho conforme necessário
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom';
 
 const Account = () => {
   const [searchParams] = useSearchParams();
@@ -30,6 +30,7 @@ const Account = () => {
       phone: "",
     },
   });
+  const navigate = useNavigate();
 
   // Estados para controlar o diálogo
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -52,6 +53,7 @@ const Account = () => {
         setIsSuccess(true);
         setFeedbackMessage("Sua conta foi criada com sucesso! Você já pode acessar a plataforma AgendaQuadra.");
         setDialogOpen(true);
+        navigate("/login")
         form.reset();
       },
       onError: (error) => {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Search, Menu, X, ChevronDown, User, Heart, Eye, EyeOff, LogOut } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, ChevronDown, User, Heart, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,12 +7,6 @@ import { Calendar, MapPin, Star, Filter } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
 import LOGO from '@/assets/images/LOGO.png';
 import { IoMdFootball } from "react-icons/io";
 import { FaVolleyball } from "react-icons/fa6";
@@ -22,7 +16,7 @@ import { FaTableTennisPaddleBall } from "react-icons/fa6";
 import { GiHockey } from "react-icons/gi";
 import { FaBaseball } from "react-icons/fa6";
 import { FaHandPaper } from "react-icons/fa";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useGetProvincesQuery } from '@/api/provinceQuery';
 import { useGetCitiesQuery } from '@/api/cityQuery';
 import { useGetCourtsTypeQuery } from '@/api/courtQuery';
@@ -72,11 +66,6 @@ const ContentHome = () => {
       setSearchTerm(event.target.value);
     };
 
- // Function to navigate to my bookings
-  const handleMyBookings = () => {
-    navigate('/courtdetails');
-  };
-
     const filteredProducts = courtData?.data?.data?.fields?.filter(product => {
       if (!product) return false;
       
@@ -124,7 +113,7 @@ const ContentHome = () => {
               >
                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
-              <Link to={'/'}>
+              
               <div className="flex items-center space-x-3 text-lg sm:text-xl md:text-2xl font-bold text-green-700">
                 <img 
                   src={LOGO} 
@@ -133,7 +122,7 @@ const ContentHome = () => {
                 />
                 <span>AgendaQuadra</span>
               </div>
-              </Link>
+
               <div className="hidden md:flex flex-1 max-w-md mx-4">
                 <div className="relative w-full">
                   <Input 
@@ -151,29 +140,15 @@ const ContentHome = () => {
                 <Link to="/booking">
                   <p className="underline cursor-pointer">Como agendar?</p>
                 </Link>
-               {token ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="p-2">
-                        <User size={20} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="cursor-pointer">
-                        <Link to={'/courtdetails'}>
-                          <Heart className="mr-2 h-4 w-4" /> Minhas Reservas
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600">
-                        <LogOut className="mr-2 h-4 w-4" /> Sair
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) :
-                (<Link to={'/Login'}>
-                                  <Button variant="outline">Entrar</Button>
-                                </Link>)}
-            </div>
+                {token ? (
+                    <Button variant="destructive" onClick={logout}>Sair</Button>
+                  ) :
+                <Link to={'/Login'}>
+                  <Button variant="outline">Entrar</Button>
+                </Link>
+              }
+                
+              </div>
             </div>
             
             {/* Search Bar Mobile */}
@@ -274,7 +249,7 @@ const ContentHome = () => {
               <Card className="sticky top-48">
                 <CardContent className="p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                     Filtrar Quadras
+                    <Filter className="mr-2 h-5 w-5" /> Filtrar Quadras
                   </h2>
                   
                   <div className="space-y-6">
@@ -381,4 +356,3 @@ const ContentHome = () => {
 }
 
 export default ContentHome;
-

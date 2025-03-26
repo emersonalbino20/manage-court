@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import FeedbackDialog from '@/_components/FeedbackDialog';
 import { useGetUserResevationsQuery, usePatchCancelReservation } from '@/api/reserveQuery';
 import { useAuth } from "@/hooks/AuthContext";
-
+import { receiveCentFront } from '@/utils/methods'
 const ManageReservations = () => {
   // States for dialogs and feedback
   const { user, logout, token } = useAuth();
@@ -170,7 +170,7 @@ const ManageReservations = () => {
                         Indisponivel{/*`${reservation.fieldAvailability.startTime} - ${reservation.fieldAvailability.endTime}`*/}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        Kz {reservation.price.toFixed(2)}
+                        Kz {receiveCentFront(reservation.price)}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         <span className={`

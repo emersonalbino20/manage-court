@@ -59,7 +59,7 @@ const formCity = useForm({
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [editandoTipo, setEditandoTipo] = useState("");
-
+  const [erro, setErro] = useState('');
   const { mutate: mutatePostCourt } = usePostCourtType();
   const { mutate: mutatePutCourt } = usePutCourtType();
 
@@ -75,6 +75,7 @@ const formCity = useForm({
       },
       onError: (error) => {
         setIsSuccess(false);
+        setErro(error)
         setFeedbackMessage("Não foi possível editar a quadra.");
         setDialogOpen(true);
       }
@@ -90,6 +91,7 @@ const formCity = useForm({
       },
       onError: (error) => {
         setIsSuccess(false);
+        setErro(error)
         setFeedbackMessage("Não foi possível cadastrar a quadra.");
         setDialogOpen(true);
       }
@@ -113,6 +115,7 @@ function submitProvince(data: any, event: React.FormEvent<HTMLFormElement> | und
       },
       onError: (error) => {
         setIsSuccess(false);
+        setErro(error)
         setFeedbackMessage("Não foi possível actualizar a província. Verifique os dados e tente novamente.");
         setDialogOpen(true);
       }
@@ -127,6 +130,7 @@ function submitProvince(data: any, event: React.FormEvent<HTMLFormElement> | und
       },
       onError: (error) => {
         setIsSuccess(false);
+        setErro(error)
         setFeedbackMessage("Não foi possível cadastra a província. Verifique os dados e tente novamente.");
         setDialogOpen(true);
       }
@@ -149,6 +153,7 @@ function submitCity(data: any, event: React.FormEvent<HTMLFormElement> | undefin
       },
       onError: (error) => {
         setIsSuccess(false);
+        setErro(error)
         setFeedbackMessage("Não foi possível actualizar a cidade. Verifique os dados e tente novamente.");
         setDialogOpen(true);
       }
@@ -162,6 +167,7 @@ function submitCity(data: any, event: React.FormEvent<HTMLFormElement> | undefin
         formCity.reset();
       },
       onError: (error) => {
+        setErro(error)
         setIsSuccess(false);
         setFeedbackMessage("Não foi possível cadastra a cidade. Verifique os dados e tente novamente.");
         setDialogOpen(true);
@@ -563,6 +569,7 @@ React.useEffect(() => {
         onClose={handleCloseDialog}
         success={isSuccess}
         message={feedbackMessage}
+        errorData={erro}
       />
     </div>
   );

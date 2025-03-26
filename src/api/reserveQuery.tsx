@@ -25,8 +25,8 @@ const auxPatchReserve = (data) => {
 
 /* Patch */
 export const auxPatchCancelReservationClient = (data) => {
-  return axios.patch(`http://localhost:3000/me/field-reservations/${data.id}/cancel`, {status: "cancelled",
-  cancellationReason: "client-reservations"}, {
+  return axios.patch(`http://localhost:3000/me/field-reservations/${data.id}/cancel`, {status: data.status,
+  cancellationReason: data.cancellationReason}, {
       headers: {
         Authorization: `Bearer ${token}`, 
         "Content-Type": "application/json",

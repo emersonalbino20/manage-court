@@ -51,7 +51,7 @@ const CourtAvailability = ({ulid}) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [editandoTipo, setEditandoTipo] = useState("");
-
+  const [erro, setErro] = useState('');
   const { mutate: mutatePostCourt } = usePostCourtAvailabilities();
   const { mutate: mutatePutCourt } = usePutCourtAvailabilities();
 
@@ -73,6 +73,7 @@ const CourtAvailability = ({ulid}) => {
         },
         onError: (error) => {
           console.log(error);
+          setErro(error)
           setIsSuccess(false);
           setFeedbackMessage("Não foi possível editar o agendamento.");
           setDialogOpen(true);
@@ -98,6 +99,7 @@ const CourtAvailability = ({ulid}) => {
         },
         onError: (error) => {
           console.log(error);
+          setErro(error)
           setIsSuccess(false);
           setFeedbackMessage("Não foi possível cadastrar o agendamento.");
           setDialogOpen(true);
@@ -288,6 +290,7 @@ const CourtAvailability = ({ulid}) => {
         onClose={handleCloseDialog}
         success={isSuccess}
         message={feedbackMessage}
+        errorData={erro}
       />
     </div>
   );

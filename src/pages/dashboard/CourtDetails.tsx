@@ -1,29 +1,72 @@
-import React, { useState } from 'react'; 
-import { CalendarIcon, CalendarCheck, Clock, MapPin, ArrowLeft, CheckCircle, Calendar, AlertTriangle } from 'lucide-react'; import { ShoppingCart, Search, Menu, X, ChevronDown, ChevronLeft, ChevronRight, User, Heart, Eye, EyeOff } from 'lucide-react'; import { Button } from '@/components/ui/button'; 
-import { Input } from '@/components/ui/input'; 
-import { Label } from '@/components/ui/label';
- import { Select } from '@/components/ui/select'; 
-import { Badge } from '@/components/ui/badge';
- import { Card, CardContent } from '@/components/ui/card';
-  import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'; import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; import Futebol_2 from '@/assets/images/court-football-full.jpg'; import Futebol_1 from '@/assets/images/court-football-small.jpg'; import Header from '@/_components/Header.tsx'; import Footer from '@/_components/Footer.tsx'; import { PiCourtBasketballFill } from "react-icons/pi"; import { Link } from 'react-router-dom'; import UserBookingsSection from '@/layouts/UserBookingsSection'; import LOGO from '@/assets/images/LOGO.png'; import { Navigation } from "swiper/modules"; import { useSearchParams } from "react-router-dom"; import { useGetCourtId } from '@/api/courtQuery'; import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"; import "leaflet/dist/leaflet.css"; import L from "leaflet"; import { useGetCourtsTypeQuery } from '@/api/courtQuery'; import {receiveCentFront, sendCoinBeck} from '@/utils/methods'; import { useGetCourtIdAvailabilities } from '@/api/courtQuery'; import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form"; import { useForm } from "react-hook-form"; import { z } from "zod"; import { zodResolver } from "@hookform/resolvers/zod"; import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
- import { useGetProvincesQuery } from '@/api/provinceQuery'; 
-import { useGetCitiesQuery } from '@/api/cityQuery'; 
-import { useGetPaymentMethodsQuery } from '@/api/paymentMethodsQuery'; 
-import { schemeBooking } from '@/utils/validateForm'; 
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
- import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import React, { useState } from 'react';
+import { useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom';
 import { format, parse, isBefore, startOfDay } from 'date-fns';
- import { pt } from 'date-fns/locale'; 
-import { getCurrentAngolaDate,  formatToAngolaTime, convertToUtc} from '@/utils/methods' 
-import { usePostReserve } from '@/api/reserveQuery' 
-import { useAuth } from "@/hooks/AuthContext"; 
+import { pt } from 'date-fns/locale';
+
+// Ícones
+import { 
+  CalendarIcon, CalendarCheck, Clock, MapPin, ArrowLeft, CheckCircle, Calendar, AlertTriangle, 
+  ShoppingCart, Search, Menu, X, ChevronDown, ChevronLeft, ChevronRight, User, Heart, Eye, EyeOff 
+} from 'lucide-react';
+import { PiCourtBasketballFill } from "react-icons/pi";
+
+// Componentes UI
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form";
+
+// Layouts & Componentes específicos
+import Header from '@/_components/Header.tsx';
+import Footer from '@/_components/Footer.tsx';
+import FeedbackDialog from '@/_components/FeedbackDialog';
+import UserBookingsSection from '@/layouts/UserBookingsSection';
+
+// Assets
+import LOGO from '@/assets/images/LOGO.png';
+import Futebol_1 from '@/assets/images/court-football-small.jpg';
+import Futebol_2 from '@/assets/images/court-football-full.jpg';
+
+// APIs & Queries
+import { useGetCourtId, useGetCourtsTypeQuery, useGetCourtIdAvailabilities } from '@/api/courtQuery';
+import { useGetProvincesQuery } from '@/api/provinceQuery';
+import { useGetCitiesQuery } from '@/api/cityQuery';
+import { useGetPaymentMethodsQuery } from '@/api/paymentMethodsQuery';
+import { usePostReserve } from '@/api/reserveQuery';
+
+// Validação de Formulário
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { schemeBooking } from '@/utils/validateForm';
+
+// Mapa (Leaflet)
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Utils
+import { getCurrentAngolaDate, formatToAngolaTime, convertToUtc, receiveCentFront, sendCoinBeck } from '@/utils/methods';
+import { useAuth } from "@/hooks/AuthContext";
+import { Navigation } from "swiper/modules";
 
 const CourtDetails = () => { 
-    const { user, logout, token } = useAuth(); 
+    const { user, logout, token} = useAuth(); 
+
     const [searchParams] = useSearchParams(); 
     const id = searchParams.get("id"); 
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [availableTimeSlotsOpen, setAvailableTimeSlotsOpen] = useState(false);
+    const [erro, setErro] = useState('');
     const today = startOfDay(new Date()); 
     const todayFormatted = getCurrentAngolaDate(); 
     const formBooking = useForm({ 
@@ -53,16 +96,18 @@ const CourtDetails = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false); 
     const [activeCategory, setActiveCategory] = useState('agendar'); 
     const categories = [ 
-        id ? { id: 'agendar', name: 'Agendar' } : {}, 
-        token ? {id: 'agendadas', name: 'Quadras Agendadas'} : {} , 
+        { id: 'agendar', name: 'Agendar' } , {id: 'agendadas', name: 'Quadras Agendadas'}, 
     ]; 
     const [isReservaDialogOpen, setIsReservaDialogOpen] = useState(false); 
+    const [dialogOpen, setDialogOpen] = useState(false);
     const [isFailedDialog, setFailedDialog] = useState(false); 
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [feedbackMessage, setFeedbackMessage] = useState("");
+    
     const [log, setLog] = useState(''); 
     const { mutate: postReserve } = usePostReserve(); 
     const { data: courtAvailabilityData } = useGetCourtIdAvailabilities(id, fieldDate); 
     const { data: methods} = useGetPaymentMethodsQuery(); 
-
     function submitBooking(data, event) { 
         event?.preventDefault(); 
         postReserve({
@@ -75,12 +120,18 @@ const CourtDetails = () => {
                 setLog(response); 
             }, 
             onError: (error) => { 
-                setFailedDialog(true); 
+                setErro(error)
+                setIsSuccess(false);
+                setFeedbackMessage("Não foi possível fazer a reserva.");
+                setDialogOpen(true);
             } 
         }) 
     } 
+     const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
 
-    const handleDateSelect = (date) => { 
+const handleDateSelect = (date) => { 
         if (date) { 
             const formattedDate = convertToUtc(date); 
             formBooking.setValue("day", formattedDate); 
@@ -244,6 +295,7 @@ const CourtDetails = () => {
                                     <div className="flex items-center justify-between mb-6"> 
                                         <div className="text-2xl font-bold text-green-700">Kz {price}/Hora</div> 
                                     </div> 
+
                                     <Tabs defaultValue="descricao"> 
                                         <TabsList className="grid grid-cols-2 mb-4"> 
                                             <TabsTrigger value="descricao">Descrição</TabsTrigger> 
@@ -373,6 +425,7 @@ const CourtDetails = () => {
                     </div> 
                 )} 
                 {activeCategory === 'agendadas' && ( 
+
                     <UserBookingsSection/> 
                 )} 
             </main> 
@@ -443,6 +496,13 @@ const CourtDetails = () => {
                     </div> 
                 </DialogContent> 
             </Dialog> 
+             <FeedbackDialog 
+        isOpen={dialogOpen}
+        onClose={handleCloseDialog}
+        success={isSuccess}
+        message={feedbackMessage}
+        errorData={erro}
+      />
             {/* Footer */} 
             <Footer /> 
         </div> 

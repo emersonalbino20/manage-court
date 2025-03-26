@@ -57,6 +57,7 @@ const UserBookingsSection = () => {
   const { data: cityData } = useGetCitiesQuery();
 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const  [erro, setErro] = useState('');
   const [bookingToCancel, setBookingToCancel] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -65,7 +66,7 @@ const UserBookingsSection = () => {
   const [id, setId] = useState('');
   const {mutate: cancelReservations} = usePatchCancelReservationClient();
   const handleCancelBooking = (bookingId) => {
-     cancelReservations({id: bookingId, status: "confirmed", cancellationReason: "nenhuma"},{
+     cancelReservations({id: bookingId, status: "cancelled", cancellationReason: "estou cancelando a reserva por motivos pessoais"},{
       onSuccess: (response) => {
         setIsSuccess(true);
         setFeedbackMessage("A sua reserva foi cancelada!");
@@ -73,7 +74,8 @@ const UserBookingsSection = () => {
         setIsCancelDialogOpen(false);
       },
       onError: (error) => {
-          setIsSuccess(false);
+        setErro(error);
+        setIsSuccess(false);
         setFeedbackMessage("Erro ao cancelar a sua reserva");
         console.log(error);
       }})
@@ -239,6 +241,7 @@ const UserBookingsSection = () => {
         onClose={handleCloseDialog}
         success={isSuccess}
         message={feedbackMessage}
+        errorData={erro}
       />
     </div>
   );

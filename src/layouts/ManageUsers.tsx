@@ -47,7 +47,7 @@ const ManageUsers = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
-
+  const [erro, setErro] = useState("");
   // Estados para o diálogo de confirmação de exclusão
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [usuarioParaExcluir, setUsuarioParaExcluir] = useState(null);
@@ -133,7 +133,7 @@ const ManageUsers = () => {
           setActiveTab('listar');
         },
         onError: (error) => {
-          console.log(error);
+          setErro(error);
           setIsSuccess(false);
           setFeedbackMessage("Não foi possível cadastrar o usuário. Verifique seus dados e tente novamente.");
           setDialogOpen(true);
@@ -416,6 +416,7 @@ return (
         onClose={handleCloseDialog}
         success={isSuccess}
         message={feedbackMessage}
+        errorData={erro}
       />
 
       {/* Confirmation Dialog for Delete */}

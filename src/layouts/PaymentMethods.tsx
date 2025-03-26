@@ -34,6 +34,7 @@ const PaymentMethods = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [editandoTipo, setEditandoTipo] = useState("");
+  const [erro, setErro] = useState('');
 
   const { mutate: mutatePostMethods } = usePostPaymentMethods();
   const { mutate: mutatePutCourt } = usePutPaymentMethods();
@@ -49,6 +50,7 @@ const PaymentMethods = () => {
         setEditandoTipo(null); // Reseta o estado após edição
       },
       onError: (error) => {
+        setErro(error)
         setIsSuccess(false);
         setFeedbackMessage("Não foi possível editar o método de pagamento.");
         setDialogOpen(true);
@@ -64,6 +66,7 @@ const PaymentMethods = () => {
         formMethods.reset();
       },
       onError: (error) => {
+        setErro(error)
         setIsSuccess(false);
         setFeedbackMessage("Não foi possível cadastrar o método.");
         setDialogOpen(true);
@@ -207,6 +210,7 @@ const PaymentMethods = () => {
         isOpen={dialogOpen}
         onClose={handleCloseDialog}
         success={isSuccess}
+        errorData={erro}
         message={feedbackMessage}
       />
     </div>

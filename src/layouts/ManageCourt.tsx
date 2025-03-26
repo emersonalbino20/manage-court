@@ -83,7 +83,7 @@ const formCourt = useForm({
 
   const { mutate: mutateCourt } = usePostCourt();
   const { mutate: putCourt } = usePutCourt();
-
+  const [erro, setErro] = useState('');
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     if (tab === 'cadastrar') {
@@ -99,10 +99,12 @@ const formCourt = useForm({
     patchFields({ id: id, isDeleted: true }, {
       onSuccess: () => {
         setIsSuccess(true);
+
         setFeedbackMessage("A quadra foi deletada com sucesso!");
         setDialogOpen(true);
       },
       onError: (error) => {
+        setErro(error)
         setIsSuccess(false);
         setFeedbackMessage("Não foi possível deletar a quadra. Tente novamente mais tarde.");
         setDialogOpen(true);
@@ -148,6 +150,7 @@ const formCourt = useForm({
         onError: (error) => {
           console.log(error)
           setIsSuccess(false);
+          setErro(error);
           setFeedbackMessage("Não foi possível atualizar a quadra. Verifique seus dados e tente novamente.");
           setDialogOpen(true);
           setModoEdicao(true);
@@ -177,11 +180,12 @@ const formCourt = useForm({
           formCourt.reset();
           setActiveTab('listar');
         },
-        onError: (error) => {
-          console.log(error)
-          setIsSuccess(false);
-          setFeedbackMessage("Não foi possível cadastrar a quadra. Verifique seus dados e tente novamente.");
-          setDialogOpen(true);
+       onError: (error) => {
+        console.log(error.response?.data?.data?.errors); // Confirma se os erros estão chegando
+        setErro(error); // Agora passamos o erro inteiro
+        setIsSuccess(false);
+        setFeedbackMessage("Não foi possível cadastrar a quadra. Verifique seus dados e tente novamente.");
+        setDialogOpen(true);
         }
       });
     }
@@ -583,6 +587,7 @@ const handleCloseDialog = () => {
         onClose={handleCloseDialog}
         success={isSuccess}
         message={feedbackMessage}
+        errorData={erro}
       />
 
       {/* Confirmation Dialog for Delete */}

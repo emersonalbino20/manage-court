@@ -160,7 +160,7 @@ const ContentHome = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem className="cursor-pointer">
-                        <Link to={'/courtdetails'}>
+                        <Link to={'/userbooking'}>
                           <Heart className="mr-2 h-4 w-4" /> Minhas Reservas
                         </Link>
                       </DropdownMenuItem>

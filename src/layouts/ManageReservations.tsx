@@ -28,7 +28,7 @@ const ManageReservations = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
-
+  const [erro, setErro] = useState('');
   // Fetch reservations query
   const { data: reservationsData, isLoading, error } = useGetUserResevationsQuery();
   console.log(reservationsData)
@@ -66,6 +66,7 @@ const ManageReservations = () => {
         },
         onError: (error) => {
           setIsSuccess(false);
+          setErro(error)
           setFeedbackMessage("Não foi possível cancelar a reserva. Tente novamente.");
           setDialogOpen(true);
           setCancelDialogOpen(false);
@@ -91,6 +92,7 @@ const ManageReservations = () => {
         },
         onError: (error) => {
           setIsSuccess(false);
+          setErro(error)
           setFeedbackMessage("Não foi possível cancelar a reserva. Tente novamente.");
           setDialogOpen(true);
           setCancelDialogOpen(false);
@@ -214,6 +216,7 @@ const ManageReservations = () => {
         isOpen={dialogOpen}
         onClose={handleCloseDialog}
         success={isSuccess}
+        errorData={erro}
         message={feedbackMessage}
       />
 

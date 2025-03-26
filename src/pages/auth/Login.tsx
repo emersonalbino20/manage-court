@@ -34,7 +34,7 @@ const form = useForm({
   });
 
   const { mutate, isLoading } = usePostLogin();
-const [isFailedDialog, setFailedDialog] = useState(false);
+  const [isFailedDialog, setFailedDialog] = useState(false);
   // Função modificada para prevenir explicitamente o comportamento padrão
   function onSubmit(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
     // Previne explicitamente o comportamento padrão
@@ -45,8 +45,6 @@ const [isFailedDialog, setFailedDialog] = useState(false);
     mutate(data, {
       onSuccess: (response) => {
         login(response); // Salva o token e usuário no contexto e localStorage
-        console.log(response)
-        navigate("/");
         form.reset();
       },
       onError: (error) => {

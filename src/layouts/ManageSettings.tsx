@@ -29,6 +29,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { schemeCourtType } from '@/utils/validateForm.tsx';
 import { schemeProvince } from '@/utils/validateForm.tsx';
 import { schemeCity } from '@/utils/validateForm.tsx';
+import  PaymentMethods from './PaymentMethods'
 
 const ManageSettings = () => {
 
@@ -244,6 +245,16 @@ React.useEffect(() => {
           onClick={() => setActiveTab('cidades')}
         >
           Cidades
+        </button>
+        <button
+          className={`py-2 px-4 font-medium whitespace-nowrap ${
+            activeTab === 'pagamentos'
+              ? 'text-green-600 border-b-2 border-green-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('pagamentos')}
+        >
+          Métodos de Pagamentos
         </button>
       </div>
 
@@ -545,7 +556,7 @@ React.useEffect(() => {
           </CardContent>
         </Card>
       )}
-
+  {activeTab === 'pagamentos' && (<PaymentMethods/>)}
       {/* Diálogo de feedback */}
       <FeedbackDialog 
         isOpen={dialogOpen}

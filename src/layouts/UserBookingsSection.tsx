@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import Volei_1 from '@/assets/images/court-volleyball.jpg';
 import {
-  useGetUserResevationsQuery, usePatchCancelReservation
+  useGetClientResevationsQuery, usePatchCancelReservationClient
 } from '@/api/reserveQuery';
 import {useGetCourtsQuery} from '@/api/courtQuery';
 import {receiveCentFront, sendCoinBeck} from '@/utils/methods';
@@ -50,7 +50,8 @@ const UserBookingsSection = () => {
       status: 'pendente'
     }
   ]);
-  const { data: myResevations } = useGetUserResevationsQuery();
+  const { data: myResevations } = useGetClientResevationsQuery();
+  console.log(myResevations)
   const { data: courts } = useGetCourtsQuery();
   const { data: provinceData } = useGetProvincesQuery();
   const { data: cityData } = useGetCitiesQuery();
@@ -62,10 +63,11 @@ const UserBookingsSection = () => {
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
   const [id, setId] = useState('');
-  const {mutate: cancelReservations} = usePatchCancelReservation();
+  const {mutate: cancelReservations} = usePatchCancelReservationClient();
   const handleCancelBooking = (bookingId) => {
-     cancelReservations({id: bookingId},{
+     cancelReservations({id: bookingId, status: "confirmed", cancellationReason: "nenhuma"},{
       onSuccess: (response) => {
+        setIsSuccess(true);
         setFeedbackMessage("A sua reserva foi cancelada!");
         setDialogOpen(true);
         setIsCancelDialogOpen(false);
@@ -152,6 +154,9 @@ const UserBookingsSection = () => {
                 </div>
                 <div className="mt-3 text-lg font-bold text-green-700">Kz {receiveCentFront(booking.price)}</div>
                 <div className="mt-4 space-y-2">
+                  {booking.status === 'cancelled' ? (
+                    ''
+                    ) :
                   <Button 
                     className="w-full bg-white text-red-700 border border-red-700 hover:bg-red-50"
                     variant="outline"
@@ -160,6 +165,7 @@ const UserBookingsSection = () => {
                   >
                     Cancelar Agendamento
                   </Button>
+                  }
                 </div>
               </CardContent>
             </Card>

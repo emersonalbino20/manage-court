@@ -16,13 +16,24 @@ export const auxPostCourtType = (data) => {
 };
 
 export const auxPostCourt = (data) => {
-  return axios.post(`http://localhost:3000/fields/`, data,{
+  return axios.post(`http://localhost:3000/fields/`,{ fieldTypeId: data?.fieldTypeId,
+      name: data?.name,
+      description: data?.description,
+      hourlyRate: data?.hourlyRate,
+      address: {
+        street: data?.address?.street,
+        cityId: data?.address?.cityId,
+        provinceId: data?.address?.provinceId,
+        latitude: data?.address?.latitude,
+        longitude: data?.address?.longitude
+      },
+      thumbnailUrl: data?.thumbnailUrl
+      }, {
       headers: {
         Authorization: `Bearer ${token}`, 
         "Content-Type": "application/json",
       },
-    });
-};
+    })}
 
 export const auxPostCourtAvailabilities = (data) => {
   return axios.post(`http://localhost:3000/field-availabilities/${data.fieldId}`, {
@@ -126,7 +137,7 @@ export const usePostCourtAvailabilities = () => {
   const { mutate, isLoading, variables } = useMutation({
     mutationFn: auxPostCourtAvailabilities,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['field-availability', variables.fieldId] });
+      queryClient.invalidateQueries({ queryKey: ['field-availability'] });
       console.log('success');
     },
     onError: (error) => {

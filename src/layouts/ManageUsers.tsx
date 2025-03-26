@@ -42,7 +42,7 @@ const ManageUsers = () => {
 
   // Dados da API
   const { data: userData } = useGetUsersQuery();
-  
+  console.log(userData)
   // Estados para controlar o diálogo
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -284,6 +284,12 @@ return (
                         <FormControl>
                         <Input {...field} 
                         className="w-full p-2 border border-gray-300 rounded-md"
+                        maxLength={9}
+                        pattern="[0-9]*"
+                        inputMode="numeric"
+                        onInput={(e) => {
+                          e.target.value = e.target.value.replace(/\D/g, "").slice(0, 9);
+                        }}
                         />
                         </FormControl>
                         <FormMessage />
@@ -382,7 +388,7 @@ return (
                         {new Date(usuario.createdAt).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-right">
-                        <button
+                       {/* <button
                           onClick={() => iniciarEdicao(usuario)}
                           className="text-blue-600 hover:text-blue-800 mr-3"
                         >
@@ -393,7 +399,7 @@ return (
                           className="text-red-600 hover:text-red-800"
                         >
                           <Trash2 size={16} />
-                        </button>
+                        </button>*/}
                       </td>
                     </tr>
                   )})}

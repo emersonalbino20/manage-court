@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import CourtAvailability from '@/_components/CourtAvailability';
 import { MdOutlineWatchLater } from "react-icons/md";
+import ImageUploader from '@/_components/ImageUploader';
 
 const ManageCourt = () => {
 
@@ -123,8 +124,16 @@ const formCourt = useForm({
     setDeleteDialogOpen(false);
   };
 
-  function submitCourt(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
+  const [thumbnailUrls, setThumbnailUrls] = useState([]);
+
+   function submitCourt(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
     event?.preventDefault(); 
+
+    const courtData = {
+      ...data,
+      thumbnailUrl: thumbnailUrls.length > 0 ? thumbnailUrls[0] : '', // Use a primeira imagem como thumbnail
+      additionalImages: thumbnailUrls.slice(1) // Imagens adicionais, se houver
+    };
 
     if (modoEdicao) {
       
@@ -327,20 +336,25 @@ const handleCloseDialog = () => {
                 />
                 </div>
                 <div>
-                 <FormField
+                <FormField
                   control={formCourt.control}
                   name="thumbnailUrl"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="block text-sm font-medium text-gray-700 mb-1">
-                      Imagem da Quadra</FormLabel>
-                      <Input type="file" {...field} multiple
-                      className="w-full p-2 border border-gray-300 rounded-md"
+                        Imagens da Quadra
+                      </FormLabel>
+                      <ImageUploader 
+                        onImageUpload={(urls) => {
+                          setThumbnailUrls(urls);
+                          field.onChange(urls.length > 0 ? urls[0] : '');
+                        }}
                       />
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
                 </div>
 
                 <div className="md:col-span-2">

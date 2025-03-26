@@ -29,8 +29,8 @@ import { getCurrentAngolaDate,  formatToAngolaTime, convertToUtc} from '@/utils/
 
 const ContentHome = () => {
 
-    const { user, logout, token } = useAuth();
-
+ const { user, logout, token } = useAuth();
+//console.log(token)
   const today = startOfDay(new Date()); 
 
   const todayFormatted = getCurrentAngolaDate();
@@ -192,7 +192,7 @@ const ContentHome = () => {
           <div className="fixed inset-0 z-40 bg-white pt-16 px-4 md:hidden">
             <div className="space-y-4 py-4 text-lg">
               <div className="border-b pb-2">
-                <Link to={'/Login'}>
+                {/*<Link to={'/Login'}>
                   <button 
                     className="flex items-center space-x-2 text-gray-700 hover:text-green-700"
                     onClick={() => setIsMenuOpen(false)}
@@ -200,7 +200,7 @@ const ContentHome = () => {
                     <User size={20} />
                     <span>Cadastrar / Entrar</span>
                   </button>
-                </Link>
+                </Link>*/}
               </div>
               
               <div className="text-lg font-medium text-gray-900 pb-1">Categorias</div>
@@ -254,18 +254,6 @@ const ContentHome = () => {
                   
                   <div className="space-y-6">
                     {/* Data */}
-                    <div className="space-y-2">
-                      <Label className="font-medium flex items-center">
-                        <Calendar className="mr-2 h-4 w-4" /> Data
-                      </Label>
-                      <Input 
-                        type="date" 
-                        className="w-full" 
-                        value={todayFormatted}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                      />
-                    </div>
-                    
                     {/* Localização */}
                     <div className="space-y-2">
                       <Label className="font-medium flex items-center">
@@ -368,3 +356,4 @@ const ContentHome = () => {
 }
 
 export default ContentHome;
+

@@ -2,7 +2,6 @@ import * as React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 const token = localStorage.getItem("token");
-
 //Auxilary Functions
 /* Post */
 export const auxPostClient = (data) => {
@@ -20,7 +19,11 @@ export const auxPostUsers = (data) => {
 
 
 export const auxPostLogin = (data) => {
-  return axios.post(`http://localhost:3000/auth/`, data, );
+  return axios.post(`http://localhost:3000/auth/`, data);
+};
+
+export const auxPostForgotPassword = (data) => {
+  return axios.post(`http://localhost:3000/auth/forgot-password`, data);
 };
 
 /* Put */
@@ -38,7 +41,7 @@ export const usePostClient = () => {
   const { mutate, isLoading, variables} = useMutation({
     mutationFn: auxPostClient,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['client'] });
+//      queryClient.invalidateQueries({ queryKey: ['client'] });
       console.log('success');
     },
     onError: (error) => {
@@ -70,7 +73,22 @@ export const usePostLogin = () => {
   const { mutate, isLoading, variables} = useMutation({
     mutationFn: auxPostLogin,
     onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ['login'] });
+      console.log(response);
+    },
+    onError: (error) => {
+      console.log(variables)
+        console.log(error);
+    }
+  });
+  return { mutate, isLoading };
+};
+
+export const usePostForgotPassword = () => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, variables} = useMutation({
+    mutationFn: auxPostForgotPassword,
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['forgot-password'] });
       console.log(response);
     },
     onError: (error) => {
@@ -97,17 +115,17 @@ export const usePutUser = () => {
 };
 
 //Get
+
 export const useGetUsersQuery = () => {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["users"],
-    queryFn: () =>
-      axios.get("http://localhost:3000/users/", {
-        headers: {
-          Authorization: `Bearer ${token}`, // Inclui o JWT no cabeçalho
-        },
-      }).then(res => res.data),
+    return useQuery({
+    queryKey: ['users'],
+    queryFn: () => {
+      const token = localStorage.getItem('token');
+      return axios
+        .get('http://localhost:3000/users', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(response => response.data);
+    }
   });
-
-  return { data, isLoading, isError };
 };
-

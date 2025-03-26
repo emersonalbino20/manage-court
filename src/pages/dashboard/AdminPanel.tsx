@@ -7,13 +7,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ManageUsers from '@/layouts/ManageUsers'
 import ManageCourt from '@/layouts/ManageCourt'
 import ManageSettings from '@/layouts/ManageSettings'
+import ManageReservations from '@/layouts/ManageReservations'
 import PaymentMethods from '@/layouts/PaymentMethods'
 import { useGetUsersQuery } from '@/api/userQuery';
 import { MdPayment } from "react-icons/md";
 import { useAuth } from "@/hooks/AuthContext";
+import {jwtDecode} from "jwt-decode";
 
 const AdminPanel = () => {
   const { user, logout, token } = useAuth();
+  const decodedToken = jwtDecode(token);
+  const userType = decodedToken?.user?.type;
 
   const { data, isError, isLoading } = useGetUsersQuery();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -62,31 +66,42 @@ const AdminPanel = () => {
           <BarChart3 size={20} className="mr-3" />
           <span>Dashboard</span>
         </a>
-        <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
-          <Calendar size={20} className="mr-3" />
-          <span>Reservas</span>
-        </a>
+        {userType === 'operator' ? 
+      (  <a href="#"  onClick={()=>{setSelect('reservations')}} className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
+                <Calendar size={20} className="mr-3" />
+                <span>Reservas</span>
+              </a>) :
+      (<div></div>)
+      }{userType === 'administrator' ? (
         <a href="#" onClick={()=>{setSelect('users')}} className={`flex items-center px-4 py-3 ${select === 'users' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
           <Users size={20} className="mr-3" />
           <span>Usuários</span>
         </a>
+        
+        ): <div></div>}
+        
+        {userType === 'administrator' ? (
         <a href="#" onClick={()=>{setSelect('quadras')}} className={`flex items-center px-4 py-3 ${select === 'quadras' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
           <PiCourtBasketballFill size={20} className="mr-3" />
           <span>Quadras</span>
         </a>
+        ): <div></div>}
+        
+        
+        {userType === 'administrator' ? (
         <a href="#" onClick={()=>{setSelect('modulo')}} className={`flex items-center px-4 py-3 ${select === 'modulo' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
           <MdCategory size={20} className="mr-3" />
           <span>Módulos</span>
         </a>
+        ): <div></div>}
+        
+        {userType === 'operator' ? (
         <a href="#" onClick={()=>{setSelect('pagamentos')}} className={`flex items-center px-4 py-3 ${select === 'pagamentos' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
           <MdPayment size={20} className="mr-3" />
           <span>Pagamentos</span>
         </a>
+        ): <div></div>}
         <div className="px-4 py-2 mt-6 text-xs font-semibold text-gray-400 uppercase">Configurações</div>
-        <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
-          <Settings size={20} className="mr-3" />
-          <span>Configurações</span>
-        </a>
         <a href="#" onClick={logout} className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors mt-auto">
           <LogOut size={20} className="mr-3" />
           <span>Sair</span>
@@ -96,7 +111,7 @@ const AdminPanel = () => {
       <div className="p-4 mt-auto">
         <div className="bg-gray-800 p-3 rounded-lg">
           <p className="text-xs text-gray-400">Logado como</p>
-          <p className="font-medium">Admin Desportivo</p>
+          <p className="font-medium">{userType}</p>
         </div>
       </div>
     </>
@@ -266,7 +281,11 @@ const AdminPanel = () => {
           </Card>
         </main>
         )}
-
+      
+      {/*Resevas Content*/}  
+      {select === 'reservations' && (
+        <ManageReservations/>
+        )}
       {/*Usuário Content*/}
       {select === 'users' && (
         <ManageUsers/>

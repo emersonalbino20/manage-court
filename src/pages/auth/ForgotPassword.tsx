@@ -10,47 +10,48 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from 'react-router-dom';
 import LOGO from '@/assets/images/LOGO.png';
+import { usePostForgotPassword } from '@/api/userQuery';
 
 // Zod schema for email validation
 const forgotPasswordSchema = z.object({
   email: z.string().email("Por favor, insira um email válido")
 });
 
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
 const ForgotPassword = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const form = useForm({
+  const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
     },
   });
 
-  const onSubmit = (data: { email: string }) => {
-    // Here you would typically call an API to send password reset request
-    console.log("Password reset requested for:", data);
-    
-    // Example of how you might send the data
-    const resetData = {
-      email: data.email
-    };
+  const { mutate, isLoading } = usePostForgotPassword();
 
-    try {
-      // Show success message
-      alert("Um link de redefinição de senha foi enviado para o seu email.");
-      // Close dialog and navigate back to login
-      setIsDialogOpen(false);
-      navigate("/login");
-    } catch (error) {
-      console.error("Erro ao solicitar redefinição de senha:", error);
-      alert("Ocorreu um erro. Por favor, tente novamente.");
-    }
-  };
+  const onSubmit = (data: ForgotPasswordFormData) => {
+    mutate(data, {
+      onSuccess: (response) => {
+        console.log(response);
+        form.reset();
+        // Optionally add success handling, like showing a success message or redirecting
+        setIsDialogOpen(false);
+      },
+      onError: (error: any) => {
+        // Handle error more specifically
+        const errorMsg = error.response?.data?.message || "Erro ao redefinir senha";
+        setErrorMessage(errorMsg);
+        setIsDialogOpen(true);
+      }
+    });
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
-      {/* Logo e nome do sistema */}
       <div className="flex flex-col items-center space-x-3 text-md sm:text-xl md:text-2xl font-bold text-green-700">
         <img 
           src={LOGO} 
@@ -70,7 +71,13 @@ const ForgotPassword = () => {
           </DialogHeader>
           
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                form.handleSubmit(onSubmit)();
+              }} 
+              className="space-y-4"
+            >
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-gray-700">Email</Label>
                 <FormField
@@ -90,11 +97,18 @@ const ForgotPassword = () => {
                 />
               </div>
               
+              {errorMessage && (
+                <div className="text-red-500 text-sm text-center">
+                  {errorMessage}
+                </div>
+              )}
+              
               <Button 
                 type="submit" 
+                disabled={isLoading}
                 className="w-full bg-green-600 hover:bg-green-700 text-white"
               >
-                Enviar Link de Redefinição
+                {isLoading ? "Enviando..." : "Enviar Link de Redefinição"}
               </Button>
             </form>
           </Form>

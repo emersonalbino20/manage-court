@@ -14,7 +14,8 @@ import {
   usePostCourt,
   usePatchFields,
   usePutCourt,
-  useGetCourtsQuery
+  useGetCourtsQuery,
+  usePostImage
 } from '@/api/courtQuery';
 import {
   useGetCourtsTypeQuery
@@ -99,7 +100,6 @@ const formCourt = useForm({
     patchFields({ id: id, isDeleted: true }, {
       onSuccess: () => {
         setIsSuccess(true);
-
         setFeedbackMessage("A quadra foi deletada com sucesso!");
         setDialogOpen(true);
       },
@@ -127,7 +127,7 @@ const formCourt = useForm({
   };
 
   const [thumbnailUrls, setThumbnailUrls] = useState([]);
-
+    const { mutate: mutateImage } = usePostImage();
    function submitCourt(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
     event?.preventDefault(); 
 
@@ -138,7 +138,25 @@ const formCourt = useForm({
     };
 
     if (modoEdicao) {
-      
+      mutateImage({fieldType: data.id, url: data.thumbnailUrl}, {
+          onSuccess: (response) => {
+          setIsSuccess(true);
+          setFeedbackMessage("A quadra foi atualizada com sucesso!");
+          setDialogOpen(true);
+          formCourt.reset();
+          setActiveTab('listar');
+        },
+        onError: (error) => {
+          console.log(data.id)
+          setIsSuccess(false);
+          setErro(error);
+          setFeedbackMessage("Não foi possível atualizar a quadra. Verifique seus dados e tente novamente.");
+          setDialogOpen(true);
+          setModoEdicao(true);
+          setActiveTab('cadastrar');
+        }
+      }
+      );/*
       putCourt(data, {
         onSuccess: (response) => {
           setIsSuccess(true);
@@ -157,8 +175,10 @@ const formCourt = useForm({
           setActiveTab('cadastrar');
         }
       });
-      setModoEdicao(false);
+      setModoEdicao(false);*/
     } else {
+
+
       const value = sendCoinBeck(data?.hourlyRate);
       mutateCourt({ fieldTypeId: data?.fieldTypeId,
                     name: data?.name,

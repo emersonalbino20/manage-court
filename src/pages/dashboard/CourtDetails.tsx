@@ -154,6 +154,10 @@ const handleDateSelect = (date) => {
         setCurrentImageIndex((prevIndex) => prevIndex === images.length - 1 ? 0 : prevIndex + 1 ); 
     }; 
 
+    const formatTime = (timeString) => {
+    return timeString ? timeString.slice(0, 5) : '';
+    };
+
     return ( 
         <div className="min-h-screen bg-white"> 
             <header className="bg-white border-b border-gray-200 fixed w-full top-0 z-50"> 
@@ -227,7 +231,7 @@ const handleDateSelect = (date) => {
                                         setAvailableTimeSlotsOpen(false); 
                                     }} > 
                                         <div> 
-                                            <p className="font-medium">{horario.startTime} - {horario.endTime}</p> 
+                                            <p className="font-medium">{horario.startTime.substring(0, 5)} - {horario.endTime.substring(0, 5)}</p> 
                                         </div> 
                                         <Badge variant="outline" className="text-green-700">Disponível</Badge> 
                                     </div> 

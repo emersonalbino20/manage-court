@@ -26,12 +26,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useGetProvincesQuery } from '@/api/provinceQuery';
 import { useGetCitiesQuery } from '@/api/cityQuery';
 import { useGetCourtsTypeQuery } from '@/api/courtQuery';
-import { useGetCourtsQuery } from '@/api/courtQuery';
+import { useGetCourtsQuery, useGetImagesId } from '@/api/courtQuery';
 import { receiveCentFront } from '@/utils/methods';
 import { useAuth } from "./../hooks/AuthContext";
 import { format, parse, isBefore, startOfDay } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { getCurrentAngolaDate,  formatToAngolaTime, convertToUtc} from '@/utils/methods'
+import FieldImageGallery from './FieldImageGallery'
 
 const ContentHome = () => {
 
@@ -67,7 +68,7 @@ const ContentHome = () => {
     const { data: cityData } = useGetCitiesQuery();
     const { data: typeData } = useGetCourtsTypeQuery();
     const { data: courtData } = useGetCourtsQuery();
-
+    //const { data: coutImages} = useGetImagesId();
     const handleSearch = (event) => {
       setSearchTerm(event.target.value);
     };
@@ -110,6 +111,7 @@ const ContentHome = () => {
       
       return true;
     }) || [];
+    //const IMG = 'http://localhost:3000/public/uploads/images/bfb09eff-43f3-4434-9a5a-7f3caaf9a47a.jpg'
 
     return (
       <main className="min-h-screen bg-white">
@@ -334,11 +336,17 @@ const ContentHome = () => {
                     return (
                       <Card key={product.id} className="overflow-hidden p-0 border border-gray-200 hover:shadow-lg transition-shadow duration-300">
                         <div className="relative h-0 pt-[75%]">
-                          <img 
-                            src={product.thumbnailUrl} 
-                            alt={product.name}
-                            className="absolute inset-0 w-full h-full object-cover"
-                          />
+                        {product.thumbnailUrl && ( // Adicione uma verificação condicional
+                        <img 
+                         src={product.thumbnailUrl} 
+                         alt={product.name}
+                         onError={(e) => {
+                         e.target.style.display = 'none';
+                          console.error('Erro ao carregar imagem:', product.thumbnailUrl);
+                       }}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                      )}
                         </div>
                         <CardContent className="p-4">
                           <h3 className="font-medium text-gray-900 mb-1">{product.name}</h3>

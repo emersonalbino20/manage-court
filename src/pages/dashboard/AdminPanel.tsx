@@ -8,7 +8,7 @@ import ManageUsers from '@/layouts/ManageUsers'
 import ManageCourt from '@/layouts/ManageCourt'
 import ManageSettings from '@/layouts/ManageSettings'
 import ManageReservations from '@/layouts/ManageReservations'
-import PaymentMethods from '@/layouts/PaymentMethods'
+import ManagePayments from '@/layouts/ManagePayments'
 import { useGetUsersQuery } from '@/api/userQuery';
 import { MdPayment } from "react-icons/md";
 import { useAuth } from "@/hooks/AuthContext";
@@ -111,7 +111,7 @@ const AdminPanel = () => {
       <div className="p-4 mt-auto">
         <div className="bg-gray-800 p-3 rounded-lg">
           <p className="text-xs text-gray-400">Logado como</p>
-          <p className="font-medium">{userType}</p>
+          <p className="font-medium">{userType === 'administrator' ? 'Admin' : 'Operador'}</p>
         </div>
       </div>
     </>
@@ -303,7 +303,7 @@ const AdminPanel = () => {
 
       {/*Payments Content*/}
       {select === 'pagamentos' && (
-        <PaymentMethods/>
+        <ManagePayments/>
           )}
       </div>
     </div>

@@ -48,6 +48,15 @@ export const auxPostCourtAvailabilities = (data) => {
     });
 };
 
+export const auxPostImage = (data) => {
+  return axios.post(`http://localhost:3000/field-images/${data.fieldType}`, {"url": data.url}, {
+      headers: {
+        Authorization: `Bearer ${token}`, 
+        "Content-Type": "application/json",
+      },
+    });
+};
+
 /* Patch */
 export const auxPatchFields = (data) => {
   return axios.patch(`http://localhost:3000/fields/${data.id}`, {
@@ -109,6 +118,21 @@ export const usePostCourt = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fields'] });
       console.log('success');
+    },
+    onError: (error) => {
+        console.log(error);
+    }
+  });
+  return { mutate, isLoading };
+};
+
+export const usePostImage = () => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading } = useMutation({
+    mutationFn: auxPostImage,
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['images'] });
+      console.log(response);
     },
     onError: (error) => {
         console.log(error);
@@ -241,9 +265,18 @@ const currentDate = new Date().toISOString().split('T')[0]
 export const useGetCourtIdAvailabilities = (fieldId, day) => {
   const { data, isFetched } = useQuery({
     queryKey: ['field-availability', fieldId, day],
-    queryFn: () => axios.get(`http://localhost:3000/field-availabilities/${fieldId}?day=${day}&excludeReserved=true`),
+    queryFn: () => axios.get(`http://localhost:3000/field-availabilities/${fieldId}?day=${day}&excludeReserved=false`),
     enabled: !!day,
   });
 
+  return { data, isFetched };
+};
+
+export const useGetImagesId = (fieldId) => {
+  const { data, isFetched } = useQuery({
+    queryKey: ['fields-images', fieldId],
+    queryFn: () => axios.get(`http://localhost:3000/field-images/${fieldId}`),
+    enabled: !!fieldId,
+  });
   return { data, isFetched };
 };

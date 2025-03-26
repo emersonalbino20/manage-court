@@ -49,10 +49,11 @@ const CourtDetails = () => {
     const typeField = typeData?.data?.data?.find(t => t.id === courtData?.data?.data?.fieldType.id); 
     const price = receiveCentFront(courtData?.data?.data.hourlyRate); 
     const { data: courtAvailabilities } = useGetCourtIdAvailabilities(id); 
+    console.log(courtAvailabilities)
     const [isMenuOpen, setIsMenuOpen] = useState(false); 
     const [activeCategory, setActiveCategory] = useState('agendar'); 
     const categories = [ 
-        { id: 'agendar', name: 'Agendar' }, 
+        id ? { id: 'agendar', name: 'Agendar' } : {}, 
         token ? {id: 'agendadas', name: 'Quadras Agendadas'} : {} , 
     ]; 
     const [isReservaDialogOpen, setIsReservaDialogOpen] = useState(false); 

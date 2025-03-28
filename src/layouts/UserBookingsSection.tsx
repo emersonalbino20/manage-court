@@ -125,12 +125,12 @@ const UserBookingsSection = () => {
             const court_data = courts?.data.data.fields.find(p => p.id === booking?.fieldId);
             const province = provinceData?.data?.data?.find(p => p.id === court_data?.address.provinceId);
             const city = cityData?.data?.data?.find(p => p.id === court_data?.address.cityId);
-            
+            console.log(court_data)
             return (
             <Card key={booking.id} className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
               <div className="relative h-0 pt-[52%]">
                 <img 
-                  src={Volei_1} 
+                  src={court_data.thumbnailUrl} 
                   alt={"Nothing"}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
@@ -156,7 +156,7 @@ const UserBookingsSection = () => {
                 </div>
                 <div className="mt-3 text-lg font-bold text-green-700">Kz {receiveCentFront(booking.price)}</div>
                 <div className="mt-4 space-y-2">
-                  {booking.status === 'cancelled' ? (
+                  {booking.status === 'cancelled' || booking.status === 'confirmed' ? (
                     ''
                     ) :
                   <Button 

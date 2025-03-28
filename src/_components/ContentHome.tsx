@@ -336,17 +336,11 @@ const ContentHome = () => {
                     return (
                       <Card key={product.id} className="overflow-hidden p-0 border border-gray-200 hover:shadow-lg transition-shadow duration-300">
                         <div className="relative h-0 pt-[75%]">
-                        {product.thumbnailUrl && ( // Adicione uma verificação condicional
                         <img 
                          src={product.thumbnailUrl} 
                          alt={product.name}
-                         onError={(e) => {
-                         e.target.style.display = 'none';
-                          console.error('Erro ao carregar imagem:', product.thumbnailUrl);
-                       }}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                      )}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
                         </div>
                         <CardContent className="p-4">
                           <h3 className="font-medium text-gray-900 mb-1">{product.name}</h3>

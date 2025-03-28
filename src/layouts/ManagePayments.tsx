@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import FeedbackDialog from '@/_components/FeedbackDialog';
-import { useGetUserPaymentsQuery, usePatchPaymentStatusQuery } from '@/api/paymentQuery';
+import { useGetPaymentsQuery, usePatchPaymentStatusQuery } from '@/api/paymentQuery';
 import { useAuth } from "@/hooks/AuthContext";
 import { receiveCentFront } from '@/utils/methods';
 import { MdPayment } from "react-icons/md";
@@ -32,8 +32,8 @@ const ManagePayments = () => {
   const [erro, setErro] = useState('');
 
   // Fetch payments query
-  const { data: paymentsData, isLoading, error } = useGetUserPaymentsQuery();
-  console.log(paymentsData)
+  const { data: paymentsData, isLoading, error } = useGetPaymentsQuery();
+  console.log("Pagamentos:",paymentsData)
 
   // Patch payment status mutation
   const { mutate: patchPaymentStatus } = usePatchPaymentStatusQuery();

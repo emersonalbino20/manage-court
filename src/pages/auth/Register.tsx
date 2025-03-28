@@ -36,7 +36,7 @@ const Account = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
-
+  const [erro, setErro] = useState('');
   const { mutate, isLoading } = usePostClient();
 
   // Função modificada para prevenir explicitamente o comportamento padrão
@@ -58,6 +58,7 @@ const Account = () => {
       },
       onError: (error) => {
         console.error("Erro ao cadastrar usuário:", error);
+        setErro(error);
         setIsSuccess(false);
         setFeedbackMessage("Não foi possível criar sua conta. Verifique seus dados e tente novamente.");
         setDialogOpen(true);
@@ -220,6 +221,7 @@ const Account = () => {
         onClose={handleCloseDialog}
         success={isSuccess}
         message={feedbackMessage}
+        errorData={erro}
       />
     </div>
   );

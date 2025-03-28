@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-const token = localStorage.getItem("token");
+
 //Auxilary Functions
 /* Post */
 export const auxPostClient = (data) => {
@@ -9,9 +9,10 @@ export const auxPostClient = (data) => {
 };
 
 export const auxPostUsers = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.post(`http://localhost:3000/users/`, data, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });
@@ -26,14 +27,6 @@ export const auxPostForgotPassword = (data) => {
   return axios.post(`http://localhost:3000/auth/forgot-password`, data);
 };
 
-/* Put */
-export const auxPutUser = (data) => {
-  return axios.put(`http://localhost:3000/users/${data.id}`, {
-    inicio: data.inicio,
-    termino: data.termino,
-    matriculaAberta: data.matriculaAberta,
-  },);
-};
 
 //main functions
 export const usePostClient = () => {
@@ -120,10 +113,10 @@ export const useGetUsersQuery = () => {
     return useQuery({
     queryKey: ['users'],
     queryFn: () => {
-      const token = localStorage.getItem('token');
+      const mytoken = localStorage.getItem("token");
       return axios
         .get('http://localhost:3000/users', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${mytoken}` }
         })
         .then(response => response.data);
     }

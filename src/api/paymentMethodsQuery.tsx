@@ -6,9 +6,10 @@ const token = localStorage.getItem("token");
 //Auxilary Functions
 /* Post */
 export const auxPostPaymentMethods = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.post(`http://localhost:3000/payment-methods/`, data, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });
@@ -16,9 +17,10 @@ export const auxPostPaymentMethods = (data) => {
 
 /* Put */
 export const auxPutPaymentMethods = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.put(`http://localhost:3000/payment-methods/${data.id}`, data,  {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });

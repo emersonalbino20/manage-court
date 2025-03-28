@@ -95,7 +95,7 @@ const AdminPanel = () => {
         </a>
         ): <div></div>}
         
-        {userType === 'operator' ? (
+        {userType === 'operator' || userType === 'administrator' ? (
         <a href="#" onClick={()=>{setSelect('pagamentos')}} className={`flex items-center px-4 py-3 ${select === 'pagamentos' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
           <MdPayment size={20} className="mr-3" />
           <span>Pagamentos</span>

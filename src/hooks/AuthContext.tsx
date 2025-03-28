@@ -86,7 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
         
         setToken(accessToken);
         setUser(decodedToken.user);
-        
+        console.log(decodedToken.user)
         localStorage.setItem("token", accessToken);
         localStorage.setItem("user", JSON.stringify(decodedToken.user));
         
@@ -111,6 +111,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
     setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
     navigate("/login");
   };
 

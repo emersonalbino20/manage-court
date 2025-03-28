@@ -21,9 +21,10 @@ const handleImageUpload = async (files: File[]) => {
 
     try {
       // Upload para a rota de uploads
+      const mytoken = localStorage.getItem("token");
       const response = await axios.post('http://localhost:3000/uploads/images', formData, {
         headers: {
-          'Authorization': `Bearer ${token}`, 
+          'Authorization': `Bearer ${mytoken}`, 
           'Content-Type': 'multipart/form-data'
         }
       });

@@ -3,19 +3,21 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sendCoinBeck } from '@/utils/methods';
 import axios from 'axios';
 const token = localStorage.getItem("token");
-
+console.log(token)
 //Auxilary Functions
 /* Post */
 export const auxPostCourtType = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.post(`http://localhost:3000/field-types/`, data, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });
 };
 
 export const auxPostCourt = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.post(`http://localhost:3000/fields/`,{ fieldTypeId: data?.fieldTypeId,
       name: data?.name,
       description: data?.description,
@@ -30,28 +32,30 @@ export const auxPostCourt = (data) => {
       thumbnailUrl: data?.thumbnailUrl
       }, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     })}
 
 export const auxPostCourtAvailabilities = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.post(`http://localhost:3000/field-availabilities/${data.fieldId}`, {
     day: data.day,
     startTime: data.startTime,
     endTime: data.endTime
   },{
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });
 };
 
 export const auxPostImage = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.post(`http://localhost:3000/field-images/${data.fieldType}`, {"url": data.url}, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });
@@ -59,11 +63,12 @@ export const auxPostImage = (data) => {
 
 /* Patch */
 export const auxPatchFields = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.patch(`http://localhost:3000/fields/${data.id}`, {
   isDeleted: data?.isDeleted
 },{
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });
@@ -71,6 +76,7 @@ export const auxPatchFields = (data) => {
 
 /* Put */
 export const auxPutCourt = (data) => {
+  const mytoken = localStorage.getItem("token");
   const value = sendCoinBeck(data?.hourlyRate);
   return axios.put(`http://localhost:3000/fields/${data.id}`,{ fieldTypeId: data?.fieldTypeId,
       name: data?.name,
@@ -86,25 +92,27 @@ export const auxPutCourt = (data) => {
       thumbnailUrl: data?.thumbnailUrl
       }, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });
 };
 
 export const auxPutCourtType = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.put(`http://localhost:3000/field-types/${data.id}`, data, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     })
 };
 
 export const auxPutCourtAvailabilities = (data) => {
-  return axios.put(`http://localhost:3000/field-availabilities/${data.id}?excludeReserved=true`, data, {
+  const mytoken = localStorage.getItem("token");
+  return axios.put(`http://localhost:3000/field-availabilities/${data.id}`, data, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });

@@ -6,9 +6,10 @@ const token = localStorage.getItem("token");
 //Auxilary Functions
 /* Post */
 export const auxPostCity = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.post(`http://localhost:3000/cities/`, data, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });

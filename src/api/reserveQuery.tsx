@@ -6,9 +6,10 @@ const token = localStorage.getItem("token");
 //Auxilary Functions
 /* Post */
 const auxPostReserve = (data) => {
-  return axios.post(`http://localhost:3000/field-reservations/${data.fieldId}`, data, {
+  const mytoken = localStorage.getItem("token");
+  return axios.post(`http://localhost:3000/field-reservations/${data.fieldId}`, {fieldAvailabilityId: data.fieldAvailabilityId, paymentMethodId: data.paymentMethodId}, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });
@@ -16,28 +17,31 @@ const auxPostReserve = (data) => {
 
 /* Patch */
 const auxPatchReserve = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.patch(`http://localhost:3000/field-reservations/${data.id}`, data,  {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     })};
 
 /* Patch */
 export const auxPatchCancelReservationClient = (data) => {
+  const mytoken = localStorage.getItem("token");
   return axios.patch(`http://localhost:3000/me/field-reservations/${data.id}/cancel`, {status: data.status,
   cancellationReason: data.cancellationReason}, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });
 };
 
 export const auxPatchCancelReservation = (data) => {
-  return axios.patch(`http://localhost:3000/me/field-reservations/${data.id}/cancel`, data, {
+  const mytoken = localStorage.getItem("token");
+  return axios.patch(`http://localhost:3000/field-reservations/${data.id}`, {status: data.status, cancellationReason: data.cancellationReason}, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${mytoken}`, 
         "Content-Type": "application/json",
       },
     });
@@ -46,10 +50,11 @@ export const auxPatchCancelReservation = (data) => {
 //main functions
 export const usePostReserve = () => {
   const queryClient = useQueryClient();
+  const mytoken = localStorage.getItem("token");
   const { mutate, isLoading } = useMutation({
     mutationFn: auxPostReserve,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['client-reservations'] });
+      queryClient.invalidateQueries({ queryKey: ['client-reservations', mytoken] });
       console.log('success');
     },
     onError: (error) => {
@@ -74,13 +79,13 @@ export const usePatchFields = () => {
 };
 
 export const useGetClientResevationsQuery = () => {
+    const mytoken = localStorage.getItem("token");
     return useQuery({
-    queryKey: ['client-reservations'],
+    queryKey: ['client-reservations', mytoken],
     queryFn: () => {
-      const token = localStorage.getItem('token');
       return axios
         .get('http://localhost:3000/me/field-reservations', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${mytoken}` }
         })
         .then(response => response.data);
     }
@@ -92,16 +97,29 @@ export const useGetUserResevationsQuery = () => {
     return useQuery({
     queryKey: ['user-reservations'],
     queryFn: () => {
-      const token = localStorage.getItem('token');
+      const mytoken = localStorage.getItem("token");
       return axios
         .get('http://localhost:3000/field-reservations', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${mytoken}` }
         })
         .then(response => response.data);
     }
   });
 };
 
+export const usePatchCancelReservation = () => {
+  const queryClient = useQueryClient();
+  const { mutate, variables } = useMutation({
+    mutationFn: auxPatchCancelReservation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-reservations']});
+    },
+    onError: (error) => {
+      console.log(error, variables)
+    }
+  });
+  return { mutate };
+};
 
 //Patch
 export const usePatchCancelReservationClient = () => {
@@ -118,16 +136,3 @@ export const usePatchCancelReservationClient = () => {
   return { mutate };
 };
 
-export const usePatchCancelReservation = () => {
-  const queryClient = useQueryClient();
-  const { mutate, variables } = useMutation({
-    mutationFn: auxPatchCancelReservation,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-reservations']});
-    },
-    onError: (error) => {
-      console.log(error, variables)
-    }
-  });
-  return { mutate };
-};

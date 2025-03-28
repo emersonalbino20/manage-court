@@ -14,9 +14,9 @@ export const schemeRegister = z
     .trim()
     .regex(passwordRegex, {
       message:
-        "A senha deve ter pelo menos 6 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.",
+        "Senha inválida",
     })
-    .max(255, "A senha deve ter no máximo 255 caracteres"),
+    .max(255, "Senha inválida"),
   confirmPassword: z.string().optional(),
   phone: z
     .string()

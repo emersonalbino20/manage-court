@@ -15,7 +15,10 @@ import { Textarea } from "@/components/ui/textarea";
 import FeedbackDialog from '@/_components/FeedbackDialog';
 import { useGetUserResevationsQuery, usePatchCancelReservation } from '@/api/reserveQuery';
 import { useAuth } from "@/hooks/AuthContext";
-import { receiveCentFront } from '@/utils/methods'
+import { receiveCentFront, formatToAngolaTime } from '@/utils/methods';
+import { useGetCourtsQuery, useGetCourtIdAvailabilities } from '@/api/courtQuery';
+import {useGetIdAvailabilities} from '@/api/reserveQuery';
+
 const ManageReservations = () => {
   // States for dialogs and feedback
   const { user, logout, token } = useAuth();
@@ -31,7 +34,12 @@ const ManageReservations = () => {
   const [erro, setErro] = useState('');
   // Fetch reservations query
   const { data: reservationsData, isLoading, error } = useGetUserResevationsQuery();
-  console.log(reservationsData)
+  const { data: courts } = useGetCourtsQuery();
+  const { data: reservations} = useGetUserResevationsQuery();
+  //const time_reservations = reservations?.data?.fieldReservations.find(r => r.id === reservation?.id);
+  
+  //console.log(time_reservations);
+
   // Patch reservation mutation
   const { mutate: patchReservation } = usePatchCancelReservation();
 
@@ -160,16 +168,20 @@ const ManageReservations = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {reservationsData?.data?.fieldReservations.map((reservation) => (
+                  {reservationsData?.data?.fieldReservations.map((reservation) => {
+                    const court_data = courts?.data.data.fields.find(p => p.id === reservation?.fieldId);
+                    const { data: time_reservations} = useGetIdAvailabilities(reservation?.fieldId);
+                    //const time = time_reservations?.data?.data?.fieldAvailabities?.find(p => p.id === reservation?.fieldId);
+                    return (
                     <tr key={reservation.id}>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        Indisponivel{/*reservation.fieldId*/}
+                        {court_data?.name}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        Indisponivel{/*new Date(reservation.fieldAvailability.day).toLocaleDateString('pt-BR')*/}
+                        {time_reservations?.data?.data?.fieldAvailabities?.startTime[0]}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        Indisponivel{/*`${reservation.fieldAvailability.startTime} - ${reservation.fieldAvailability.endTime}`*/}
+                        {time_reservations?.data?.data?.fieldAvailabities?.map(v=>v.startTime)} - {time_reservations?.data?.data?.fieldAvailabities?.map(v=>v.endTime)}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         Kz {receiveCentFront(reservation.price)}
@@ -203,7 +215,7 @@ const ManageReservations = () => {
                         )}
                       </td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
             </div>

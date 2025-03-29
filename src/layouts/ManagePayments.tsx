@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DollarSign, ShieldX, CheckCircle } from 'lucide-react';
+import { DollarSign, ShieldX, CheckCircle, Search, CalendarIcon, FilterIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog,
@@ -12,13 +12,33 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import FeedbackDialog from '@/_components/FeedbackDialog';
 import { useGetPaymentsQuery, usePatchPaymentStatusQuery } from '@/api/paymentQuery';
+import { useGetPaymentMethodsQuery } from '@/api/paymentMethodsQuery';
 import { useAuth } from "@/hooks/AuthContext";
 import { receiveCentFront } from '@/utils/methods';
 import { MdPayment } from "react-icons/md";
+import { useGetUsersQuery } from '@/api/userQuery';
 
 const ManagePayments = () => {
+  // Função para formatar a data atual no formato YYYY-MM-DD para o input
+  const formatCurrentDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // States for dialogs and feedback
   const { user, logout, token } = useAuth();
 
@@ -31,9 +51,18 @@ const ManagePayments = () => {
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [erro, setErro] = useState('');
 
+  // States for filters - usando a data atual como valor padrão para fromDate
+  const [fromDate, setFromDate] = useState(formatCurrentDate());
+  const [toDate, setToDate] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [filtersVisible, setFiltersVisible] = useState(false);
+
   // Fetch payments query
-  const { data: paymentsData, isLoading, error } = useGetPaymentsQuery();
-  console.log("Pagamentos:",paymentsData)
+  const { data: paymentsData, isLoading, error } = useGetPaymentsQuery(fromDate, toDate, statusFilter);
+  const { data: userData } = useGetUsersQuery();
+
+  const { data: methodsData } = useGetPaymentMethodsQuery();
+  //console.log(methodsData);
 
   // Patch payment status mutation
   const { mutate: patchPaymentStatus } = usePatchPaymentStatusQuery();
@@ -81,8 +110,8 @@ const ManagePayments = () => {
     if (paymentId) {
       patchPaymentStatus({
         id: paymentId,
-        status: "completed",
-        cancellationReason: ""
+        status: "success",
+        cancellationReason: "Pagamento confirmado com sucesso"
       }, {
         onSuccess: () => {
           setIsSuccess(true);
@@ -106,11 +135,32 @@ const ManagePayments = () => {
     setDialogOpen(false);
   };
 
+  // Toggle filters visibility
+  const toggleFilters = () => {
+    setFiltersVisible(!filtersVisible);
+  };
+
+  // Apply filters function - you'll connect this to your API later
+  const applyFilters = () => {
+    // This is just a placeholder for now
+    console.log("Applying filters:", { fromDate, toDate, statusFilter });
+    // You'll implement the actual API call here
+  };
+
+  // Reset filters
+  const resetFilters = () => {
+    setFromDate(formatCurrentDate()); // Resetar para a data atual, não para string vazia
+    setToDate('');
+    setStatusFilter('all');
+  };
+
   // Status translation
   const translateStatus = (status) => {
     const statusMap = {
       'pending': 'Pendente',
       'success': 'Concluído',
+      'Success': 'Concluído',
+      'failed': 'Falhou',
       'Failed': 'Falhou'
     };
     return statusMap[status] || status;
@@ -123,6 +173,72 @@ const ManagePayments = () => {
           <MdPayment size={20} className="mr-2" /> Pagamentos
         </h1>
       </div>
+
+      <Card className="mb-6">
+        <CardHeader className="p-4 flex flex-row items-center justify-between">
+          <CardTitle>Filtros</CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={toggleFilters}
+            className="flex items-center gap-1"
+          >
+            <FilterIcon size={16} />
+            {filtersVisible ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+          </Button>
+        </CardHeader>
+        {filtersVisible && (
+          <CardContent className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Data Inicial</label>
+                <div className="relative">
+                  <Input
+                    type="date"
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    className="pl-10"
+                  />
+                  <CalendarIcon size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Data Final</label>
+                <div className="relative">
+                  <Input
+                    type="date"
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                    className="pl-10"
+                  />
+                  <CalendarIcon size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Status</label>
+                <Select value={statusFilter} onValueChange={setStatusFilter} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos os status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="pending">Pendente</SelectItem>
+                    <SelectItem value="success">Concluído</SelectItem>
+                    <SelectItem value="failed">Falhou</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {/*<div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={resetFilters}>Limpar</Button>
+              <Button onClick={applyFilters} className="flex items-center gap-1">
+                <Search size={16} />
+                Aplicar Filtros
+              </Button>
+            </div>*/}
+          </CardContent>
+        )}
+      </Card>
 
       <Card>
         <CardHeader className="p-4">
@@ -139,7 +255,7 @@ const ManagePayments = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      ID da Reserva
+                      Cliente
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Método de Pagamento
@@ -159,13 +275,16 @@ const ManagePayments = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {paymentsData?.data?.payments.map((payment) => (
+                  {paymentsData?.data?.payments.map((payment) => {
+                    const users = userData?.data?.users?.find(u => u.id === payment?.clientId);
+                    const methods = methodsData?.data?.data?.find(m => m.id === payment?.paymentMethodId);
+                    return(
                     <tr key={payment.id}>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        {payment.fieldReservationId}
+                        {users?.name}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        {payment.paymentMethodId}
+                        {methods?.name}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         {new Date(payment.createdAt).toLocaleDateString('pt-BR')}
@@ -177,7 +296,7 @@ const ManagePayments = () => {
                         <span className={`
                           px-2 py-1 rounded-full text-xs font-medium
                           ${payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                            payment.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                            payment.status === 'completed' || payment.status === 'success' ? 'bg-green-100 text-green-800' : 
                             'bg-red-100 text-red-800'}
                         `}>
                           {translateStatus(payment.status)}
@@ -185,10 +304,10 @@ const ManagePayments = () => {
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-right">
                         {payment.status === 'pending' && (
-                          <>
+                          <div className="flex justify-end gap-2">
                             <button
                               onClick={() => openConfirmDialog(payment.id)}
-                              className="text-green-600 hover:text-green-800 flex items-center mr-2"
+                              className="text-green-600 hover:text-green-800 flex items-center"
                             >
                               <CheckCircle size={16} className="mr-1" /> Confirmar
                             </button>
@@ -198,11 +317,11 @@ const ManagePayments = () => {
                             >
                               <ShieldX size={16} className="mr-1" /> Cancelar
                             </button>
-                          </>
+                          </div>
                         )}
                       </td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
             </div>

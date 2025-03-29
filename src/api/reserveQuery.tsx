@@ -107,6 +107,16 @@ export const useGetUserResevationsQuery = () => {
   });
 };
 
+export const useGetIdAvailabilities = (fieldId) => {
+  const { data, isFetched } = useQuery({
+    queryKey: ['field-availability', fieldId],
+    queryFn: () => axios.get(`http://localhost:3000/field-availabilities/${fieldId}`),
+    enabled: !!fieldId,
+  });
+
+  return { data, isFetched };
+};
+
 export const usePatchCancelReservation = () => {
   const queryClient = useQueryClient();
   const { mutate, variables } = useMutation({

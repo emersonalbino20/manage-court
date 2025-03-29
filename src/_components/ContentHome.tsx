@@ -46,7 +46,7 @@ const ContentHome = () => {
     const [searchTerm, setSearchTerm] = useState('');
     
     const categories = [
-      { id: 'destaques', name: 'Todos' },
+      { id: 'destaques', name: 'Todas' },
       { id: 'Futebol', icon: <IoMdFootball />, name: 'Futebol' },
       { id: 'Basquete', icon: <FaBasketballBall />, name: 'Basquete' },
       { id: 'Futsal', icon: <FaTrophy />, name: 'Futsal' },
@@ -161,9 +161,9 @@ const ContentHome = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="cursor-pointer">
-                        <Link to={'/userbooking'}>
-                          <Heart className="mr-2 h-4 w-4" /> Minhas Reservas
+                      <DropdownMenuItem className="cursor-pointer font-bold text-gray-800 flex items-center">
+                        <Heart className="mr-2 h-4 w-4" /> <Link to={'/userbooking'}>
+                          Minhas Reservas
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600">
@@ -363,7 +363,7 @@ const ContentHome = () => {
                     variant="outline" 
                     className="mt-4"
                     onClick={() => {
-                      setActiveCategory('destaques');
+                      setActiveCategory('todas');
                       setSelectedLocation('');
                       setSelectedCity('');
                       setSelectedSportType('todas');

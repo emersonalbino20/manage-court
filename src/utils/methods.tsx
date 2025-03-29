@@ -5,6 +5,7 @@ export const formatToAngolaTime = (utcDate) => {
   const date = new Date(utcDate);
   return date.toLocaleString("pt-PT", { timeZone: "Africa/Luanda" });
 };
+
 export const getCurrentAngolaDate = () => {
   const now = new Date().toLocaleDateString("pt-PT", { 
     timeZone: "Africa/Luanda",
@@ -15,6 +16,7 @@ export const getCurrentAngolaDate = () => {
 
   return now.split("/").reverse().join("-"); // Formata para "YYYY-MM-DD"
 };
+
 //Enviar ao beck
 export const convertToUtc = (localDate) => {
   if (!localDate) return null;

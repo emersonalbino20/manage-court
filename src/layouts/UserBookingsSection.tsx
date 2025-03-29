@@ -7,8 +7,8 @@ import Volei_1 from '@/assets/images/court-volleyball.jpg';
 import {
   useGetClientResevationsQuery, usePatchCancelReservationClient
 } from '@/api/reserveQuery';
-import {useGetCourtsQuery} from '@/api/courtQuery';
-import {receiveCentFront, sendCoinBeck} from '@/utils/methods';
+import { useGetCourtsQuery } from '@/api/courtQuery';
+import { receiveCentFront, sendCoinBeck } from '@/utils/methods';
 import {
   useGetProvincesQuery
 } from '@/api/provinceQuery';
@@ -18,40 +18,8 @@ import {
 import FeedbackDialog from '@/_components/FeedbackDialog'; // Ajuste o caminho conforme necessário
 
 const UserBookingsSection = () => {
-  const [bookings, setBookings] = useState([
-    { 
-      id: 1, 
-      courtName: 'Quadra de Futebol', 
-      location: 'Kilamba Kiaxe - Avenida de Moçamedes', 
-      date: '18/03/2025', 
-      time: '15:00 - 16:00',
-      price: 'Kz 89.000,90',
-      image: Volei_1,
-      status: 'confirmado'
-    },
-    { 
-      id: 2, 
-      courtName: 'Quadra de Tênis', 
-      location: 'Talatona - Rua dos Coqueiros', 
-      date: '20/03/2025', 
-      time: '18:00 - 19:00',
-      price: 'Kz 59.000,90',
-      image: Volei_1,
-      status: 'confirmado'
-    },
-    { 
-      id: 3, 
-      courtName: 'Quadra de Basquete', 
-      location: 'Maianga - Avenida Comandante Valódia', 
-      date: '22/03/2025', 
-      time: '10:00 - 11:00',
-      price: 'Kz 189.000,90',
-      image: Volei_1,
-      status: 'pendente'
-    }
-  ]);
+  
   const { data: myResevations } = useGetClientResevationsQuery();
-  console.log(myResevations)
   const { data: courts } = useGetCourtsQuery();
   const { data: provinceData } = useGetProvincesQuery();
   const { data: cityData } = useGetCitiesQuery();
@@ -129,11 +97,12 @@ const UserBookingsSection = () => {
             return (
             <Card key={booking.id} className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
               <div className="relative h-0 pt-[52%]">
-                <img 
-                  src={court_data.thumbnailUrl} 
-                  alt={"Nothing"}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
+              {court_data?.thumbnailUrl &&
+                (<img 
+                    src={court_data?.thumbnailUrl} 
+                    alt={"Nothing"}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />)}
                 <div className="absolute top-2 right-2">
                   {getStatusBadge(booking.status)}
                 </div>
@@ -143,7 +112,7 @@ const UserBookingsSection = () => {
                 <div className="space-y-2 text-sm text-gray-700">
                   <div className="flex items-center">
                     <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{city.name} - {province.name}</span>
+                    <span>{city?.name} - {province?.name}</span>
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-gray-500" />

@@ -41,6 +41,8 @@ import {
 import CourtAvailability from '@/_components/CourtAvailability';
 import { MdOutlineWatchLater } from "react-icons/md";
 import ImageUploader from '@/_components/ImageUploader';
+import { Image } from 'lucide-react';
+import FieldImagesDialog from '@/_components/FieldImagesDialog';
 
 const ManageCourt = () => {
 
@@ -77,6 +79,22 @@ const formCourt = useForm({
   // Estados para o diálogo de confirmação de exclusão
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [quadraParaExcluir, setQuadraParaExcluir] = useState(null);
+
+  // Add these state variables inside the ManageCourt component:
+  const [imagesDialogOpen, setImagesDialogOpen] = useState(false);
+  const [selectedFieldId, setSelectedFieldId] = useState(null);
+
+// Add this function inside the ManageCourt component:
+const openImagesDialog = (fieldId) => {
+  setSelectedFieldId(fieldId);
+  setImagesDialogOpen(true);
+};
+
+// Add this function inside the ManageCourt component:
+const closeImagesDialog = () => {
+  setImagesDialogOpen(false);
+  setSelectedFieldId(null);
+};
 
   const { data: typeData } = useGetCourtsTypeQuery();
   const { data: provinceData } = useGetProvincesQuery();
@@ -177,7 +195,6 @@ const formCourt = useForm({
       });
       setModoEdicao(false);*/
     } else {
-
 
       const value = sendCoinBeck(data?.hourlyRate);
       mutateCourt({ fieldTypeId: data?.fieldTypeId,
@@ -588,6 +605,14 @@ const handleCloseDialog = () => {
                         >
                           <MdOutlineWatchLater />
                         </button>
+
+                        <button
+                            onClick={() => openImagesDialog(quadra.id)}
+                            className="text-purple-600 hover:text-purple-800 ml-3"
+                            title="Gerenciar Imagens"
+                          >
+                            <Image size={16} />
+                          </button>
                       </td>
                     </tr>
                   )})}
@@ -609,7 +634,13 @@ const handleCloseDialog = () => {
         message={feedbackMessage}
         errorData={erro}
       />
-
+      
+      {/* Field Images Dialog */}
+      <FieldImagesDialog 
+        isOpen={imagesDialogOpen}
+        onClose={closeImagesDialog}
+        fieldId={selectedFieldId}
+      />
       {/* Confirmation Dialog for Delete */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>

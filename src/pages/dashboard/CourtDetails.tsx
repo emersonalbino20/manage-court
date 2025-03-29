@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Link, useNavigate } from 'react-router-dom';
 import { format, parse, isBefore, startOfDay } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Ícones
 import { 
@@ -59,11 +60,15 @@ import { getCurrentAngolaDate, formatToAngolaTime, convertToUtc, receiveCentFron
 import { useAuth } from "@/hooks/AuthContext";
 import { Navigation } from "swiper/modules";
 
+import {useFieldImages} from '@/api/fieldImagesQuery';
+
 const CourtDetails = () => { 
     const { user, logout, token} = useAuth(); 
 
     const [searchParams] = useSearchParams(); 
     const id = searchParams.get("id"); 
+    const { data: cover, isLoading, error } = useFieldImages(id);
+    
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [availableTimeSlotsOpen, setAvailableTimeSlotsOpen] = useState(false);
     const [erro, setErro] = useState('');
@@ -146,18 +151,20 @@ const handleDateSelect = (date) => {
         Futebol_2, 
     ]; 
 
+
     const goToPrevious = () => { 
-        setCurrentImageIndex((prevIndex) => prevIndex === 0 ? images.length - 1 : prevIndex - 1 ); 
+        setCurrentImageIndex((prevIndex) => prevIndex === 0 ? cover?.data?.fieldImages?.length - 1 : prevIndex - 1 ); 
     }; 
 
     const goToNext = () => { 
-        setCurrentImageIndex((prevIndex) => prevIndex === images.length - 1 ? 0 : prevIndex + 1 ); 
+        setCurrentImageIndex((prevIndex) => prevIndex === cover?.data?.fieldImages?.length - 1 ? 0 : prevIndex + 1 ); 
     }; 
 
     const formatTime = (timeString) => {
     return timeString ? timeString.slice(0, 5) : '';
     };
 
+    
     return ( 
         <div className="min-h-screen bg-white"> 
             <header className="bg-white border-b border-gray-200 fixed w-full top-0 z-50"> 
@@ -265,11 +272,11 @@ const handleDateSelect = (date) => {
                             <Card className="overflow-hidden p-0 border border-gray-200"> 
                                 {/* Image carousel */} 
                                 <div className="relative pt-[60%]"> 
-                                    {images.map((img, index) => ( 
+                                    {cover?.data?.fieldImages?.map((img, index) => ( 
                                         <div key={index} className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${ 
                                             index === currentImageIndex ? 'opacity-100' : 'opacity-0 pointer-events-none' 
                                         }`} > 
-                                            <img src={img} alt={`Quadra de Futebol ${index + 1}`} className="absolute inset-0 w-full h-full object-cover" /> 
+                                            <img src={img.url} alt={`Quadra de Futebol ${index + 1}`} className="absolute inset-0 w-full h-full object-cover" /> 
                                         </div> 
                                     ))} 
                                     {/* Navigation arrows */} 

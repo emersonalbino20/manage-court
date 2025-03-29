@@ -2,7 +2,6 @@ import * as React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 const token = localStorage.getItem("token");
-console.log(token)
 //Auxilary Functions
 
 export const auxPatchCancelPayments = (data) => {
@@ -16,17 +15,30 @@ export const auxPatchCancelPayments = (data) => {
 };
 
 //Get
-export const useGetPaymentsQuery = () => {
-    const mytoken = localStorage.getItem("token");
-    return useQuery({
-    queryKey: ['payments', mytoken],
+export const useGetPaymentsQuery = (fromDate, toDate, status) => {
+  const mytoken = localStorage.getItem("token");
+  
+  // Construir a URL com os parâmetros de consulta apenas se estiverem definidos
+  let url = 'http://localhost:3000/payments/';
+  const params = new URLSearchParams();
+  
+  if (fromDate) params.append('fromDate', fromDate);
+  if (toDate) params.append('toDate', toDate);
+  if (status && status !== 'all') params.append('status', status);
+  
+  const queryString = params.toString();
+  const fullUrl = queryString ? `${url}?${queryString}` : url;
+  
+  return useQuery({
+    queryKey: ['payments', mytoken, fromDate, toDate, status],
     queryFn: () => {
       return axios
-        .get('http://localhost:3000/payments/', {
+        .get(fullUrl, {
           headers: { Authorization: `Bearer ${mytoken}` }
         })
         .then(response => response.data);
-    }
+    },
+    enabled: !!mytoken && (!!fromDate || !!toDate || (!!status && status !== 'all'))
   });
 };
 

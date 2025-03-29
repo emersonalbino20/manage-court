@@ -118,6 +118,16 @@ export const auxPutCourtAvailabilities = (data) => {
     });
 };
 
+export const auxDeleteCourtAvailabilities = (data) => {
+  const mytoken = localStorage.getItem("token");
+  return axios.delete(`http://localhost:3000/field-availabilities/${data}`, {
+      headers: {
+        Authorization: `Bearer ${mytoken}`, 
+        "Content-Type": "application/json",
+      },
+    });
+};
+
 //main functions
 export const usePostCourt = () => {
   const queryClient = useQueryClient();
@@ -200,8 +210,24 @@ export const usePutCourtAvailabilities = () => {
   const { mutate, isLoading, variables } = useMutation({
     mutationFn: auxPutCourtAvailabilities,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['field-availability', variables.fieldId] });
+      queryClient.invalidateQueries({ queryKey: ['field-availability'] });
       console.log('success');
+    },
+    onError: (error) => {
+        console.log(variables);
+        console.log(error);
+    }
+  });
+  return { mutate };
+};
+
+export const useDeleteCourtAvailabilities = () => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, variables } = useMutation({
+    mutationFn: auxDeleteCourtAvailabilities,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-availability'] });
+      console.log(variables);
     },
     onError: (error) => {
         console.log(variables);
@@ -272,7 +298,7 @@ const currentDate = new Date().toISOString().split('T')[0]
 
 export const useGetCourtIdAvailabilities = (fieldId, day) => {
   const { data, isFetched } = useQuery({
-    queryKey: ['field-availability', fieldId, day],
+    queryKey: ['field-availability'],
     queryFn: () => axios.get(`http://localhost:3000/field-availabilities/${fieldId}?day=${day}&excludeReserved=false`),
     enabled: !!day,
   });

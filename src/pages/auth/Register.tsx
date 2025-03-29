@@ -16,8 +16,10 @@ import FeedbackDialog from '@/_components/FeedbackDialog'; // Ajuste o caminho c
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useSearchParams } from "react-router-dom";
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from "./../../hooks/AuthContext";
 
 const Account = () => {
+  const { login } = useAuth();
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
   const form = useForm({
@@ -53,7 +55,7 @@ const Account = () => {
         setIsSuccess(true);
         setFeedbackMessage("Sua conta foi criada com sucesso! Você já pode acessar a plataforma AgendaQuadra.");
         setDialogOpen(true);
-        navigate("/login")
+        //login(response);
         form.reset();
       },
       onError: (error) => {
@@ -72,6 +74,8 @@ const Account = () => {
   const handleCloseDialog = () => {
     setDialogOpen(false);
   };
+  const [showPassword, setShowPassword] = useState(false);
+const [password, setPassword] = useState('');
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">

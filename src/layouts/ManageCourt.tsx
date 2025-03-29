@@ -547,9 +547,6 @@ const handleCloseDialog = () => {
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Endereço
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Descrição
-                    </th>
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
                       Ações
                     </th>
@@ -575,13 +572,6 @@ const handleCloseDialog = () => {
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         {quadra.address?.street}
-                      </td>
-                      <td className="px-4 py-2">
-                        {quadra.description ? 
-                          (quadra.description.length > 50 ? 
-                            `${quadra.description.substring(0, 50)}...` : 
-                            quadra.description) : 
-                          '—'}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-right">
                         <button

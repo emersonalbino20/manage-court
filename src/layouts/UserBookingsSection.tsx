@@ -44,6 +44,7 @@ const UserBookingsSection = () => {
       onError: (error) => {
         setErro(error);
         setIsSuccess(false);
+        setDialogOpen(true);
         setFeedbackMessage("Erro ao cancelar a sua reserva");
         console.log(error);
       }})

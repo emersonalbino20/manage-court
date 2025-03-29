@@ -11,7 +11,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   usePostCourtAvailabilities,
   usePutCourtAvailabilities,
-  useGetCourtIdAvailabilities
+  useGetCourtIdAvailabilities,
+  useDeleteCourtAvailabilities // Nova query para deletar agendamentos
 } from '@/api/courtQuery';
 import { Link } from 'react-router-dom';
 import FeedbackDialog from '@/_components/FeedbackDialog';
@@ -54,6 +55,11 @@ const CourtAvailability = ({ulid}) => {
   const [erro, setErro] = useState('');
   const { mutate: mutatePostCourt } = usePostCourtAvailabilities();
   const { mutate: mutatePutCourt } = usePutCourtAvailabilities();
+  const { mutate: mutateDeleteCourt } = useDeleteCourtAvailabilities(); // Hook para deletar agendamento
+
+  // Estado para controlar o diálogo de confirmação de exclusão
+  const [deleteConfirmDialogOpen, setDeleteConfirmDialogOpen] = useState(false);
+  const [agendamentoToDelete, setAgendamentoToDelete] = useState(null);
 
   function submitCourt(data, event) {
     event?.preventDefault();
@@ -66,6 +72,7 @@ const CourtAvailability = ({ulid}) => {
         endTime: data.endTime
       }, {
         onSuccess: (response) => {
+          console.log(response)
           setIsSuccess(true);
           setFeedbackMessage("O agendamento foi editado com sucesso!");
           setDialogOpen(true);
@@ -121,6 +128,46 @@ const CourtAvailability = ({ulid}) => {
     formCourt.setValue("day", formattedDate);
     formCourt.setValue("startTime", agendamento.startTime);
     formCourt.setValue("endTime", agendamento.endTime);
+  };
+
+  // Função para mostrar o diálogo de confirmação de exclusão
+  const confirmDeleteAgendamento = (agendamento) => {
+    setAgendamentoToDelete(agendamento);
+    setDeleteConfirmDialogOpen(true);
+  };
+
+  // Função para executar a exclusão do agendamento após confirmação
+  const deleteAgendamento = () => {
+    if (agendamentoToDelete) {
+      console.log(agendamentoToDelete)
+      mutateDeleteCourt(agendamentoToDelete.id, {
+        onSuccess: () => {
+          setIsSuccess(true);
+          setFeedbackMessage("O agendamento foi excluído com sucesso!");
+          setDialogOpen(true);
+          setDeleteConfirmDialogOpen(false);
+          setAgendamentoToDelete(null);
+          
+          // Se o agendamento que está sendo editado for excluído, limpar o formulário
+          if (editandoTipo && editandoTipo.id === agendamentoToDelete.id) {
+            setEditandoTipo(null);
+            formCourt.reset({
+              day: todayFormatted,
+              startTime: "",
+              endTime: ""
+            });
+          }
+        },
+        onError: (error) => {
+          console.log(error);
+          setErro(error);
+          setIsSuccess(false);
+          setFeedbackMessage("Não foi possível excluir o agendamento.");
+          setDialogOpen(true);
+          setDeleteConfirmDialogOpen(false);
+        }
+      });
+    }
   };
 
   const handleDateSelect = (date) => {
@@ -268,6 +315,12 @@ const CourtAvailability = ({ulid}) => {
                             >
                               <Edit size={16} />
                             </button>
+                            <button
+                              onClick={() => confirmDeleteAgendamento(agendamento)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -292,6 +345,40 @@ const CourtAvailability = ({ulid}) => {
         message={feedbackMessage}
         errorData={erro}
       />
+
+      {/* Diálogo de confirmação de exclusão */}
+      <Dialog open={deleteConfirmDialogOpen} onOpenChange={setDeleteConfirmDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirmar exclusão</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>Tem certeza que deseja excluir este horário disponível?</p>
+            {agendamentoToDelete && (
+              <div className="mt-2 p-3 bg-gray-100 rounded-md">
+                <p><strong>Data:</strong> {format(parse(agendamentoToDelete.day, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy')}</p>
+                <p><strong>Horário:</strong> {agendamentoToDelete.startTime.substring(0, 5)} - {agendamentoToDelete.endTime.substring(0, 5)}</p>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setDeleteConfirmDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={deleteAgendamento}
+            >
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

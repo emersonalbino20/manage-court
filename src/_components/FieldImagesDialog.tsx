@@ -74,7 +74,8 @@ const FieldImagesDialog = ({ isOpen, onClose, fieldId }) => {
         },
       });
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      console.log(response)
       queryClient.invalidateQueries(['fieldImages', fieldId]);
     }
   });

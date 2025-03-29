@@ -151,12 +151,6 @@ const ManageReservations = () => {
                       Quadra
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Data
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Horário
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Preço
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -170,18 +164,10 @@ const ManageReservations = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {reservationsData?.data?.fieldReservations.map((reservation) => {
                     const court_data = courts?.data.data.fields.find(p => p.id === reservation?.fieldId);
-                    const { data: time_reservations} = useGetIdAvailabilities(reservation?.fieldId);
-                    //const time = time_reservations?.data?.data?.fieldAvailabities?.find(p => p.id === reservation?.fieldId);
                     return (
                     <tr key={reservation.id}>
                       <td className="px-4 py-2 whitespace-nowrap">
                         {court_data?.name}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        {time_reservations?.data?.data?.fieldAvailabities?.startTime[0]}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        {time_reservations?.data?.data?.fieldAvailabities?.map(v=>v.startTime)} - {time_reservations?.data?.data?.fieldAvailabities?.map(v=>v.endTime)}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         Kz {receiveCentFront(reservation.price)}

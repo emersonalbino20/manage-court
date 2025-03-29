@@ -8,6 +8,7 @@ import Register from '../pages/auth/Register';
 import CourtDetails from '../pages/dashboard/CourtDetails';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
+import ResetPassword from '../pages/auth/ResetPassword';
 import Booking from '../pages/dashboard/Booking';
 import UserBooking from '../layouts/UserBookingsSection';
 import AdminPanel from '../pages/dashboard/AdminPanel';
@@ -17,15 +18,17 @@ export function AppRoutes(): React.ReactElement {
   return (
     <Routes>
       {/* Rotas públicas */}
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
+      
+      
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/courtdetails" element={<CourtDetails />} />
       {/* Rotas protegidas */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<AdminPanel />} />
-        <Route path="/courtdetails" element={<CourtDetails />} />
         <Route path="/booking" element={<Booking />} />
         <Route path="/userbooking" element={<UserBooking />} />
       </Route>

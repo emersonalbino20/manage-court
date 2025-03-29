@@ -51,6 +51,6 @@ export function ProtectedRoute(): React.ReactElement {
 
   } catch (error) {
     console.error("Erro ao decodificar o token:", error);
-    return <Outlet/>;
+    return <Navigate to="/login" replace />
   }
 }

@@ -97,12 +97,22 @@ const CourtDetails = () => {
     const typeField = typeData?.data?.data?.find(t => t.id === courtData?.data?.data?.fieldType.id); 
     const price = receiveCentFront(courtData?.data?.data.hourlyRate); 
     const { data: courtAvailabilities } = useGetCourtIdAvailabilities(id); 
-    console.log(courtAvailabilities)
     const [isMenuOpen, setIsMenuOpen] = useState(false); 
-    const [activeCategory, setActiveCategory] = useState('agendar'); 
-    const categories = [ 
-        { id: 'agendar', name: 'Agendar' } , {id: 'agendadas', name: 'Quadras Agendadas'}, 
-    ]; 
+    
+    // Definir a categoria padrão com base na existência do ID
+    const defaultCategory = id ? 'agendar' : 'agendadas';
+    const [activeCategory, setActiveCategory] = useState(defaultCategory);
+    
+    // Definir categorias disponíveis com base na existência do ID
+    const categories = id 
+        ? [ 
+            { id: 'agendar', name: 'Agendar' }, 
+            { id: 'agendadas', name: 'Quadras Agendadas'} 
+          ]
+        : [
+            { id: 'agendadas', name: 'Quadras Agendadas'}
+          ];
+    
     const [isReservaDialogOpen, setIsReservaDialogOpen] = useState(false); 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [isFailedDialog, setFailedDialog] = useState(false); 
@@ -113,6 +123,7 @@ const CourtDetails = () => {
     const { mutate: postReserve } = usePostReserve(); 
     const { data: courtAvailabilityData } = useGetCourtIdAvailabilities(id, fieldDate); 
     const { data: methods} = useGetPaymentMethodsQuery(); 
+    
     function submitBooking(data, event) { 
         event?.preventDefault(); 
         postReserve({
@@ -132,11 +143,12 @@ const CourtDetails = () => {
             } 
         }) 
     } 
-     const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
+    
+    const handleCloseDialog = () => {
+        setDialogOpen(false);
+    };
 
-const handleDateSelect = (date) => { 
+    const handleDateSelect = (date) => { 
         if (date) { 
             const formattedDate = convertToUtc(date); 
             formBooking.setValue("day", formattedDate); 
@@ -151,7 +163,6 @@ const handleDateSelect = (date) => {
         Futebol_2, 
     ]; 
 
-
     const goToPrevious = () => { 
         setCurrentImageIndex((prevIndex) => prevIndex === 0 ? cover?.data?.fieldImages?.length - 1 : prevIndex - 1 ); 
     }; 
@@ -161,9 +172,11 @@ const handleDateSelect = (date) => {
     }; 
 
     const formatTime = (timeString) => {
-    return timeString ? timeString.slice(0, 5) : '';
+        return timeString ? timeString.slice(0, 5) : '';
     };
 
+    // Verificar se há ID válido para mostrar o conteúdo
+    const hasValidId = !!id; 
     
     return ( 
         <div className="min-h-screen bg-white"> 
@@ -263,9 +276,19 @@ const handleDateSelect = (date) => {
                             <ArrowLeft size={16} className="mr-1" /> Voltar 
                         </Button> 
                     </Link> 
-                </div> 
+                </div>
+                
+                {/* Mensagem quando ID não está disponível e a categoria padrão é "agendar" */}
+                {!hasValidId && activeCategory === 'agendar' && (
+                    <div className="text-center p-8">
+                        <AlertTriangle size={48} className="mx-auto text-yellow-500 mb-4" />
+                        <h2 className="text-xl font-bold mb-2">ID da quadra não fornecido</h2>
+                        <p className="text-gray-600">Não é possível exibir os detalhes da quadra para agendamento.</p>
+                    </div>
+                )}
+                
                 {/* Detalhes da Quadra */} 
-                {activeCategory === 'agendar' &&  ( 
+                {hasValidId && activeCategory === 'agendar' && ( 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8"> 
                         {/* Card da Quadra */} 
                         <div> 
@@ -290,7 +313,7 @@ const handleDateSelect = (date) => {
                                     </div> 
                                     {/* Image indicator dots */} 
                                     <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2"> 
-                                        {images.map((_, index) => ( 
+                                        {cover?.data?.fieldImages?.map((_, index) => ( 
                                             <button key={index} onClick={() => setCurrentImageIndex(index)} className={`h-2 w-2 rounded-full ${ 
                                                 index === currentImageIndex ? 'bg-white' : 'bg-white bg-opacity-50' 
                                             }`} aria-label={`View image ${index + 1}`} /> 
@@ -377,9 +400,6 @@ const handleDateSelect = (date) => {
                                                     <FormItem> 
                                                         <FormLabel className="block font-medium text-gray-700 mb-2"> 
                                                             Horário 
-                                                            {/*<button type="button" onClick={() => setAvailableTimeSlotsOpen(true)} className="ml-2 text-sm text-green-700 hover:underline" > 
-                                                                Ver Horários 
-                                                            </button> */}
                                                         </FormLabel> 
                                                         <FormControl> 
                                                             <select {...field} className="w-full border border-gray-300 rounded-md px-4 py-2.5 h-11 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700" onChange={(e) => { 
@@ -436,7 +456,6 @@ const handleDateSelect = (date) => {
                     </div> 
                 )} 
                 {activeCategory === 'agendadas' && ( 
-
                     <UserBookingsSection/> 
                 )} 
             </main> 
@@ -488,6 +507,7 @@ const handleDateSelect = (date) => {
                     </div> 
                 </DialogContent> 
             </Dialog> 
+
             {/* Erro Dialog */} 
             <Dialog open={isFailedDialog} onOpenChange={setFailedDialog}> 
                 <DialogContent className="sm:max-w-md"> 

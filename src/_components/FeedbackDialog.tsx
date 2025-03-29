@@ -54,7 +54,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
             )}
           </div>
           <DialogTitle className="text-center text-lg font-semibold text-gray-900 mt-4">
-            {success ? "Cadastro Realizado" : "Erro no Cadastro"}
+            {success ? "Operação Sucedida" : "Operação Falhada"}
           </DialogTitle>
           <DialogDescription className="text-center text-gray-600">
             {message || (success ? defaultSuccessMessage : defaultErrorMessage)}

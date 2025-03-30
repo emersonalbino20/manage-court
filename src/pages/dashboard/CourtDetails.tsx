@@ -134,6 +134,8 @@ const CourtDetails = () => {
             onSuccess: (response) => { 
                 setIsReservaDialogOpen(true); 
                 setLog(response); 
+                formBooking.reset();
+                setActiveCategory('agendadas'); 
             }, 
             onError: (error) => { 
                 setErro(error)
@@ -295,13 +297,15 @@ const CourtDetails = () => {
                             <Card className="overflow-hidden p-0 border border-gray-200"> 
                                 {/* Image carousel */} 
                                 <div className="relative pt-[60%]"> 
-                                    {cover?.data?.fieldImages?.map((img, index) => ( 
+                                    {cover?.data?.fieldImages?.map((img, index) => {
+                                        console.log(img.url)
+                                        return( 
                                         <div key={index} className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${ 
                                             index === currentImageIndex ? 'opacity-100' : 'opacity-0 pointer-events-none' 
                                         }`} > 
-                                            <img src={img.url} alt={`Quadra de Futebol ${index + 1}`} className="absolute inset-0 w-full h-full object-cover" /> 
+                                            <img src={img?.url} alt={`Quadra de Futebol ${index + 1}`} className="absolute inset-0 w-full h-full object-cover" /> 
                                         </div> 
-                                    ))} 
+                                    )})} 
                                     {/* Navigation arrows */} 
                                     <div className="absolute inset-0 flex items-center justify-between p-4"> 
                                         <Button onClick={goToPrevious} variant="ghost" className="bg-white rounded-full p-2" > 
@@ -491,7 +495,7 @@ const CourtDetails = () => {
                                     <span className="font-semibold">Kz {receiveCentFront(log?.data?.data?.price)}</span> 
                                 </div> 
                                 <div className="flex justify-between"> 
-                                    <span className="text-gray-700">Status:</span> 
+                                    <span className="text-gray-700">Estado:</span> 
                                     <span className="font-semibold text-yellow-600">{log?.data?.data?.status}</span> 
                                 </div> 
                             </div> 

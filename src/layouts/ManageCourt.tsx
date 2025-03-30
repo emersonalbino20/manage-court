@@ -383,7 +383,7 @@ const handleCloseDialog = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="block text-sm font-medium text-gray-700 mb-1">
-                        Imagens da Quadra
+                        Imagem de Capa
                       </FormLabel>
                       <ImageUploader 
                         onImageUpload={(urls) => {

@@ -140,7 +140,7 @@ id: z.number().int().positive().max(32_767).optional(),
     invalid_type_error: 'O nome da provínvia deve ser uma string.',
   })
   .trim()
-  .min(4, {
+  .min(3, {
     message: 'O nome da província deve ter pelo menos 3 caracteres.',
   })
   .max(25, {

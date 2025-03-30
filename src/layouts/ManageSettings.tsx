@@ -54,6 +54,9 @@ const formCity = useForm({
     },
   });
 
+  //const { watch } = formCity;
+  //const [ fieldDate ] = watch(['day']);
+
   // Estados para controlar o diálogo
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);

@@ -13,6 +13,7 @@ import { useGetUsersQuery } from '@/api/userQuery';
 import { MdPayment } from "react-icons/md";
 import { useAuth } from "@/hooks/AuthContext";
 import {jwtDecode} from "jwt-decode";
+import LOGO from '@/assets/images/LOGO.png';
 
 const AdminPanel = () => {
   const { user, logout, token } = useAuth();
@@ -56,8 +57,12 @@ const AdminPanel = () => {
   const SidebarContent = () => (
     <>
       <div className="p-4 flex items-center space-x-2">
-        <Trophy size={24} className="text-green-500" />
-        <h1 className="font-bold text-xl">QuadraAgenda</h1>
+         <img 
+          src={LOGO} 
+          className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-14 lg:w-14 object-contain" 
+          alt="Logo" 
+        />
+        <h1 className="font-bold text-sm sm:text-base md:text-lg lg:text-xl">AgendaQuadra</h1>
       </div>
       
       <nav className="mt-8 flex-1">
@@ -150,15 +155,14 @@ const AdminPanel = () => {
                 <Menu size={24} />
               </button>
               <div className="flex items-center lg:hidden">
-                <Trophy size={20} className="text-green-500 mr-2" />
-                <h2 className="text-xl font-semibold text-gray-800">QuadraAgenda</h2>
+                <img 
+                  src={LOGO} 
+                  className="h-8 w-8 xs:h-10 xs:w-10 sm:h-12 sm:w-12" 
+                  alt="Logo" 
+                />
+                <h2 className="text-base xs:text-lg sm:text-xl font-semibold text-gray-800 ml-2">AgendaQuadra</h2>
               </div>
               <h2 className="text-xl font-semibold text-gray-800 hidden lg:block">Painel Administrativo</h2>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-gray-100 p-2 rounded-full">
-                <Users size={20} className="text-gray-600" />
-              </div>
             </div>
           </div>
         </header>

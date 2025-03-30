@@ -10,18 +10,27 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import FeedbackDialog from '@/_components/FeedbackDialog';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const FieldImagesDialog = ({ isOpen, onClose, fieldId }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
+  const [erro, setErro] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [fileError, setFileError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
   
   const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB em bytes
+  const MAX_FILES = 5; // Máximo de 5 arquivos
 
   // Query to fetch images
   let mytoken = localStorage.getItem("token");
@@ -40,29 +49,70 @@ const FieldImagesDialog = ({ isOpen, onClose, fieldId }) => {
     enabled: !!fieldId && isOpen
   });
 
-  // Mutation to add new image - mantém o funcionamento original
+  // Mutation to add new image
   const addImageMutation = useMutation({
-    mutationFn: async (url) => {
-      return await axios.post(`http://localhost:3000/field-images/${fieldId}`, { url }, {
-        headers: {
-          Authorization: `Bearer ${mytoken}`, 
-          "Content-Type": "application/json",
-        },
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['fieldImages', fieldId]);
-      setSelectedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+  mutationFn: async (files) => {
+    const mytoken = localStorage.getItem("token");
+    const uploadedImages = [];
+
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        // Upload da imagem para o servidor
+        const response = await axios.post('http://localhost:3000/uploads/images', formData, {
+          headers: {
+            'Authorization': `Bearer ${mytoken}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
+        // Se o upload for bem-sucedido, adiciona a URL retornada
+        if (response.data.data?.imageUrl) {
+          uploadedImages.push(response.data.data.imageUrl);
+        }
+      } catch (error) {
+        console.error('Erro no upload da imagem:', error);
+        setErro(error);
+        setIsSuccess(false);
+        setFeedbackMessage("Erro no upload da imagem:");
+        setDialogOpen(true);
+        throw new Error(`Erro ao fazer upload da imagem ${file.name}`);
       }
-      setIsUploading(false);
-    },
-    onError: (error) => {
-      console.error('Erro ao adicionar imagem:', error);
-      setIsUploading(false);
     }
-  });
+
+    // Salvar as URLs no backend associadas ao fieldId
+    const savePromises = uploadedImages.map(imageUrl =>
+      axios.post(`http://localhost:3000/field-images/${fieldId}`, 
+        { url: imageUrl }, // Enviar no formato { url: "a url" }
+        {
+          headers: {
+            Authorization: `Bearer ${mytoken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+    );
+
+    return Promise.all(savePromises);
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries(['fieldImages', fieldId]);
+    setSelectedFiles([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    setIsUploading(false);
+  },
+  onError: (error) => {
+    setErro(error);
+    setIsSuccess(false);
+    setFeedbackMessage("Erro ao adicionar imagens");
+    setDialogOpen(true);
+    setIsUploading(false);
+  }
+});
 
   // Mutation to delete image
   const deleteImageMutation = useMutation({
@@ -75,59 +125,74 @@ const FieldImagesDialog = ({ isOpen, onClose, fieldId }) => {
       });
     },
     onSuccess: (response) => {
-      console.log(response)
       queryClient.invalidateQueries(['fieldImages', fieldId]);
     }
   });
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const files = Array.from(e.target.files);
     setFileError('');
     
-    if (!file) {
-      setSelectedFile(null);
+    if (!files.length) {
+      setSelectedFiles([]);
       return;
     }
     
-    // Verificar o tamanho do arquivo
-    if (file.size > MAX_FILE_SIZE) {
-      setFileError('O arquivo deve ter menos de 3 MB');
-      setSelectedFile(null);
+    // Verificar o número máximo de arquivos
+    if (files.length > MAX_FILES) {
+      //setFileError();
+      setIsSuccess(false);
+      setFeedbackMessage(`Você pode selecionar no máximo ${MAX_FILES} imagens de uma vez`);
+      setDialogOpen(true);
+      setSelectedFiles([]);
       e.target.value = ''; // Limpar o input
       return;
     }
     
-    // Verificar se é uma imagem
-    if (!file.type.startsWith('image/')) {
-      setFileError('O arquivo deve ser uma imagem');
-      setSelectedFile(null);
-      e.target.value = ''; // Limpar o input
-      return;
+    // Verificar cada arquivo
+    const validFiles = [];
+    for (const file of files) {
+      // Verificar o tamanho do arquivo
+      if (file.size > MAX_FILE_SIZE) {
+        setIsSuccess(false);
+        setFeedbackMessage(`O arquivo ${file.name} excede o tamanho máximo de 3 MB`);
+        setDialogOpen(true);
+        setSelectedFiles([]);
+        e.target.value = ''; // Limpar o input
+        return;
+      }
+      
+      // Verificar se é uma imagem
+      if (!file.type.startsWith('image/')) {
+        
+        setIsSuccess(false);
+        setFeedbackMessage(`O arquivo ${file.name} não é uma imagem válida`);
+        setDialogOpen(true);
+        setSelectedFiles([]);
+        e.target.value = ''; // Limpar o input
+        return;
+      }
+      
+      validFiles.push(file);
     }
     
-    setSelectedFile(file);
+    setSelectedFiles(validFiles);
   };
 
-  const handleAddImage = (e) => {
+  const handleAddImages = (e) => {
     e.preventDefault();
-    if (!selectedFile) return;
+    if (!selectedFiles.length) return;
     
     setIsUploading(true);
-    
-    // Converter o arquivo para uma URL (objeto local) para visualização
-    const fileUrl = URL.createObjectURL(selectedFile);
-    
-    // Usar a URL no formato esperado pelo backend
-    addImageMutation.mutate(fileUrl);
+    addImageMutation.mutate(selectedFiles);
   };
 
   const handleDeleteImage = (imageId) => {
-    if (confirm('Tem certeza que deseja excluir esta imagem?')) {
       deleteImageMutation.mutate(imageId);
-    }
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
@@ -140,10 +205,10 @@ const FieldImagesDialog = ({ isOpen, onClose, fieldId }) => {
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Add new image form */}
-          <form onSubmit={handleAddImage} className="space-y-3">
+          {/* Add new images form */}
+          <form onSubmit={handleAddImages} className="space-y-3">
             <div>
-              <Label htmlFor="imageFile">Selecionar Imagem</Label>
+              <Label htmlFor="imageFile">Selecionar Imagens</Label>
               <div className="mt-1 flex items-center space-x-2">
                 <Input
                   id="imageFile"
@@ -152,11 +217,12 @@ const FieldImagesDialog = ({ isOpen, onClose, fieldId }) => {
                   accept="image/*"
                   onChange={handleFileChange}
                   className="w-full"
+                  multiple
                 />
                 <Button 
                   type="submit" 
                   className="bg-green-600 hover:bg-green-700"
-                  disabled={!selectedFile || isUploading}
+                  disabled={!selectedFiles.length || isUploading}
                 >
                   {isUploading ? (
                     "Enviando..."
@@ -172,8 +238,38 @@ const FieldImagesDialog = ({ isOpen, onClose, fieldId }) => {
                 <p className="text-sm text-red-600 mt-1">{fileError}</p>
               )}
               <p className="text-sm text-gray-500 mt-1">
-                Tamanho máximo: 3 MB
+                Até 5 imagens, máximo 3 MB cada
               </p>
+              
+              {/* Preview das imagens selecionadas */}
+              {selectedFiles.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium mb-1">{selectedFiles.length} {selectedFiles.length === 1 ? 'imagem selecionada' : 'imagens selecionadas'}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedFiles.map((file, index) => (
+                      <div key={index} className="relative w-16 h-16">
+                        <img 
+                          src={URL.createObjectURL(file)} 
+                          alt={`Preview ${index}`}
+                          className="w-full h-full object-cover rounded-md"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newFiles = [...selectedFiles];
+                            newFiles.splice(index, 1);
+                            setSelectedFiles(newFiles);
+                          }}
+                          className="absolute -top-1 -right-1 bg-red-600 text-white p-1 rounded-full w-5 h-5 flex items-center justify-center"
+                          title="Remover imagem"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </form>
 
@@ -183,13 +279,13 @@ const FieldImagesDialog = ({ isOpen, onClose, fieldId }) => {
             {isLoading ? (
               <p className="text-center py-4 text-gray-500">Carregando imagens...</p>
             ) : data?.data?.fieldImages?.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto p-1">
                 {data.data.fieldImages.map((image) => (
                   <div key={image.id} className="relative group">
                     <img 
                       src={image.url} 
                       alt="Imagem da quadra"
-                      className="w-full h-32 object-cover rounded-md"
+                      className="w-full h-24 object-cover rounded-md"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = "/placeholder-image.jpg";
@@ -197,10 +293,10 @@ const FieldImagesDialog = ({ isOpen, onClose, fieldId }) => {
                     />
                     <button
                       onClick={() => handleDeleteImage(image.id)}
-                      className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                       title="Excluir imagem"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={12} />
                     </button>
                   </div>
                 ))}
@@ -218,6 +314,14 @@ const FieldImagesDialog = ({ isOpen, onClose, fieldId }) => {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <FeedbackDialog 
+        isOpen={dialogOpen}
+        onClose={handleCloseDialog}
+        success={isSuccess}
+        message={feedbackMessage}
+        errorData={erro}
+      />
+    </>
   );
 };
 

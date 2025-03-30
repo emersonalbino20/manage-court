@@ -64,3 +64,12 @@ export const useGetProvincesQuery = () => {
   });
   return { data, isLoading, isError };
 };
+
+export const useGetProvinceCityId = (id) => {
+  const { data, isFetched } = useQuery({
+    queryKey: ['pronvincias-cidades'],
+    queryFn: () => axios.get(`http://localhost:3000/${id}/cities`),
+    enabled: !!id,
+  });
+  return { data, isFetched };
+};

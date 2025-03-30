@@ -357,9 +357,9 @@ return (
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Data de Cadastro
                     </th>
-                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                    {/*<th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
                       Ações
-                    </th>
+                    </th>*/}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -387,8 +387,8 @@ return (
                       <td className="px-4 py-2 whitespace-nowrap">
                         {new Date(usuario.createdAt).toLocaleDateString('pt-BR')}
                       </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-right">
-                       {/* <button
+                      {/*<td className="px-4 py-2 whitespace-nowrap text-right">
+                        <button
                           onClick={() => iniciarEdicao(usuario)}
                           className="text-blue-600 hover:text-blue-800 mr-3"
                         >
@@ -399,8 +399,8 @@ return (
                           className="text-red-600 hover:text-red-800"
                         >
                           <Trash2 size={16} />
-                        </button>*/}
-                      </td>
+                        </button>
+                      </td>*/}
                     </tr>
                   )})}
                 </tbody>

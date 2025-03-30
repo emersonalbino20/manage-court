@@ -46,11 +46,11 @@ const ContentHome = () => {
   const categories = [
     { id: 'destaques', name: 'Todas' },
     { id: 'Futebol', icon: <IoMdFootball />, name: 'Futebol' },
-    { id: 'Basquete', icon: <FaBasketballBall />, name: 'Basquete' },
     { id: 'Futsal', icon: <FaTrophy />, name: 'Futsal' },
+    { id: 'Basquete', icon: <FaBasketballBall />, name: 'Basquete' },
     { id: 'Vôlei', icon: <FaVolleyball />, name: 'Vôlei' },
     { id: 'Tênis', icon: <FaTableTennisPaddleBall />, name: 'Tênis' },
-    { id: 'Hóquei Patins', icon: <GiHockey />, name: 'Hóquei Patins' },
+    { id: 'Hóquei', icon: <GiHockey />, name: 'Hóquei' },
     { id: 'Basebol', icon: <FaBaseball />, name: 'Basebol' },
     { id: 'Handebol', icon: <FaHandPaper />, name: 'Handebol' },
   ];

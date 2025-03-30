@@ -239,39 +239,59 @@ const CourtAvailability = ({ulid}) => {
                         )}
                       />
 
-                      <FormField
-                        control={formCourt.control}
-                        name="startTime"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Hora de Início</FormLabel>
-                            <Input type="time" step="1" {...field} 
-                              onChange={(e) => {
-                                let [hours] = e.target.value.split(":");
-                                hours = String(hours).padStart(2, "0");
-                                const newStartTime = `${hours}:00:00`;
-                                field.onChange(newStartTime);
-                                
-                                const newEndTime = `${String(Number(hours) + 1).padStart(2, "0")}:00:00`;
-                                formCourt.setValue("endTime", newEndTime);
-                              }}
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={formCourt.control}
-                        name="endTime"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Hora de Término</FormLabel>
-                            <Input type="time" step="1" {...field} readOnly />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                     <FormField
+  control={formCourt.control}
+  name="startTime"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Hora de Início</FormLabel>
+      <Input
+        type="time"
+        step="1"
+        {...field}
+        onChange={(e) => {
+          let [hours, minutes, seconds] = e.target.value.split(":");
+          hours = String(hours).padStart(2, "0");
+          minutes = String(minutes || "00").padStart(2, "0");
+          seconds = String(seconds || "00").padStart(2, "0");
+
+          const newStartTime = `${hours}:${minutes}:${seconds}`;
+          field.onChange(newStartTime);
+
+          const newEndTime = `${String(Number(hours) + 1).padStart(2, "0")}:${minutes}:${seconds}`;
+          formCourt.setValue("endTime", newEndTime);
+        }}
+      />
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
+<FormField
+  control={formCourt.control}
+  name="endTime"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Hora de Término</FormLabel>
+      <Input
+        type="time"
+        step="1"
+        {...field}
+        onChange={(e) => {
+          let [hours, minutes, seconds] = e.target.value.split(":");
+          hours = String(hours).padStart(2, "0");
+          minutes = String(minutes || "00").padStart(2, "0");
+          seconds = String(seconds || "00").padStart(2, "0");
+
+          const newEndTime = `${hours}:${minutes}:${seconds}`;
+          field.onChange(newEndTime);
+        }}
+      />
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
                       
                       <Button 
                         type="submit" 

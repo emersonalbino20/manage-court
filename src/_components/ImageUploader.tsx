@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
 import { Upload } from 'lucide-react';
 import axios from 'axios';
-const token = localStorage.getItem("token");
+import FeedbackDialog from '@/_components/FeedbackDialog';
 
+const token = localStorage.getItem("token");
+const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
+  const [erro, setErro] = useState('');
 // Função para upload de imagens
 const handleImageUpload = async (files: File[]) => {
   const uploadedImages = [];
@@ -34,7 +42,11 @@ const handleImageUpload = async (files: File[]) => {
         uploadedImages.push(response.data.data.imageUrl);
       }
     } catch (error) {
-      console.log('Erro no upload da imagem:', error);
+        console.log('Erro no upload da imagem:', error);
+        setErro(error);
+        setIsSuccess(false);
+        setFeedbackMessage("Erro no upload da imagem:");
+        setDialogOpen(true);
       alert(`Erro no upload da imagem ${file.name}`);
     }
   }
@@ -45,7 +57,7 @@ const handleImageUpload = async (files: File[]) => {
 // Componente de Upload de Imagens
 const ImageUploader = ({ 
   onImageUpload, 
-  maxImages = 3 
+  maxImages = 1 
 }) => {
   const [images, setImages] = useState([]);
 
@@ -54,7 +66,7 @@ const ImageUploader = ({
     
     // Limitar número de imagens
     if (images.length + files.length > maxImages) {
-      alert(`Você pode fazer upload de no máximo ${maxImages} imagens`);
+      alert(`Você pode fazer upload de no máximo ${maxImages} imagem`);
       return;
     }
 
@@ -114,6 +126,13 @@ const ImageUploader = ({
           ))}
         </div>
       )}
+      <FeedbackDialog 
+        isOpen={dialogOpen}
+        onClose={handleCloseDialog}
+        success={isSuccess}
+        message={feedbackMessage}
+        errorData={erro}
+      />
     </div>
   );
 };

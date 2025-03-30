@@ -154,9 +154,8 @@ const Booking = () => {
                   <SelectValue placeholder="Selecione uma forma de pagamento" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pix">PIX</SelectItem>
-                  <SelectItem value="cartao">Cartão de Crédito</SelectItem>
-                  <SelectItem value="local">Pagamento no local</SelectItem>
+                  <SelectItem value="pix">Cash</SelectItem>
+                  <SelectItem value="cartao">Multicx</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -229,7 +228,7 @@ const Booking = () => {
                       <span>Kz {selectedCourt === 'tennis' ? '80,00' : '120,00'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Status:</span>
+                      <span>Estado:</span>
                       <span className="text-yellow-600 font-medium">Pendente</span>
                     </div>
                   </div>

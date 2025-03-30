@@ -23,7 +23,7 @@ import { GiHockey } from "react-icons/gi";
 import { FaBaseball } from "react-icons/fa6";
 import { FaHandPaper } from "react-icons/fa";
 import { Link, useNavigate } from 'react-router-dom';
-import { useGetProvincesQuery } from '@/api/provinceQuery';
+import { useGetProvincesQuery, useGetProvinceCityId } from '@/api/provinceQuery';
 import { useGetCitiesQuery } from '@/api/cityQuery';
 import { useGetCourtsTypeQuery } from '@/api/courtQuery';
 import { useGetCourtsQuery, useGetImagesId } from '@/api/courtQuery';
@@ -66,7 +66,10 @@ const ContentHome = () => {
   const { data: cityData } = useGetCitiesQuery();
   const { data: typeData } = useGetCourtsTypeQuery();
   const { data: courtData } = useGetCourtsQuery();
+  const [province, setProvince] = useState('');
+  const {data: cities} = useGetProvinceCityId(province);
 
+  console.log(cities);
   // Sync category nav with sport type filter
   useEffect(() => {
     if (activeCategory !== 'destaques') {
@@ -331,15 +334,18 @@ const ContentHome = () => {
                     </Label>
                     <Select 
                       value={selectedLocation} 
-                      onValueChange={setSelectedLocation}
+                      onValueChange={(value)=>{
+                        setSelectedLocation(value)
+                        setProvince(value)
+                    }}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecione a província" />
                       </SelectTrigger>
                       <SelectContent position="popper" className="z-50">
-                        <SelectItem value="todas">Todas as províncias</SelectItem>
+                        <SelectItem value="todas" >Todas as províncias</SelectItem>
                         {provinceData?.data?.data?.map(location => (
-                          <SelectItem key={location?.id} value={location?.name}>
+                          <SelectItem key={location?.id} value={location?.id}>
                             {location?.name}
                           </SelectItem>
                         ))}
@@ -354,7 +360,7 @@ const ContentHome = () => {
                       </SelectTrigger>
                       <SelectContent position="popper" className="z-50">
                         <SelectItem value="todas">Todas as cidades</SelectItem>
-                        {cityData?.data?.data?.map(location => (
+                        {cities?.data?.data?.map(location => (
                           <SelectItem key={location?.id} value={location?.name}>
                             {location?.name}
                           </SelectItem>

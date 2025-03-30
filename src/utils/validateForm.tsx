@@ -65,7 +65,13 @@ export const schemeCourt = z.object({
     .max(200, { message: 'A descrição pode ter no máximo 200 caracteres.' })
     .optional(),
   hourlyRate: z.number({message: "O campo recebe números inteiros e decimais ex: 20,20"}).min(0),
-  thumbnailUrl: z.string().url({message: 'Imagem inválida'}).max(255).optional(),
+  thumbnailUrl: z
+  .string()
+  .max(255)
+  .optional()
+  .refine((val) => val === "" || z.string().url().safeParse(val).success, {
+    message: "Imagem inválida",
+  }),
   address: z.object({
     street: z.string().trim().min(1, {message: "O nome da rua deve ter pelo menos 1 letra"}).max(80).regex(/^[a-zA-ZÀ-ÿ]+(?:\s[a-zA-ZÀ-ÿ]+)*$/, {
       message: 'O nome da rua deve conter apenas letras e espaços e não pode começar ou terminar com espaço.',

@@ -354,8 +354,8 @@ const CourtDetails = () => {
                                                 </div> 
                                                 <div className="mt-2"> 
                                                     <p className="text-gray-700"> 
-                                                        <MapPin size={16} className="inline mr-1" /> 
-                                                        {courtData?.data?.data?.address.street}, {courtData?.data?.data?.address.number} - {courtData?.data?.data?.address.city.name}, {courtData?.data?.data?.address.province.name} 
+                                                        {/*<MapPin size={16} className="inline mr-1" /> 
+                                                        courtData?.data?.data?.address.street}, {courtData?.data?.data?.address.number} - {courtData?.data?.data?.address.city.name}, {courtData?.data?.data?.address.province.name*/} 
                                                     </p> 
                                                 </div> 
                                             </div> 

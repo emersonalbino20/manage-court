@@ -156,25 +156,7 @@ const closeImagesDialog = () => {
     };
 
     if (modoEdicao) {
-      mutateImage({fieldType: data.id, url: data.thumbnailUrl}, {
-          onSuccess: (response) => {
-          setIsSuccess(true);
-          setFeedbackMessage("A quadra foi atualizada com sucesso!");
-          setDialogOpen(true);
-          formCourt.reset();
-          setActiveTab('listar');
-        },
-        onError: (error) => {
-          console.log(data.id)
-          setIsSuccess(false);
-          setErro(error);
-          setFeedbackMessage("Não foi possível atualizar a quadra. Verifique seus dados e tente novamente.");
-          setDialogOpen(true);
-          setModoEdicao(true);
-          setActiveTab('cadastrar');
-        }
-      }
-      );/*
+      mutateImage({fieldType: data.fieldTypeId, url: data.thumbnailUrl});
       putCourt(data, {
         onSuccess: (response) => {
           setIsSuccess(true);
@@ -193,7 +175,7 @@ const closeImagesDialog = () => {
           setActiveTab('cadastrar');
         }
       });
-      setModoEdicao(false);*/
+      setModoEdicao(false);
     } else {
 
       const value = sendCoinBeck(data?.hourlyRate);
@@ -243,6 +225,7 @@ const handleCloseDialog = () => {
     formCourt.setValue("address.longitude", court.address.longitude);
     formCourt.setValue("address.cityId", court.address.cityId);
     formCourt.setValue("address.provinceId", court.address.provinceId);
+    formCourt.setValue("thumbnailUrl", court.thumbnailUrl);
     setModoEdicao(true);
     setActiveTab('cadastrar');
   };
@@ -280,6 +263,7 @@ const handleCloseDialog = () => {
         >
           Quadras Cadastradas
         </button>
+        {activeTab === 'disponibilidade' &&
         <button
           className={`py-2 px-4 font-medium ${
             activeTab === 'disponibilidade'
@@ -290,6 +274,7 @@ const handleCloseDialog = () => {
         >
           Disponibilidade
         </button>
+      }
       </div>
 
       {/* Conteúdo das Abas */}

@@ -16,7 +16,7 @@ import {
 import {
   usePostProvince,
   usePutProvince,
-  useGetProvincesQuery
+  useGetProvincesQuery,
 } from '@/api/provinceQuery';
 import {
   usePostCity,

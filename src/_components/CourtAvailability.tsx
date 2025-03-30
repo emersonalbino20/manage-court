@@ -88,6 +88,12 @@ const CourtAvailability = ({ulid}) => {
       });
     } else {
 
+      console.log({
+        fieldId: ulid,
+        day: data.day,
+        startTime: data.startTime,
+        endTime: data.endTime
+      })
       mutatePostCourt({
         fieldId: ulid,
         day: data.day,

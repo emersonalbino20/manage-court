@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
 import { Upload } from 'lucide-react';
 import axios from 'axios';
-import FeedbackDialog from '@/_components/FeedbackDialog';
-
 const token = localStorage.getItem("token");
-const [dialogOpen, setDialogOpen] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState("");
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
-  const [erro, setErro] = useState('');
+
 // Função para upload de imagens
 const handleImageUpload = async (files: File[]) => {
   const uploadedImages = [];
@@ -42,11 +34,7 @@ const handleImageUpload = async (files: File[]) => {
         uploadedImages.push(response.data.data.imageUrl);
       }
     } catch (error) {
-        console.log('Erro no upload da imagem:', error);
-        setErro(error);
-        setIsSuccess(false);
-        setFeedbackMessage("Erro no upload da imagem:");
-        setDialogOpen(true);
+      console.log('Erro no upload da imagem:', error);
       alert(`Erro no upload da imagem ${file.name}`);
     }
   }
@@ -126,13 +114,6 @@ const ImageUploader = ({
           ))}
         </div>
       )}
-      <FeedbackDialog 
-        isOpen={dialogOpen}
-        onClose={handleCloseDialog}
-        success={isSuccess}
-        message={feedbackMessage}
-        errorData={erro}
-      />
     </div>
   );
 };

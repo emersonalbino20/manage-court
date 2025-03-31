@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, Users, Calendar, Settings, LogOut, Home, Trophy, Activity, TrendingUp, Menu, X } from 'lucide-react';
+import { BarChart3, Users, Calendar, Settings, LogOut, Home, Trophy, Activity, TrendingUp, Menu, X, DollarSign } from 'lucide-react';
 import { PiCourtBasketballFill } from "react-icons/pi";
 import { PiGlobeHemisphereWestFill } from "react-icons/pi";
 import { MdCategory } from "react-icons/md";
@@ -10,6 +10,7 @@ import ManageSettings from '@/layouts/ManageSettings'
 import ManageReservations from '@/layouts/ManageReservations'
 import ManagePayments from '@/layouts/ManagePayments'
 import { useGetUsersQuery } from '@/api/userQuery';
+import { useGetAdminStatsQuery, useGetOperatorStatsQuery } from '@/api/statsQuery';
 import { MdPayment } from "react-icons/md";
 import { useAuth } from "@/hooks/AuthContext";
 import {jwtDecode} from "jwt-decode";
@@ -23,29 +24,116 @@ const AdminPanel = () => {
   const { data, isError, isLoading } = useGetUsersQuery();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Dados estatísticos simulados
-  const stats = [
-    { title: "Usuários Ativos", value: "5,823", percentagem: "+12%", icon: <Users size={20} /> },
-    { title: "Quadras Agendadas", value: "246", percentagem: "+8%", icon: <Calendar size={20} /> },
+  // Fetch stats based on user type
+  const { data: admin } = useGetAdminStatsQuery();
+  const { data: operator } = useGetOperatorStatsQuery();
+  console.log(operator)
+  // Function to safely calculate percentages when data is not yet loaded
+  const safeCalculatePercentage = (part, total) => {
+    if (!total || total === 0) return 0;
+    return Math.round((part / total) * 100);
+  };
+
+  // Process fields data if available for admin
+  const fieldsWithPercentage = React.useMemo(() => {
+    if (!admin?.data?.popularFields?.length) return [];
     
-  ];
+    const maxReservations = Math.max(...admin.data.popularFields.map(field => field.reservations));
+    return admin.data.popularFields.map(field => ({
+      ...field,
+      percentagem: maxReservations > 0 ? (field.reservations / maxReservations) * 100 : 0
+    }));
+  }, [admin?.data?.popularFields]);
 
-  // Dados dos esportes mais populares
-  const popularSports = [
-    { nome: "Futebol", percentagem: 42 },
-    { nome: "Basquete", percentagem: 28 },
-    { nome: "Tênis", percentagem: 15 },
-    { nome: "Vôlei", percentagem: 10 },
-    { nome: "Natação", percentagem: 5 }
-  ];
+  // Process fields data if available for operator
+  const operatorFieldsWithPercentage = React.useMemo(() => {
+    if (!operator?.data?.popularFields?.length) return [];
+    
+    const maxReservations = Math.max(...operator.data.popularFields.map(field => field.reservations));
+    return operator.data.popularFields.map(field => ({
+      ...field,
+      percentagem: maxReservations > 0 ? (field.reservations / maxReservations) * 100 : 0
+    }));
+  }, [operator?.data?.popularFields]);
 
-  // Dados recentes simulados
-  const eventosRecentes = [
-    { nome: "Torneio Regional de Futebol", data: "15/03", local: "Estádio Municipal" },
-    { nome: "Campeonato de Basquete", data: "18/03", local: "Arena Desportiva" },
-    { nome: "Corrida Beneficente", data: "20/03", local: "Parque Central" },
-    { nome: "Torneio de Tênis", data: "25/03", local: "Clube Atlético" }
-  ];
+  // Stats cards data for admin
+  const statsCards = React.useMemo(() => {
+    if (!admin?.data) return [];
+    
+    return [
+      { 
+        title: "Usuários Ativos", 
+        value: admin.data.users.active.toLocaleString(), 
+        percentagem: `+${admin.data.users.active.toLocaleString() * 100 / 100}%`, 
+        icon: <Users size={20} />,
+        color: "bg-blue-100",
+        textColor: "text-blue-600"
+      },
+      { 
+        title: "Reservas Confirmadas", 
+        value: admin.data.reservations.confirmed.toLocaleString(), 
+        percentagem: `+${admin.data.reservations.confirmed.toLocaleString()  * 100 / 100 }%`, 
+        icon: <Calendar size={20} />,
+        color: "bg-green-100",
+        textColor: "text-green-600"
+      },
+      { 
+        title: "Receita Total", 
+        value: `Kz ${admin.data.revenue.total.toLocaleString()}`, 
+        percentagem: "+15%", 
+        icon: <MdPayment size={20} />,
+        color: "bg-purple-100",
+        textColor: "text-purple-600"
+      },
+      { 
+        title: "Novos Usuários", 
+        value: admin.data.users.newThisMonth.toLocaleString(), 
+        percentagem: "+22%", 
+        icon: <Activity size={20} />,
+        color: "bg-orange-100",
+        textColor: "text-orange-600"
+      }
+    ];
+  }, [admin?.data]);
+
+  // Stats cards data for operator
+  const operatorStatsCards = React.useMemo(() => {
+    if (!operator?.data) return [];
+    
+    return [
+      { 
+        title: "Reservas Pendentes", 
+        value: operator.data.pendingReservations.toLocaleString(), 
+        percentagem: "+5%", 
+        icon: <Calendar size={20} />,
+        color: "bg-yellow-100",
+        textColor: "text-yellow-600"
+      },
+      { 
+        title: "Quadras Disponíveis", 
+        value: operator.data.scheduledFields?.length.toLocaleString() || "0", 
+        percentagem: "+3%", 
+        icon: <PiCourtBasketballFill size={20} />,
+        color: "bg-blue-100",
+        textColor: "text-blue-600"
+      },
+      { 
+        title: "Reservas Recentes", 
+        value: operator.data.recentReservations?.length.toLocaleString() || "0", 
+        percentagem: "+10%", 
+        icon: <Activity size={20} />,
+        color: "bg-green-100",
+        textColor: "text-green-600"
+      }
+    ];
+  }, [operator?.data]);
+
+  // Status color mapping
+  const statusColors = {
+    "Confirmado": "bg-green-100 text-green-800",
+    "Pendente": "bg-yellow-100 text-yellow-800",
+    "Cancelado": "bg-red-100 text-red-800"
+  };
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -53,6 +141,7 @@ const AdminPanel = () => {
 
   // Show content on screen when an menu item is selected
   const [select, setSelect] = useState('dashboard');
+  
   // Componente do Sidebar para reutilização
   const SidebarContent = () => (
     <>
@@ -72,7 +161,7 @@ const AdminPanel = () => {
           <span>Dashboard</span>
         </a>
         {userType === 'operator' ? 
-      (  <a href="#"  onClick={()=>{setSelect('reservations')}} className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
+      (  <a href="#"  onClick={()=>{setSelect('reservations')}} className={`flex items-center px-4 py-3 ${select === 'reservations' ? 'text-white bg-gray-800' : 'text-gray-300 hover:bg-gray-800 hover:text-white transition-colors'}`}>
                 <Calendar size={20} className="mr-3" />
                 <span>Reservas</span>
               </a>) :
@@ -122,6 +211,21 @@ const AdminPanel = () => {
     </>
   );
 
+  // Format date helper
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
+  };
+
+  // Format time helper
+  const formatTime = (timeString) => {
+    return timeString;
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Mobile Sidebar (overlay) */}
@@ -168,147 +272,288 @@ const AdminPanel = () => {
         </header>
         
         {/* Dashboard Content */}
-        {select == 'dashboard' && (
-        <main className="p-4 md:p-6 overflow-x-hidden">
-          <div className="mb-6 md:mb-8">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-800">Bem-vindo ao Painel Administrativo</h1>
-            <p className="text-gray-600">Visão geral da sua agenda desportiva</p>
-          </div>
-          
-          {/* Estatísticas - Layout responsivo aprimorado */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-            {stats.map((stat, index) => (
-              <Card key={index}>
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">{stat.title}</p>
-                      <p className="text-xl md:text-2xl font-bold mt-1">{stat.value}</p>
-                    </div>
-                    <div className="bg-green-100 p-2 md:p-3 rounded-full">
-                      {stat.icon}
-                    </div>
-                  </div>
-                  <div className="mt-3 md:mt-4">
-                    <span className="text-xs inline-flex items-center font-medium text-green-600">
-                      <TrendingUp size={14} className="mr-1" />
-                      {stat.percentagem}
-                    </span>
-                    <span className="text-xs ml-1 text-gray-500">vs mês anterior</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          {/* Gráficos e Tabelas - Layout responsivo aprimorado */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-            {/* Esportes Populares */}
-            <Card className="lg:col-span-1">
-              <CardHeader className="p-4 md:p-6">
-                <CardTitle>Quadras Populares</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 md:p-6 pt-0">
-                <div className="space-y-3 md:space-y-4">
-                  {popularSports.map((sport, index) => (
-                    <div key={index} className="flex flex-col">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">{sport.nome}</span>
-                        <span className="text-sm text-gray-500">{sport.percentagem}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-green-600 h-2 rounded-full" 
-                          style={{ width: `${sport.percentagem}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+        {select === 'dashboard' && (
+          <main className="p-4 md:p-6 overflow-x-hidden">
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-800">Estatísticas da Plataforma</h1>
+              <p className="text-gray-600">Visão geral do desempenho da sua agenda desportiva</p>
+            </div>
             
-            {/* Eventos Recentes - Com scroll interno quando necessário */}
-            <Card className="lg:col-span-2">
-              <CardHeader className="p-4 md:p-6">
-                <CardTitle>Reservas Recentes</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="md:p-6 p-4 pt-0">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          <th className="pb-3 pr-2">Nome do Evento</th>
-                          <th className="pb-3 px-2">Data</th>
-                          <th className="pb-3 pl-2">Local</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {eventosRecentes.map((evento, index) => (
-                          <tr key={index}>
-                            <td className="py-3 pr-2 text-sm font-medium">{evento.nome}</td>
-                            <td className="py-3 px-2 text-sm text-gray-500">{evento.data}</td>
-                            <td className="py-3 pl-2 text-sm text-gray-500">{evento.local}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Status Mensal - Gráfico responsivo */}
-          <Card className="mb-6 md:mb-8">
-            <CardHeader className="p-4 md:p-6">
-              <CardTitle>Visão Geral Mensal</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 md:p-6">
-              <div className="h-48 md:h-64 overflow-x-auto lg:overflow-x-hidden">
-                <div className="flex items-end space-x-2 md:space-x-6 min-w-max lg:min-w-0 justify-center lg:justify-between w-full">
-                  {[40, 65, 75, 50, 80, 60, 90, 70, 85, 55, 45, 70].map((height, index) => (
-                    <div key={index} className="flex flex-col items-center">
-                      <div 
-                        className="bg-green-500 rounded-t-md w-6 md:w-8" 
-                        style={{ height: `${height * 0.4}vh` }}
-                      ></div>
-                      <span className="text-xs mt-2 text-gray-500">
-                        {['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'][index]}
-                      </span>
-                    </div>
+            {/* Admin Statistics */}
+            {userType === 'administrator' && admin?.data && (
+              <>
+                {/* Estatísticas Principais - Admin */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+                  {statsCards.map((stat, index) => (
+                    <Card key={index}>
+                      <CardContent className="p-4 md:p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">{stat.title}</p>
+                            <p className="text-xl md:text-2xl font-bold mt-1">{stat.value}</p>
+                          </div>
+                          {/*<div className={`${stat.color} p-2 md:p-3 rounded-full`}>
+                            {stat.icon}
+                          </div>*/}
+                        </div>
+                        <div className="mt-3 md:mt-4">
+                          <span className={`text-xs inline-flex items-center font-medium ${stat.textColor}`}>
+                            <TrendingUp size={14} className="mr-1" />
+                            {stat.percentagem}
+                          </span>
+                          <span className="text-xs ml-1 text-gray-500">vs mês anterior</span>
+                        </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
+                
+                {/* Gráficos e Tabelas - Admin */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+                  {/* Tipos de Usuários */}
+                  <Card className="lg:col-span-1">
+                    <CardHeader className="p-4 md:p-6">
+                      <CardTitle>Distribuição de Usuários</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 md:p-6 pt-0">
+                      <div className="space-y-4">
+                        {Object.entries(admin.data.users.byType).map(([type, count], index) => (
+                          <div key={index} className="flex flex-col">
+                            <div className="flex justify-between mb-1">
+                              <span className="text-sm font-medium capitalize">{type}</span>
+                              <span className="text-sm text-gray-500">
+                                {safeCalculatePercentage(count, admin.data.users.total)}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className={`h-2 rounded-full ${index === 0 ? 'bg-blue-600' : index === 1 ? 'bg-purple-600' : 'bg-green-600'}`} 
+                                style={{ width: `${safeCalculatePercentage(count, admin.data.users.total)}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Quadras Populares */}
+                  <Card className="lg:col-span-1">
+                    <CardHeader className="p-4 md:p-6">
+                      <CardTitle>Quadras Populares</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 md:p-6 pt-0">
+                      <div className="space-y-3 md:space-y-4">
+                        {fieldsWithPercentage.map((field, index) => (
+                          <div key={index} className="flex flex-col">
+                            <div className="flex justify-between mb-1">
+                              <span className="text-sm font-medium">{field.name}</span>
+                              <span className="text-sm text-gray-500">{field.reservations}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-green-600 h-2 rounded-full" 
+                                style={{ width: `${field.percentagem}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Status das Reservas */}
+                  <Card className="lg:col-span-1">
+                    <CardHeader className="p-4 md:p-6">
+                      <CardTitle>Status das Reservas</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 md:p-6 pt-0">
+                      <div className="space-y-3 md:space-y-4">
+                        {Object.entries(admin.data.reservations)
+                          .filter(([key]) => key !== 'total')
+                          .map(([status, count], index) => (
+                            <div key={index} className="flex flex-col">
+                              <div className="flex justify-between mb-1">
+                                <span className="text-sm font-medium capitalize">{status}</span>
+                                <span className="text-sm text-gray-500">
+                                  {count.toLocaleString()} ({safeCalculatePercentage(count, admin.data.reservations.total)}%)
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className={`h-2 rounded-full ${
+                                    status === 'confirmed' ? 'bg-green-600' : 
+                                    status === 'pending' ? 'bg-yellow-500' : 'bg-red-500'
+                                  }`} 
+                                  style={{ width: `${safeCalculatePercentage(count, admin.data.reservations.total)}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </>
+            )}
+            
+            {/* Operator Statistics */}
+            {userType === 'operator' && operator?.data && (
+              <>
+                {/* Estatísticas Principais - Operator */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+                  {operatorStatsCards.map((stat, index) => (
+                    <Card key={index}>
+                      <CardContent className="p-4 md:p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">{stat.title}</p>
+                            <p className="text-xl md:text-2xl font-bold mt-1">{stat.value}</p>
+                          </div>
+                          <div className={`${stat.color} p-2 md:p-3 rounded-full`}>
+                            {stat.icon}
+                          </div>
+                        </div>
+                        <div className="mt-3 md:mt-4">
+                          <span className={`text-xs inline-flex items-center font-medium ${stat.textColor}`}>
+                            <TrendingUp size={14} className="mr-1" />
+                            {stat.percentagem}
+                          </span>
+                          <span className="text-xs ml-1 text-gray-500">vs mês anterior</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                
+                {/* Quadras e Reservas - Operator */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+                  {/* Quadras Populares */}
+                  <Card className="lg:col-span-1">
+                    <CardHeader className="p-4 md:p-6">
+                      <CardTitle>Quadras Populares</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 md:p-6 pt-0">
+                      <div className="space-y-3 md:space-y-4">
+                        {operatorFieldsWithPercentage.map((field, index) => (
+                          <div key={index} className="flex flex-col">
+                            <div className="flex justify-between mb-1">
+                              <span className="text-sm font-medium">{field.name}</span>
+                              <span className="text-sm text-gray-500">{field.reservations} reservas</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-blue-600 h-2 rounded-full" 
+                                style={{ width: `${field.percentagem}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Reservas Recentes */}
+                  <Card className="lg:col-span-1">
+                    <CardHeader className="p-4 md:p-6">
+                      <CardTitle>Reservas Recentes</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 md:p-6 pt-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-full divide-y divide-gray-200">
+                          <thead>
+                            <tr>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quadra</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {operator.data.recentReservations.map((reservation, index) => (
+                              <tr key={index}>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">{reservation.Client.name}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm">{reservation.Field.name}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm">{formatDate(reservation.createdAt)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm">
+                                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                    reservation.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
+                                    reservation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                    'bg-red-100 text-red-800'
+                                  }`}>
+                                    {reservation.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Quadras Agendadas */}
+                <Card className="mb-6 md:mb-8">
+                  <CardHeader className="p-4 md:p-6">
+                    <CardTitle>Quadras Agendadas Hoje</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 md:p-6 pt-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-full divide-y divide-gray-200">
+                        <thead>
+                          <tr>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quadra</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localização</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horário</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {operator.data.scheduledFields.map((schedule, index) => (
+                            <tr key={index}>
+                              <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">{schedule.Field.name}</td>
+                              <td className="px-3 py-2 whitespace-nowrap text-sm">
+                                {schedule.Field.FieldAddresses?.City?.name}, {schedule.Field.FieldAddresses?.Province?.name}
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap text-sm">
+                                {formatTime(schedule.FieldAvailability.startTime)} - {formatTime(schedule.FieldAvailability.endTime)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </main>
         )}
-      
-      {/*Resevas Content*/}  
-      {select === 'reservations' && (
-        <ManageReservations/>
+        
+        {/*Resevas Content*/}  
+        {select === 'reservations' && (
+          <ManageReservations/>
         )}
-      {/*Usuário Content*/}
-      {select === 'users' && (
-        <ManageUsers/>
-          )}
+        
+        {/*Usuário Content*/}
+        {select === 'users' && (
+          <ManageUsers/>
+        )}
 
-      {/*Quadras Content*/}
-      {select === 'quadras' && (
-        <ManageCourt/>
-          )}
+        {/*Quadras Content*/}
+        {select === 'quadras' && (
+          <ManageCourt/>
+        )}
 
-      {/*Módulos Content*/}
-      {select === 'modulo' && (
-        <ManageSettings/>
-          )}
+        {/*Módulos Content*/}
+        {select === 'modulo' && (
+          <ManageSettings/>
+        )}
 
-      {/*Payments Content*/}
-      {select === 'pagamentos' && (
-        <ManagePayments/>
-          )}
+        {/*Payments Content*/}
+        {select === 'pagamentos' && (
+          <ManagePayments/>
+        )}
       </div>
     </div>
   );

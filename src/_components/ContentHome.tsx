@@ -33,6 +33,7 @@ import { format, parse, isBefore, startOfDay } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { getCurrentAngolaDate,  formatToAngolaTime, convertToUtc} from '@/utils/methods'
 import FieldImageGallery from './FieldImageGallery'
+import { FaUserEdit } from "react-icons/fa";
 
 const ContentHome = () => {
   const navigate = useNavigate();
@@ -190,7 +191,12 @@ const ContentHome = () => {
                         Minhas Reservas
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600">
+                    <DropdownMenuItem className="cursor-pointer text-gray-600 flex items-center">
+                      <FaUserEdit className="mr-2 h-4 w-4" /> <Link to={'/edit-profile'}>
+                        Meus dados
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={logout} className="cursor-pointer text-gray-600">
                       <LogOut className="mr-2 h-4 w-4" /> Sair
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -390,6 +396,7 @@ const ContentHome = () => {
                 {filteredProducts?.map((product) => {
                   const cidade = cityData?.data?.data?.find(c => c.id === product.address.cityId);
                   const province = provinceData?.data?.data?.find(c => c.id === product.address.provinceId);
+                  let typeCourt = typeData?.data?.data?.find(t=>t.id==product.fieldTypeId)
                   const price = receiveCentFront(product.hourlyRate);
                   return (
                     <Card key={product.id} className="overflow-hidden p-0 border border-gray-200 hover:shadow-lg transition-shadow duration-300">
@@ -401,10 +408,10 @@ const ContentHome = () => {
                     />
                       </div>
                       <CardContent className="p-4">
-                        <h3 className="font-medium text-gray-900 mb-1">{product.name}</h3>
+                        <h3 className="font-medium text-gray-900 mb-1">{typeCourt?.name} - {product?.name}</h3>
                         <p className="text-sm text-gray-500">{cidade?.name || 'N/A'} - {province?.name || 'N/A'}</p>
                         <div className="text-lg font-bold text-green-700 mt-1">{price}/Hora</div>
-                        <Link to={`/courtdetails?id=${product.id}`}>
+                        <Link to={`/courtdetails?id=${product?.id}`}>
                           <Button className="w-full mt-3 bg-green-700 hover:bg-green-600">
                             Ver Mais
                           </Button>

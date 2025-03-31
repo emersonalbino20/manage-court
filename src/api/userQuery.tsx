@@ -18,6 +18,17 @@ export const auxPostUsers = (data) => {
     });
 };
 
+export const auxPutUser = (data) => {
+  const mytoken = localStorage.getItem("token");
+  return axios.put(`http://localhost:3000/users/${data?.id}`, {name: data?.name, phone: data?.phone, type: data?.type}, {
+      headers: {
+        Authorization: `Bearer ${mytoken}`, 
+        "Content-Type": "application/json",
+      },
+    });
+};
+
+
 
 export const auxPostLogin = (data) => {
   return axios.post(`http://localhost:3000/auth/`, data);
@@ -97,7 +108,7 @@ export const usePutUser = () => {
   const { mutate } = useMutation({
     mutationFn: auxPutUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       console.log('success');
     },
     onError: (error) => {
@@ -116,6 +127,20 @@ export const useGetUsersQuery = () => {
       const mytoken = localStorage.getItem("token");
       return axios
         .get('http://localhost:3000/users', {
+          headers: { Authorization: `Bearer ${mytoken}` }
+        })
+        .then(response => response.data);
+    }
+  });
+};
+
+export const useGetClientsQuery = () => {
+    return useQuery({
+    queryKey: ['myprofile'],
+    queryFn: () => {
+      const mytoken = localStorage.getItem("token");
+      return axios
+        .get('http://localhost:3000/users/?type=client', {
           headers: { Authorization: `Bearer ${mytoken}` }
         })
         .then(response => response.data);

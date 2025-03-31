@@ -27,7 +27,7 @@ import { useGetPaymentMethodsQuery } from '@/api/paymentMethodsQuery';
 import { useAuth } from "@/hooks/AuthContext";
 import { receiveCentFront } from '@/utils/methods';
 import { MdPayment } from "react-icons/md";
-import { useGetUsersQuery } from '@/api/userQuery';
+import { useGetClientsQuery } from '@/api/userQuery';
 
 const ManagePayments = () => {
   // Função para formatar a data atual no formato YYYY-MM-DD para o input
@@ -59,10 +59,8 @@ const ManagePayments = () => {
 
   // Fetch payments query
   const { data: paymentsData, isLoading, error } = useGetPaymentsQuery(fromDate, toDate, statusFilter);
-  const { data: userData } = useGetUsersQuery();
-
+  const { data: userData } = useGetClientsQuery();
   const { data: methodsData } = useGetPaymentMethodsQuery();
-  //console.log(methodsData);
 
   // Patch payment status mutation
   const { mutate: patchPaymentStatus } = usePatchPaymentStatusQuery();
@@ -215,7 +213,7 @@ const ManagePayments = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Status</label>
+                <label className="text-sm font-medium text-gray-700">Estado</label>
                 <Select value={statusFilter} onValueChange={setStatusFilter} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Todos os status" />
@@ -267,7 +265,7 @@ const ManagePayments = () => {
                       Valor
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Status
+                      Estado
                     </th>
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
                       Ações

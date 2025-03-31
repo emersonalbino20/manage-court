@@ -6,11 +6,12 @@ import { Label } from '@/components/ui/label';
 import {
   useGetUsersQuery,
   usePostUsers,
+  usePutUser
 } from '@/api/userQuery';
 import FeedbackDialog from '@/_components/FeedbackDialog';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { schemeUser } from '@/utils/validateForm.tsx';
+import { schemeUser, schemeUserUp } from '@/utils/validateForm.tsx';
 import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form";
 import {
   AlertDialog,
@@ -31,8 +32,16 @@ const ManageUsers = () => {
       name: '',
       email: '',
       phone: '',
-      type: 'client',
-      password: ''
+      type: '',
+    },
+  });
+
+  const formUserUp = useForm({
+    resolver: zodResolver(schemeUserUp),
+    defaultValues: {
+      name: '',
+      phone: '',
+      type: '',
     },
   });
 
@@ -42,7 +51,7 @@ const ManageUsers = () => {
 
   // Dados da API
   const { data: userData } = useGetUsersQuery();
-  console.log(userData)
+  
   // Estados para controlar o diálogo
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -53,7 +62,7 @@ const ManageUsers = () => {
   const [usuarioParaExcluir, setUsuarioParaExcluir] = useState(null);
 
   const { mutate: mutateUser } = usePostUsers();
-  //const { mutate: putUser } = usePutUser();
+  const { mutate: putUser } = usePutUser();
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -98,17 +107,18 @@ const ManageUsers = () => {
   function submitUser(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
     event?.preventDefault(); 
 
-    /*if (modoEdicao) {
+    if (modoEdicao) {
       putUser(data, {
         onSuccess: (response) => {
           setIsSuccess(true);
           setFeedbackMessage("O usuário foi atualizado com sucesso!");
           setDialogOpen(true);
-          formUser.reset();
+          formUserUp.reset();
           setActiveTab('listar');
         },
         onError: (error) => {
           console.log(error);
+          setErro(error)
           setIsSuccess(false);
           setFeedbackMessage("Não foi possível atualizar o usuário. Verifique seus dados e tente novamente.");
           setDialogOpen(true);
@@ -117,7 +127,7 @@ const ManageUsers = () => {
         }
       });
       setModoEdicao(false);
-    } else {*/
+    } else {
       mutateUser({ 
         name: data?.name,
         email: data?.email,
@@ -133,13 +143,14 @@ const ManageUsers = () => {
           setActiveTab('listar');
         },
         onError: (error) => {
+          console.log(error)
           setErro(error);
           setIsSuccess(false);
           setFeedbackMessage("Não foi possível cadastrar o usuário. Verifique seus dados e tente novamente.");
           setDialogOpen(true);
         }
       });
-    //}
+    }
   };
 
   const handleCloseDialog = () => {
@@ -148,14 +159,11 @@ const ManageUsers = () => {
 
   const iniciarEdicao = (user) => {
     setUsuarioEditando(user);
-    formUser.setValue("id", user.id);
-    formUser.setValue("name", user.name);
-    formUser.setValue("email", user.email);
-    formUser.setValue("phone", user.phone);
-    formUser.setValue("type", user.type);
-    // Não configuramos a senha para edição por motivos de segurança
-    formUser.setValue("password", "");
     setModoEdicao(true);
+    formUserUp.setValue("id", user.id);
+    formUserUp.setValue("name", user.name);
+    formUserUp.setValue("phone", user.phone);
+    formUserUp.setValue("type", user.type);
     setActiveTab('cadastrar');
   };
 
@@ -206,6 +214,7 @@ return (
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
+          {!modoEdicao ?  (
           <Form {...formUser}>
             <form onSubmit={(e) => {
                 e.preventDefault();
@@ -255,7 +264,7 @@ return (
                     )}
                   />
                 </div>
-
+          
                 <div>
                   <FormField
                     control={formUser.control}
@@ -266,6 +275,7 @@ return (
                         <FormControl>
                         <Input {...field} type="email"
                         className="w-full p-2 border border-gray-300 rounded-md"
+                        readOnly={modoEdicao}
                         />
                         </FormControl>
                         <FormMessage />
@@ -273,7 +283,7 @@ return (
                     )}
                   />
                 </div>
-
+            
                 <div>
                   <FormField
                     control={formUser.control}
@@ -297,7 +307,6 @@ return (
                     )}
                   />
                 </div>
-
                 <div className="md:col-span-2">
                   <FormField
                     control={formUser.control}
@@ -305,7 +314,7 @@ return (
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="block text-sm font-medium text-gray-700 mb-1">
-                          {modoEdicao ? 'Nova Senha (deixe em branco para manter atual)' : 'Senha'}
+                           Senha
                         </FormLabel>
                         <FormControl>
                         <Input {...field} type="password"
@@ -325,12 +334,99 @@ return (
                   className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                 >
                   <Save size={16} className="inline mr-1" />
-                  {modoEdicao ? 'Atualizar' : 'Cadastrar'}
+                  Cadastrar
                 </button>
               </div>
             </form>
             </Form>
-          </CardContent>
+          ) :
+  (
+    <Form {...formUserUp}>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                formUserUp.handleSubmit((data) => submitUser(data, e))();
+              }} 
+             >
+             
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <FormField
+                    control={formUserUp.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</FormLabel>
+                        <FormControl>
+                        <Input {...field} 
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div>
+                  <FormField
+                    control={formUserUp.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="block text-sm font-medium text-gray-700 mb-1">Tipo de Usuário</FormLabel>
+                        <FormControl>
+                          <select
+                            {...field}
+                           className="w-full p-2 border border-gray-300 rounded-md"
+                          >
+                            <option value="">Selecione o tipo de usuário</option>
+                            {userTypes.map((type) => (
+                              <option key={type.id} value={type.id}>{type.name}</option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                          <div>
+                  <FormField
+                    control={formUserUp.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="block text-sm font-medium text-gray-700 mb-1">Telefone</FormLabel>
+                        <FormControl>
+                        <Input {...field} 
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        maxLength={9}
+                        pattern="[0-9]*"
+                        inputMode="numeric"
+                        onInput={(e) => {
+                          e.target.value = e.target.value.replace(/\D/g, "").slice(0, 9);
+                        }}
+                        />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  <Save size={16} className="inline mr-1" />
+                  Atualizar
+                </button>
+              </div>
+            </form>
+            </Form>)
+}</CardContent>
         </Card>
       ) : activeTab === 'listar' ? (
         <Card>
@@ -357,9 +453,9 @@ return (
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Data de Cadastro
                     </th>
-                    {/*<th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
                       Ações
-                    </th>*/}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -387,20 +483,20 @@ return (
                       <td className="px-4 py-2 whitespace-nowrap">
                         {new Date(usuario.createdAt).toLocaleDateString('pt-BR')}
                       </td>
-                      {/*<td className="px-4 py-2 whitespace-nowrap text-right">
+                      <td className="px-4 py-2 whitespace-nowrap text-right">
                         <button
                           onClick={() => iniciarEdicao(usuario)}
                           className="text-blue-600 hover:text-blue-800 mr-3"
                         >
                           <Edit size={16} />
                         </button>
-                        <button
+                        {/*<button
                           onClick={() => openDeleteDialog(usuario)}
                           className="text-red-600 hover:text-red-800"
                         >
                           <Trash2 size={16} />
-                        </button>
-                      </td>*/}
+                        </button>*/}
+                      </td>
                     </tr>
                   )})}
                 </tbody>

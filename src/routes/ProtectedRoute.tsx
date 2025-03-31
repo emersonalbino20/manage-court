@@ -30,7 +30,7 @@ export function ProtectedRoute(): React.ReactElement {
 
     // Rotas específicas por tipo de usuário
     const adminRoutes = ["/admin"];
-    const clientRoutes = ["/", "/courtdetails", "/booking", "/userbooking"];
+    const clientRoutes = ["/", "/edit-profile", "/courtdetails", "/booking", "/userbooking"];
 
     // Lógica de redirecionamento para administradores e operadores
     if (userType === "administrator" || userType === "operator") {

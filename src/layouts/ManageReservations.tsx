@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/AuthContext";
 import { receiveCentFront, formatToAngolaTime } from '@/utils/methods';
 import { useGetCourtsQuery, useGetCourtIdAvailabilities } from '@/api/courtQuery';
 import {useGetIdAvailabilities} from '@/api/reserveQuery';
+import { useGetClientsQuery } from '@/api/userQuery';
 
 const ManageReservations = () => {
   // States for dialogs and feedback
@@ -36,9 +37,7 @@ const ManageReservations = () => {
   const { data: reservationsData, isLoading, error } = useGetUserResevationsQuery();
   const { data: courts } = useGetCourtsQuery();
   const { data: reservations} = useGetUserResevationsQuery();
-  //const time_reservations = reservations?.data?.fieldReservations.find(r => r.id === reservation?.id);
-  
-  //console.log(time_reservations);
+  const { data: userData } = useGetClientsQuery();
 
   // Patch reservation mutation
   const { mutate: patchReservation } = usePatchCancelReservation();
@@ -151,10 +150,13 @@ const ManageReservations = () => {
                       Quadra
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Cliente
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Preço
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Status
+                      Estado
                     </th>
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
                       Ações
@@ -164,10 +166,14 @@ const ManageReservations = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {reservationsData?.data?.fieldReservations.map((reservation) => {
                     const court_data = courts?.data.data.fields.find(p => p.id === reservation?.fieldId);
+                    const users = userData?.data?.users?.find(u => u.id === reservation?.clientId);
                     return (
                     <tr key={reservation.id}>
                       <td className="px-4 py-2 whitespace-nowrap">
                         {court_data?.name}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        {users?.name}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         Kz {receiveCentFront(reservation.price)}

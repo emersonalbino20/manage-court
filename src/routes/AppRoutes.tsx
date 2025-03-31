@@ -5,6 +5,7 @@ import { lazy, Suspense } from 'react';
 
 // Importações das páginas
 const Home = lazy(() => import('../pages/dashboard/Home'));
+const EditProfile = lazy(() => import('../pages/dashboard/EditProfile'));
 const Register = lazy(() => import('../pages/auth/Register'));
 const CourtDetails = lazy(() => import('../pages/dashboard/CourtDetails'));
 const Login = lazy(() => import('../pages/auth/Login'));
@@ -27,9 +28,11 @@ export function AppRoutes(): React.ReactElement {
         <Routes>
           {/* Rotas públicas */}
           <Route path="/courtdetails" element={<CourtDetails />} />
+
           {/* Rotas protegidas */}
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Home />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

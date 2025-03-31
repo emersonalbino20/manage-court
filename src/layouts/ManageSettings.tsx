@@ -151,8 +151,8 @@ function submitCity(data: any, event: React.FormEvent<HTMLFormElement> | undefin
         setIsSuccess(true);
         setFeedbackMessage("A cidade foi actualizada com sucesso!");
         setDialogOpen(true);
-        formCity.reset();
-        setEditandoProvincia(null); // Reseta o estado após edição
+        //formCity.reset();
+        setEditandoCidade(null); // Reseta o estado após edição
       },
       onError: (error) => {
         setIsSuccess(false);
@@ -167,7 +167,7 @@ function submitCity(data: any, event: React.FormEvent<HTMLFormElement> | undefin
         setIsSuccess(true);
         setFeedbackMessage("A cidade foi cadastrada com sucesso!");
         setDialogOpen(true);
-        formCity.reset();
+        //formCity.reset();
       },
       onError: (error) => {
         setErro(error)
@@ -208,6 +208,7 @@ React.useEffect(() => {
   };
   
   const editarCidade = (cidade, pr) => {
+    console.log(`cidade: ${cidade.id}, provincia: ${pr}`)
     setEditandoCidade(cidade)
     formCity.setValue("id", cidade.id);
     formCity.setValue("provinceId", pr);
@@ -543,7 +544,7 @@ React.useEffect(() => {
                               <td className="py-2">{provincia ? provincia?.name : 'Desconhecida'}</td>
                               <td className="py-2 text-right">
                                 <button
-                                  onClick={() => editarCidade(cidade, provincia.provinceId)}
+                                  onClick={() => editarCidade(cidade, provincia.id)}
                                   className="text-blue-600 hover:text-blue-800 mr-2"
                                 >
                                   <Edit size={16} />

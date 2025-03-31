@@ -108,14 +108,37 @@ export const schemeUser = z.object({
       message: "Tipo de usuário inválido",
     })
     .default("client"),
-  password: z
+ password: z
+  .string()
+  .trim()
+  .regex(passwordRegex, {
+    message:
+      "A senha deve ter pelo menos 6 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.",
+  })
+  .max(255, "A senha deve ter no máximo 255 caracteres")
+
+});
+
+export const schemeUserUp = z.object({
+  id: z.string().trim().ulid({
+    message: "ID inválido",
+  }).optional(),
+  name: z
     .string()
     .trim()
-    .regex(passwordRegex, {
-      message:
-        "A senha deve ter pelo menos 6 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.",
+    .min(3, { message: "O nome deve ter pelo menos 3 caracteres" })
+    .max(100, { message: "O nome não pode ter mais de 100 caracteres" })
+    .regex(nameRegex, { message: "O nome contém caracteres inválidos" }),
+  phone: z
+    .string()
+    .trim()
+    .length(9, { message: "O telefone deve ter exatamente 9 dígitos" })
+    .regex(phoneRegex, { message: "Número de telefone inválido" }),
+  type: z
+    .enum(["administrator", "operator", "client"], {
+      message: "Tipo de usuário inválido",
     })
-    .max(255, "A senha deve ter no máximo 255 caracteres")
+    .default("client"),
 });
 
 

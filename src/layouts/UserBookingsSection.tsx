@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, AlertCircle, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, AlertCircle, X, Alert, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -16,6 +16,8 @@ import {
   useGetCitiesQuery
 } from '@/api/cityQuery';
 import FeedbackDialog from '@/_components/FeedbackDialog'; // Ajuste o caminho conforme necessário
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from '@/components/ui/label';
 
 const UserBookingsSection = () => {
   
@@ -30,11 +32,12 @@ const UserBookingsSection = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [cancellationReason, setCancellationReason] = useState("");
 
   const [id, setId] = useState('');
   const {mutate: cancelReservations} = usePatchCancelReservationClient();
   const handleCancelBooking = (bookingId) => {
-     cancelReservations({id: bookingId, status: "cancelled", cancellationReason: "estou cancelando a reserva por motivos pessoais"},{
+     cancelReservations({id: bookingId, status: "cancelled", cancellationReason: cancellationReason},{
       onSuccess: (response) => {
         setIsSuccess(true);
         setFeedbackMessage("A sua reserva foi cancelada!");
@@ -96,50 +99,85 @@ const UserBookingsSection = () => {
             const city = cityData?.data?.data?.find(p => p.id === court_data?.address.cityId);
             console.log(court_data)
             return (
-            <Card key={booking.id} className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-              <div className="relative h-0 pt-[52%]">
-              {court_data?.thumbnailUrl &&
-                (<img 
-                    src={court_data?.thumbnailUrl} 
-                    alt={"Nothing"}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />)}
-                <div className="absolute top-2 right-2">
-                  {getStatusBadge(booking.status)}
+                     <Card key={booking.id} className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+            <div className="relative h-0 pt-[52%]">
+              {court_data?.thumbnailUrl && (
+                <img 
+                  src={court_data?.thumbnailUrl} 
+                  alt={"Imagem da quadra"}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              )}
+              <div className="absolute top-2 right-2">
+                {getStatusBadge(booking.status)}
+              </div>
+              {booking.status === 'cancelled' && (
+                <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center">
+                  <div className="bg-white/90 px-4 py-2 rounded-md shadow-md">
+                    <span className="font-semibold text-red-600">Agendamento Cancelado</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <CardContent className="p-4">
+              <h3 className="font-medium text-gray-900 mb-1">{court_data?.name}</h3>
+              <div className="space-y-2 text-sm text-gray-700">
+                <div className="flex items-center">
+                  <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                  <span>{city?.name} - {province?.name}</span>
+                </div>
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                  <span>{booking.fieldAvailability.day}</span>
+                </div>
+                <div className="flex items-center">
+                  <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                  <span>{booking.fieldAvailability.startTime} - {booking.fieldAvailability.endTime}</span>
                 </div>
               </div>
-              <CardContent className="p-4">
-                <h3 className="font-medium text-gray-900 mb-1">{court_data?.name}</h3>
-                <div className="space-y-2 text-sm text-gray-700">
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{city?.name} - {province?.name}</span>
+              <div className="mt-3 text-lg font-bold text-green-700">Kz {receiveCentFront(booking.price)}</div>
+              
+              <div className="mt-4">
+                {booking.status === 'cancelled' ? (
+                  <div className="border border-red-100 bg-red-50 rounded-md p-3">
+                    <div className="flex space-x-2">
+                      <div className="flex-shrink-0 pt-0.5">
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-red-800">Motivo do cancelamento:</h4>
+                        <p className="text-sm text-red-700 mt-1">
+                          {booking.cancellationReason || "Nenhum motivo fornecido"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{booking.fieldAvailability.day}</span>
+                ) : booking.status === 'confirmed' ? (
+                  <div className="border border-green-100 bg-green-50 rounded-md p-3">
+                    <div className="flex space-x-2">
+                      <div className="flex-shrink-0 pt-0.5">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-green-800">Confirmação:</h4>
+                        <p className="text-sm text-green-700 mt-1">
+                          {booking.cancellationReason || "Agendamento confirmado"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{booking.fieldAvailability.startTime} - {booking.fieldAvailability.endTime}</span>
-                  </div>
-                </div>
-                <div className="mt-3 text-lg font-bold text-green-700">Kz {receiveCentFront(booking.price)}</div>
-                <div className="mt-4 space-y-2">
-                  {booking.status === 'cancelled' || booking.status === 'confirmed' ? (
-                    ''
-                    ) :
+                ) : (
                   <Button 
                     className="w-full bg-white text-red-700 border border-red-700 hover:bg-red-50"
                     variant="outline"
-                    onClick={()=>{openCancelDialog(booking)}}
+                    onClick={() => openCancelDialog(booking)}
                     disabled={booking.status === 'cancelado'}
                   >
                     Cancelar Agendamento
                   </Button>
-                  }
-                </div>
-              </CardContent>
+                )}
+              </div>
+            </CardContent>
             </Card>
           )})}
         </div>
@@ -147,65 +185,73 @@ const UserBookingsSection = () => {
 
       {/* Cancel Booking Dialog */}
       <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Cancelar Agendamento</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {bookingToCancel && (
-            <div className="py-4">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-16 h-16 relative">
-                  <img 
-                    src={Volei_1} 
-                
-                    className="w-full h-full object-cover rounded-md"
-                  />
-                </div>
-                {/*<div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">campo nome</p>
-                  <p className="text-sm text-gray-700">{bookingToCancel.fieldAvailability.startTime} - {bookingToCancel.fieldAvailability.endTime}</p>
-                  <p className="text-sm text-gray-700">local</p>
-                  <p className="text-sm font-bold text-green-700">Kz {receiveCentFront(bookingToCancel.price)}</p>
-                </div>*/}
-              </div>
-              
-              <div className="mt-4 bg-yellow-50 p-3 rounded-md">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <AlertCircle className="h-5 w-5 text-yellow-400" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-yellow-700">
-                  Política de cancelamento: Cancelamentos com até 24h de antecedencia.
-                    </p>
-                  </div>
-                </div>
-              </div>
+  <DialogContent className="sm:max-w-md md:max-w-lg p-0 overflow-hidden rounded-lg">
+    <DialogHeader className="px-6 pt-6 pb-3 bg-white border-b">
+      <DialogTitle className="text-xl font-bold flex items-center gap-2">
+        <AlertCircle className="h-5 w-5 text-red-500" />
+        Cancelar Agendamento
+      </DialogTitle>
+      <DialogDescription className="mt-1 text-gray-600">
+        Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita.
+      </DialogDescription>
+    </DialogHeader>
+    
+    {bookingToCancel && (
+      <div className="px-6 py-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+                   
+          <div className="flex-grow space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="cancellation-reason" className="text-sm font-medium text-gray-700">
+                Motivo do cancelamento
+              </Label>
+              <Textarea 
+                id="cancellation-reason"
+                placeholder="Descreva o motivo do cancelamento (opcional)"
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                className="w-full min-h-24 resize-y border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 transition-all rounded-md"
+              />
             </div>
-          )}
-          
-          <DialogFooter className="flex justify-between mt-6">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setIsCancelDialogOpen(false)}
-            >
-              Voltar
-            </Button>
-            <Button 
-              type="button" 
-              className="bg-red-600 hover:bg-red-700 text-white"
-              onClick={() => bookingToCancel && handleCancelBooking(bookingToCancel.id)}
-            >
-              Confirmar Cancelamento
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+        
+        <div className="mt-5 bg-amber-50 p-4 rounded-lg border border-amber-100">
+          <div className="flex items-start">
+            <div className="flex-shrink-0 pt-0.5">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-amber-800">Política de cancelamento</h3>
+              <p className="mt-1 text-sm text-amber-700">
+                Cancelamentos com até 24h de antecedência são processados sem custos adicionais. 
+                Cancelamentos posteriores podem estar sujeitos às políticas da instalação.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    
+    <DialogFooter className="px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-between gap-3">
+      <Button 
+        type="button" 
+        variant="outline" 
+        onClick={() => setIsCancelDialogOpen(false)}
+        className="w-full sm:w-auto border-gray-300 hover:bg-gray-50 transition-colors"
+      >
+        Voltar
+      </Button>
+      <Button 
+        type="button" 
+        className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white transition-colors focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+        onClick={() => bookingToCancel && handleCancelBooking(bookingToCancel.id)}
+      >
+        Confirmar Cancelamento
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
       <FeedbackDialog 
         isOpen={dialogOpen}
         onClose={handleCloseDialog}

@@ -80,20 +80,25 @@ const formCourt = useForm({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [quadraParaExcluir, setQuadraParaExcluir] = useState(null);
 
-  // Add these state variables inside the ManageCourt component:
+  // Estados para o diálogo de imagens
   const [imagesDialogOpen, setImagesDialogOpen] = useState(false);
   const [selectedFieldId, setSelectedFieldId] = useState(null);
+  
+  // Estado para o ID da quadra selecionada - agora com nome mais descritivo
+  const [selectedCourtId, setSelectedCourtId] = useState(null);
 
-// Add this function inside the ManageCourt component:
+// Função para abrir o diálogo de imagens
 const openImagesDialog = (fieldId) => {
   setSelectedFieldId(fieldId);
+  // Atualizar também o selectedCourtId para manter consistência
+  setSelectedCourtId(fieldId);
   setImagesDialogOpen(true);
 };
 
-// Add this function inside the ManageCourt component:
+// Função para fechar o diálogo de imagens
 const closeImagesDialog = () => {
   setImagesDialogOpen(false);
-  setSelectedFieldId(null);
+  // Não resetamos o selectedFieldId/selectedCourtId aqui para manter a referência
 };
 
   const { data: typeData } = useGetCourtsTypeQuery();
@@ -103,15 +108,26 @@ const closeImagesDialog = () => {
   const { mutate: mutateCourt } = usePostCourt();
   const { mutate: putCourt } = usePutCourt();
   const [erro, setErro] = useState('');
+  
+  // Função modificada para tratar mudança de abas preservando o ID da quadra selecionada
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     if (tab === 'cadastrar') {
       setModoEdicao(false);
       formCourt.reset();
+      // Não resetamos o selectedCourtId aqui para preservar a referência
     }
   };
 
-  //Patch
+  // Função para abrir a aba de disponibilidade da quadra
+  const openCourtAvailability = (courtId) => {
+    // Primeiro atualizamos o ID da quadra
+    setSelectedCourtId(courtId);
+    // Depois mudamos para a aba de disponibilidade
+    setActiveTab('disponibilidade');
+  };
+
+  //Patch para deletar quadra
   const { mutate: patchFields } = usePatchFields();
 
   const handleSubmitPatchFields = (id) => {
@@ -120,6 +136,10 @@ const closeImagesDialog = () => {
         setIsSuccess(true);
         setFeedbackMessage("A quadra foi deletada com sucesso!");
         setDialogOpen(true);
+        // Se a quadra deletada for a atualmente selecionada, resetamos o ID
+        if (selectedCourtId === id) {
+          setSelectedCourtId(null);
+        }
       },
       onError: (error) => {
         setErro(error)
@@ -130,9 +150,11 @@ const closeImagesDialog = () => {
     });
   };
 
-  // Função para abrir o diálogo de confirmação
+  // Função para abrir o diálogo de confirmação de exclusão
   const openDeleteDialog = (quadra) => {
     setQuadraParaExcluir(quadra);
+    // Atualizamos também o selectedCourtId para manter consistência
+    setSelectedCourtId(quadra.id);
     setDeleteDialogOpen(true);
   };
 
@@ -145,8 +167,9 @@ const closeImagesDialog = () => {
   };
 
   const [thumbnailUrls, setThumbnailUrls] = useState([]);
-    const { mutate: mutateImage } = usePostImage();
-   function submitCourt(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
+  const { mutate: mutateImage } = usePostImage();
+  
+  function submitCourt(data: any, event: React.FormEvent<HTMLFormElement> | undefined) {
     event?.preventDefault(); 
 
     const courtData = {
@@ -163,6 +186,8 @@ const closeImagesDialog = () => {
           setFeedbackMessage("A quadra foi atualizada com sucesso!");
           setDialogOpen(true);
           formCourt.reset();
+          // Preservamos o ID da quadra mesmo após salvar
+          setSelectedCourtId(data.id);
           setActiveTab('listar');
         },
         onError: (error) => {
@@ -177,31 +202,35 @@ const closeImagesDialog = () => {
       });
       setModoEdicao(false);
     } else {
-
       const value = sendCoinBeck(data?.hourlyRate);
-      mutateCourt({ fieldTypeId: data?.fieldTypeId,
-                    name: data?.name,
-                    description: data?.description,
-                    hourlyRate: value,
-                    address: {
-                      street: data?.address?.street,
-                      cityId: data?.address?.cityId,
-                      provinceId: data?.address?.provinceId,
-                      latitude: data?.address?.latitude,
-                      longitude: data?.address?.longitude
-                    },
-                    thumbnailUrl: data?.thumbnailUrl
-                    }, {
+      mutateCourt({ 
+        fieldTypeId: data?.fieldTypeId,
+        name: data?.name,
+        description: data?.description,
+        hourlyRate: value,
+        address: {
+          street: data?.address?.street,
+          cityId: data?.address?.cityId,
+          provinceId: data?.address?.provinceId,
+          latitude: data?.address?.latitude,
+          longitude: data?.address?.longitude
+        },
+        thumbnailUrl: data?.thumbnailUrl
+      }, {
         onSuccess: (response) => {
           setIsSuccess(true);
           setFeedbackMessage("A quadra foi cadastrada com sucesso!");
           setDialogOpen(true);
+          // Atualiza o ID da quadra com o ID da nova quadra criada (se disponível na resposta)
+          if (response?.data?.data?.id) {
+            setSelectedCourtId(response.data.data.id);
+          }
           formCourt.reset();
           setActiveTab('listar');
         },
        onError: (error) => {
-        console.log(error.response?.data?.data?.errors); // Confirma se os erros estão chegando
-        setErro(error); // Agora passamos o erro inteiro
+        console.log(error.response?.data?.data?.errors); 
+        setErro(error);
         setIsSuccess(false);
         setFeedbackMessage("Não foi possível cadastrar a quadra. Verifique seus dados e tente novamente.");
         setDialogOpen(true);
@@ -209,13 +238,17 @@ const closeImagesDialog = () => {
       });
     }
   };
-const handleCloseDialog = () => {
+
+  const handleCloseDialog = () => {
     setDialogOpen(false);
   };
 
   const iniciarEdicao = (court) => {
     const value = receiveCentFront(court?.hourlyRate);
     setQuadraEditando(court);
+    // Atualiza o ID da quadra sendo editada
+    setSelectedCourtId(court.id);
+    
     formCourt.setValue("id", court.id);
     formCourt.setValue("name", court.name);
     formCourt.setValue("description", court.description);
@@ -229,9 +262,6 @@ const handleCloseDialog = () => {
     setModoEdicao(true);
     setActiveTab('cadastrar');
   };
-
-  const [id, setId] = useState(null);
-  
 
   return (
     <div className="p-4 md:p-6 overflow-x-hidden">
@@ -542,7 +572,7 @@ const handleCloseDialog = () => {
                     const court_type = typeData?.data?.data?.find(p => p.id === quadra?.fieldTypeId);
                     const price = receiveCentFront(quadra.hourlyRate);
                     return(
-                    <tr key={quadra.id}>
+                    <tr key={quadra.id} className={selectedCourtId === quadra.id ? "bg-green-50" : ""}>
                       <td className="px-4 py-2 whitespace-nowrap">
                         {quadra.name}
                       </td>
@@ -572,10 +602,8 @@ const handleCloseDialog = () => {
                           <Trash2 size={16} />
                         </button>
                       
-                      <button
-                          onClick={() =>{ handleTabChange('disponibilidade');
-                          setId(quadra.id);
-                        }}
+                        <button
+                          onClick={() => openCourtAvailability(quadra.id)}
                           className="text-yellow-600 hover:text-yellow-800"
                         >
                           <MdOutlineWatchLater />
@@ -597,8 +625,11 @@ const handleCloseDialog = () => {
           </CardContent>
         </Card>
       ) : (
-        // Conteúdo da aba Disponibilidade
-        <CourtAvailability ulid={id}/>
+        // Conteúdo da aba Disponibilidade - Adicionado key prop para forçar re-render
+        <CourtAvailability 
+          key={`court-availability-${selectedCourtId}`} 
+          ulid={selectedCourtId}
+        />
       )}
 
       {/* Feedback Dialog */}

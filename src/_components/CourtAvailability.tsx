@@ -28,10 +28,8 @@ import { getCurrentAngolaDate,  formatToAngolaTime, convertToUtc} from '@/utils/
 const CourtAvailability = ({ulid}) => {
   // Estado para controlar a abertura do popover do calendário
   const [calendarOpen, setCalendarOpen] = useState(false);
-  
-
   const today = startOfDay(new Date()); 
-
+console.log(ulid)
   const todayFormatted = getCurrentAngolaDate();
   
   const formCourt = useForm({
@@ -126,6 +124,7 @@ const CourtAvailability = ({ulid}) => {
   };
   
   const { data: courtData } = useGetCourtIdAvailabilities(ulid, fieldDate);
+  console.log(courtData)
   
   const editarAgendamento = (agendamento) => {
     setEditandoTipo(agendamento);

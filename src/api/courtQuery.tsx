@@ -298,9 +298,9 @@ const currentDate = new Date().toISOString().split('T')[0]
 
 export const useGetCourtIdAvailabilities = (fieldId, day) => {
   const { data, isFetched } = useQuery({
-    queryKey: ['field-availability'],
+    queryKey: ['field-availability', fieldId, day],
     queryFn: () => axios.get(`http://localhost:3000/field-availabilities/${fieldId}?day=${day}&excludeReserved=false`),
-    enabled: !!day,
+    enabled: !!fieldId,
   });
 
   return { data, isFetched };

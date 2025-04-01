@@ -34,6 +34,7 @@ import { pt } from 'date-fns/locale';
 import { getCurrentAngolaDate,  formatToAngolaTime, convertToUtc} from '@/utils/methods'
 import FieldImageGallery from './FieldImageGallery'
 import { FaUserEdit } from "react-icons/fa";
+import { useRef } from "react";
 
 const ContentHome = () => {
   const navigate = useNavigate();
@@ -66,11 +67,11 @@ const ContentHome = () => {
   const { data: provinceData } = useGetProvincesQuery();
   const { data: cityData } = useGetCitiesQuery();
   const { data: typeData } = useGetCourtsTypeQuery();
-  const { data: courtData } = useGetCourtsQuery();
-  const [province, setProvince] = useState('');
+  const { data: courtData, isLoading } = useGetCourtsQuery();
+
+     const [province, setProvince] = useState('');
   const {data: cities} = useGetProvinceCityId(province);
 
-  console.log(cities);
   // Sync category nav with sport type filter
   useEffect(() => {
     if (activeCategory !== 'destaques') {
@@ -104,39 +105,40 @@ const ContentHome = () => {
     setSearchTerm('');
   };
 
-  const filteredProducts = courtData?.data?.data?.fields?.filter(product => {
-    if (!product) return false;
-    
-    const type = typeData?.data?.data?.find(t => t.id === product.fieldTypeId);
-    const city = cityData?.data?.data?.find(t => t.id === product.address.cityId);
-    
-    // Filtro por termo de busca
-    if (searchTerm && !product.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false;
-    }
-    
-    // Filtro por categoria
-    if (activeCategory !== 'destaques' && type?.name !== activeCategory) {
-      return false;
-    }
-    
-    // Filtro por tipo de esporte (do formulário)
-    if (selectedSportType !== 'todas' && type?.name !== selectedSportType) {
-      return false;
-    }
-    
-    // Filtro por localização
-    if (selectedCity && selectedCity !== "todas" && city?.name !== selectedCity) {
-      return false;
-    }
-    
-    // Filtro por avaliação mínima
-    if (product.rating < minRating) {
-      return false;
-    }
-    
-    return true;
-  }) || [];
+
+ const filteredProducts = courtData?.data?.data?.fields?.filter(product => {
+  if (!product) return false;
+
+  const type = typeData?.data?.data?.find(t => t.id === product.fieldTypeId);
+  const city = cityData?.data?.data?.find(t => t.id === product.address.cityId);
+
+  // Filtro por termo de busca
+  if (searchTerm && !product.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+    return false;
+  }
+
+  // Filtro por categoria
+  if (activeCategory !== 'destaques' && type?.name !== activeCategory) {
+    return false;
+  }
+
+  // Filtro por tipo de esporte (do formulário)
+  if (selectedSportType !== 'todas' && type?.name !== selectedSportType) {
+    return false;
+  }
+
+  // Filtro por localização
+  if (selectedCity && selectedCity !== "todas" && city?.name !== selectedCity) {
+    return false;
+  }
+
+  // Filtro por avaliação mínima
+  if (minRating && product.rating < minRating) {
+    return false;
+  }
+
+  return true;
+});
 
   return (
     <main className="min-h-screen bg-white">
@@ -186,16 +188,18 @@ const ContentHome = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                  <Link to={'/courtdetails'}>
                     <DropdownMenuItem className="cursor-pointer font-bold text-gray-800 flex items-center">
-                      <Heart className="mr-2 h-4 w-4" /> <Link to={'/courtdetails'}>
+                      <Heart className="mr-2 h-4 w-4" /> 
                         Minhas Reservas
-                      </Link>
                     </DropdownMenuItem>
+                    </Link>
+                    <Link to={'/edit-profile'}>
                     <DropdownMenuItem className="cursor-pointer text-gray-600 flex items-center">
-                      <FaUserEdit className="mr-2 h-4 w-4" /> <Link to={'/edit-profile'}>
+                      <FaUserEdit className="mr-2 h-4 w-4" /> 
                         Meus dados
-                      </Link>
                     </DropdownMenuItem>
+                     </Link>
                     <DropdownMenuItem onClick={logout} className="cursor-pointer text-gray-600">
                       <LogOut className="mr-2 h-4 w-4" /> Sair
                     </DropdownMenuItem>
@@ -389,9 +393,13 @@ const ContentHome = () => {
           </aside>
           
           {/* Seção de Produtos (à direita) */}
+          {isLoading ? <div className="flex justify-center items-center h-screen">
+                <p>Carregando...</p>
+            </div>: (
           <div className="flex-1">
             {/* Grade de Produtos */}
             {filteredProducts.length > 0 ? (
+              <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {filteredProducts?.map((product) => {
                   const cidade = cityData?.data?.data?.find(c => c.id === product.address.cityId);
@@ -421,6 +429,7 @@ const ContentHome = () => {
                   );
                 })}
               </div>
+              </>
             ) : (
               <div className="text-center py-12">
                 <p className="text-lg text-gray-500">Nenhuma quadra encontrada com os filtros selecionados.</p>
@@ -433,7 +442,8 @@ const ContentHome = () => {
                 </Button>
               </div>
             )}
-          </div>
+            
+          </div>)}
         </div>
       </div>
     </main>

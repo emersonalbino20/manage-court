@@ -141,6 +141,36 @@ export const schemeUserUp = z.object({
     .default("client"),
 });
 
+export const schemeMyProfile = z.object({
+  id: z.string().trim().ulid({
+    message: "ID inválido",
+  }).optional(),
+  name: z
+    .string()
+    .trim()
+    .min(3, { message: "O nome deve ter pelo menos 3 caracteres" })
+    .max(100, { message: "O nome não pode ter mais de 100 caracteres" })
+    .regex(nameRegex, { message: "O nome contém caracteres inválidos" }),
+  phone: z
+    .string()
+    .trim()
+    .length(9, { message: "O telefone deve ter exatamente 9 dígitos" })
+    .regex(phoneRegex, { message: "Número de telefone inválido" }),
+  email: z
+    .string()
+    .trim()
+    .email({ message: "Digite um e-mail válido" })
+    .max(255, { message: "O e-mail não pode ter mais de 255 caracteres" }),
+     password: z
+  .string()
+  .trim()
+  .regex(passwordRegex, {
+    message:
+      "A senha deve ter pelo menos 6 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.",
+  })
+  .max(255, "A senha deve ter no máximo 255 caracteres").optional()
+});
+
 
  export const schemeCourtType = z.object({
   id: z.number().int().positive().max(32_767).optional(),

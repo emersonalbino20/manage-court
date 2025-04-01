@@ -128,7 +128,7 @@ const ManageReservations = () => {
     <div className="p-4 md:p-6 overflow-x-hidden">
       <div className="mb-4">
         <h1 className="text-xl font-bold text-gray-800 flex items-center">
-          <Calendar className="mr-2" /> Minhas Reservas
+          <Calendar className="mr-2" /> Reservas
         </h1>
       </div>
 

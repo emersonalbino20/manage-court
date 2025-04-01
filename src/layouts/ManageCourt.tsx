@@ -71,6 +71,7 @@ const formCourt = useForm({
 
   // Dados da API
   const { data: courtData } = useGetCourtsQuery();
+  console.log(courtData)
   // Estados para controlar o diálogo
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);

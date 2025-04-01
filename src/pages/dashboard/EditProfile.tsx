@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -17,14 +17,6 @@ import {
   Label 
 } from '@/components/ui/label';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form';
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
@@ -33,173 +25,304 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import { 
   User, 
   Phone, 
   Mail, 
   Key, 
   Save,
-  ShieldCheck
+  ShieldCheck,
+  Home,
+  Calendar,
+  LogOut,
+  Menu,
+  ChevronDown
 } from 'lucide-react';
-import { useGetClientsQuery } from '@/api/userQuery';
+import { useGetClientsQuery, usePutClient } from '@/api/userQuery';
+import { useForm } from "react-hook-form";
+import FeedbackDialog from '@/_components/FeedbackDialog';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { schemeMyProfile } from '@/utils/validateForm.tsx';
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form";
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from "@/hooks/AuthContext";
 
 const EditProfile = () => {
-  // Dados simulados do usuário
-  const { data: profileData} = useGetClientsQuery();
-  console.log(profileData)
-  const [userData, setUserData] = useState({
-    nome: 'Carlos Silva',
-    telefone: '(11) 98765-4321',
-    email: 'carlos.silva@exemplo.com',
-    senha: '',
-    confirmarSenha: ''
+  // Dados do usuário
+  const { data: profileData, isLoading } = useGetClientsQuery();
+//  console.log(profileData)
+  const formProfile = useForm({
+    resolver: zodResolver(schemeMyProfile),
+    defaultValues: {
+      password: ''
+    },
   });
+  
+  const { logout } = useAuth();
 
   // Estado para confirmação de salvamento
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [erro, setErro] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const { mutate, isLoading: isSaving } = usePutClient();
   
-  // Função para lidar com alterações de input
-  const handleChange = (e) => {
-    setUserData({
-      ...userData,
-      [e.target.name]: e.target.value
+  // Função para salvar alterações
+  function submitProfile(data, event) {
+    event?.preventDefault(); 
+    mutate(data, {
+      onSuccess: () => {
+        setIsSuccess(true);
+        setFeedbackMessage("Os seus dados foram actualizados com sucesso!");
+        setDialogOpen(true);
+      },
+      onError: (error) => {
+        setErro(error)
+        setIsSuccess(false);
+        setFeedbackMessage("Não foi possível actualizar os seus dados.");
+        setDialogOpen(true);
+      }
     });
   };
 
-  // Função para salvar alterações
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    setShowConfirmation(true);
+const handleCloseDialog = () => {
+    setDialogOpen(false);
   };
-
-  // Função para fechar o diálogo de confirmação
-  const handleCloseConfirmation = () => {
-    setShowConfirmation(false);
-  };
-
+  
   return (
-    <div className="container mx-auto px-4 py-8 max-w-md">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-2xl flex items-center gap-2">
-            <User className="h-6 w-6" /> Editar Perfil
-          </CardTitle>
-          <CardDescription>
-            Atualize suas informações pessoais
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="nome" className="flex items-center gap-2">
-                  <User className="h-4 w-4" /> Nome Completo
-                </Label>
-                <Input 
-                  id="nome" 
-                  name="nome" 
-                  value={userData.nome} 
-                  onChange={handleChange}
-                  placeholder="Digite seu nome completo"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="telefone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" /> Telefone
-                </Label>
-                <Input 
-                  id="telefone" 
-                  name="telefone" 
-                  value={userData.telefone} 
-                  onChange={handleChange}
-                  placeholder="(00) 00000-0000"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" /> Email
-                </Label>
-                <Input 
-                  id="email" 
-                  name="email" 
-                  type="email" 
-                  value={userData.email} 
-                  onChange={handleChange}
-                  placeholder="seu.email@exemplo.com"
-                  required
-                />
-              </div>
-              
-              <div className="pt-4 border-t">
-                <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
-                  <ShieldCheck className="h-4 w-4" /> 
-                  Preencha os campos abaixo apenas se desejar alterar sua senha
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="senha" className="flex items-center gap-2">
-                    <Key className="h-4 w-4" /> Nova Senha
-                  </Label>
-                  <Input 
-                    id="senha" 
-                    name="senha" 
-                    type="password" 
-                    value={userData.senha} 
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                  />
-                </div>
-                
-                <div className="space-y-2 mt-4">
-                  <Label htmlFor="confirmarSenha" className="flex items-center gap-2">
-                    <Key className="h-4 w-4" /> Confirmar Nova Senha
-                  </Label>
-                  <Input 
-                    id="confirmarSenha" 
-                    name="confirmarSenha" 
-                    type="password" 
-                    value={userData.confirmarSenha} 
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                  />
-                </div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header com navegação */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <User className="h-6 w-6 text-primary" />
+            <h1 className="text-xl font-bold">Minha Conta</h1>
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-1">
+                <span className="hidden md:inline">Menu</span>
+                <ChevronDown className="h-4 w-4" />
+                <span className="sr-only">Menu de navegação</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <Link to={'/'}>
+              <DropdownMenuItem >
+                <Home className="mr-2 h-4 w-4" />
+                <span>Página Inicial</span>
+              </DropdownMenuItem>
+              </Link>
+              <Link to={'/courtdetails'}>
+              <DropdownMenuItem >
+                <Calendar className="mr-2 h-4 w-4" />
+                <span>Minhas Reservas</span>
+              </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={logout} className="text-red-500">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sair</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
 
-            <CardFooter className="px-0 pt-4 flex justify-between">
-              <Button variant="outline" type="button">
-                Cancelar
-              </Button>
-              <Button type="submit" className="flex items-center gap-2">
-                <Save className="h-4 w-4" /> Salvar Alterações
-              </Button>
-            </CardFooter>
-          </form>
-        </CardContent>
-      </Card>
+      {/* Conteúdo principal */}
+      <div className="container mx-auto px-4 py-8 max-w-md">
+        <Card className="w-full shadow-md">
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <User className="h-6 w-6 text-primary" /> Editar Perfil
+            </CardTitle>
+            <CardDescription>
+              Atualize suas informações pessoais
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <Form {...formProfile}>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  formProfile.handleSubmit((data) => submitProfile(data, e))();
+                }} 
+                className="space-y-6"
+                >
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <FormField
+                        control={formProfile.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel htmlFor="name" className="flex items-center gap-2">
+                              <User className="h-4 w-4" />Nome Completo
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                id="name" 
+                                {...field} 
+                                placeholder="Digite seu nome completo"
+                                className="focus:ring-primary"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <FormField
+                        control={formProfile.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel htmlFor="phone" className="flex items-center gap-2">
+                              <Phone className="h-4 w-4" /> Telefone
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                id="phone" 
+                                {...field} 
+                                maxLength={9}
+                                pattern="[0-9]*"
+                                inputMode="numeric"
+                                onInput={(e) => {
+                                  e.target.value = e.target.value.replace(/\D/g, "").slice(0, 9);
+                                }}
+                                className="focus:ring-primary"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  
+                    <div className="space-y-2">
+                      <FormField
+                        control={formProfile.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel htmlFor="email" className="flex items-center gap-2">
+                              <Mail className="h-4 w-4" /> Email
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                id="email" 
+                                {...field} 
+                                type="email"
+                                placeholder="seu.email@exemplo.com"
+                                className="focus:ring-primary"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="pt-4 border-t mt-4">
+                      <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
+                        <ShieldCheck className="h-4 w-4" /> 
+                        Preencha os campos abaixo apenas se desejar alterar sua senha
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <FormField
+                          control={formProfile.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel htmlFor="password" className="flex items-center gap-2">
+                                <Key className="h-4 w-4" /> Nova Senha
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  id="password" 
+                                  {...field}
+                                  type="password" 
+                                  placeholder="••••••••"
+                                  className="focus:ring-primary"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2 mt-4">
+                        <Label htmlFor="confirmPassword" className="flex items-center gap-2">
+                          <Key className="h-4 w-4" /> Confirmar Nova Senha
+                        </Label>
+                        <Input 
+                          id="confirmPassword" 
+                          name="confirmPassword" 
+                          type="password" 
+                          placeholder="••••••••"
+                          className="focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <CardFooter className="px-0 pt-4 flex flex-col sm:flex-row justify-between gap-4">
+                  <Link to={'/'}>
+                    <Button 
+                      variant="outline" 
+                      type="button" 
+                      className="w-full sm:w-auto"
+                    >
+                      Cancelar
+                    </Button>
+                    </Link>
+                    <Button 
+                      type="submit" 
+                      className="flex items-center justify-center gap-2 w-full sm:w-auto"
+                      disabled={isSaving}
+                    >
+                      {isSaving ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      ) : (
+                        <Save className="h-4 w-4" />
+                      )}
+                      Salvar Alterações
+                    </Button>
+                  </CardFooter>
+                </form>
+              </Form>
+            )}
+          </CardContent>
+        </Card>
+        
+       {/* Feedback Dialog */}
+      <FeedbackDialog 
+        isOpen={dialogOpen}
+        onClose={handleCloseDialog}
+        success={isSuccess}
+        message={feedbackMessage}
+        errorData={erro}
+      />
       
-      {/* Diálogo de confirmação */}
-      <AlertDialog open={showConfirmation} onOpenChange={setShowConfirmation}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Dados atualizados com sucesso!</AlertDialogTitle>
-            <AlertDialogDescription>
-              Suas informações pessoais foram atualizadas no sistema.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={handleCloseConfirmation}>
-              OK
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      </div>
     </div>
   );
 };

@@ -28,6 +28,15 @@ export const auxPutUser = (data) => {
     });
 };
 
+export const auxPutClient = (data) => {
+  const mytoken = localStorage.getItem("token");
+  return axios.put(`http://localhost:3000/me/`, {name: data?.name, phone: data?.phone, email: data?.email, password: data?.password}, {
+      headers: {
+        Authorization: `Bearer ${mytoken}`, 
+        "Content-Type": "application/json",
+      },
+    });
+};
 
 
 export const auxPostLogin = (data) => {
@@ -140,10 +149,24 @@ export const useGetClientsQuery = () => {
     queryFn: () => {
       const mytoken = localStorage.getItem("token");
       return axios
-        .get('http://localhost:3000/users/?type=client', {
+        .get('http://localhost:3000/me/', {
           headers: { Authorization: `Bearer ${mytoken}` }
         })
         .then(response => response.data);
     }
   });
+};
+
+export const usePutClient = () => {
+  const queryClient = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: auxPutClient,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myprofile'] });
+    },
+    onError: (error) => {
+        console.log(error);
+    }
+  });
+  return { mutate };
 };

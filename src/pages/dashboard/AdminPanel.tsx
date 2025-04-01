@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, Users, Calendar, Settings, LogOut, Home, Trophy, Activity, TrendingUp, Menu, X, DollarSign } from 'lucide-react';
+import { BarChart3, Users, Calendar, Settings, LogOut, Home, Trophy, Activity, TrendingUp, TrendingDown, Menu, X, DollarSign } from 'lucide-react';
 import { PiCourtBasketballFill } from "react-icons/pi";
 import { PiGlobeHemisphereWestFill } from "react-icons/pi";
 import { MdCategory } from "react-icons/md";
@@ -45,15 +45,30 @@ const AdminPanel = () => {
     }));
   }, [admin?.data?.popularFields]);
 
-  // Process fields data if available for operator
+  // Process fields data if available for operator - UPDATED for new structure
   const operatorFieldsWithPercentage = React.useMemo(() => {
-    if (!operator?.data?.popularFields?.length) return [];
+    if (!operator?.data?.popularFields?.thisMonth?.length) return [];
     
-    const maxReservations = Math.max(...operator.data.popularFields.map(field => field.reservations));
-    return operator.data.popularFields.map(field => ({
-      ...field,
-      percentagem: maxReservations > 0 ? (field.reservations / maxReservations) * 100 : 0
-    }));
+    const thisMonthFields = operator.data.popularFields.thisMonth;
+    const maxReservations = Math.max(...thisMonthFields.map(field => field.reservations));
+    
+    return thisMonthFields.map(field => {
+      // Find the same field in last month's data to calculate growth
+      const lastMonthField = operator.data.popularFields.lastMonth?.find(f => f.fieldId === field.fieldId);
+      const lastMonthReservations = lastMonthField ? lastMonthField.reservations : 0;
+      
+      // Calculate growth percentage
+      const growth = lastMonthReservations > 0 
+        ? ((field.reservations - lastMonthReservations) / lastMonthReservations) * 100 
+        : field.reservations > 0 ? 100 : 0;
+      
+      return {
+        ...field,
+        percentagem: maxReservations > 0 ? (field.reservations / maxReservations) * 100 : 0,
+        growth: growth.toFixed(1),
+        lastMonthReservations
+      };
+    });
   }, [operator?.data?.popularFields]);
 
   // Stats cards data for admin
@@ -96,43 +111,64 @@ const AdminPanel = () => {
     ];
   }, [admin?.data]);
 
-  // Stats cards data for operator
+  // Stats cards data for operator - UPDATED for new structure
   const operatorStatsCards = React.useMemo(() => {
     if (!operator?.data) return [];
+    
+    // Calculate total reservations this month
+    const thisMonthReservations = operator.data.popularFields.thisMonth?.reduce(
+      (total, field) => total + field.reservations, 0
+    ) || 0;
+    
+    // Calculate total reservations last month
+    const lastMonthReservations = operator.data.popularFields.lastMonth?.reduce(
+      (total, field) => total + field.reservations, 0
+    ) || 0;
+    
+    // Calculate growth percentage
+    const reservationsGrowth = lastMonthReservations > 0 
+      ? ((thisMonthReservations - lastMonthReservations) / lastMonthReservations) * 100 
+      : thisMonthReservations > 0 ? 100 : 0;
+    
+    // Determine if growth is positive or negative
+    const isPositiveGrowth = reservationsGrowth >= 0;
     
     return [
       { 
         title: "Reservas Pendentes", 
         value: operator.data.pendingReservations.toLocaleString(), 
-        percentagem: "+5%", 
+        percentagem: isPositiveGrowth ? `+${reservationsGrowth.toFixed(1)}%` : `${reservationsGrowth.toFixed(1)}%`, 
         icon: <Calendar size={20} />,
+        growthIcon: isPositiveGrowth ? <TrendingUp size={14} className="mr-1" /> : <TrendingDown size={14} className="mr-1" />,
         color: "bg-yellow-100",
-        textColor: "text-yellow-600"
+        textColor: isPositiveGrowth ? "text-green-600" : "text-red-600"
       },
       { 
         title: "Quadras Disponíveis", 
         value: operator.data.scheduledFields?.length.toLocaleString() || "0", 
-        percentagem: "+3%", 
+        percentagem: isPositiveGrowth ? `+${Math.abs(reservationsGrowth).toFixed(1)}%` : `${reservationsGrowth.toFixed(1)}%`,
         icon: <PiCourtBasketballFill size={20} />,
+        growthIcon: isPositiveGrowth ? <TrendingUp size={14} className="mr-1" /> : <TrendingDown size={14} className="mr-1" />,
         color: "bg-blue-100",
-        textColor: "text-blue-600"
+        textColor: isPositiveGrowth ? "text-green-600" : "text-red-600"
       },
       { 
         title: "Reservas Recentes", 
         value: operator.data.recentReservations?.length.toLocaleString() || "0", 
-        percentagem: "+10%", 
+        percentagem: isPositiveGrowth ? `+${Math.abs(reservationsGrowth).toFixed(1)}%` : `${reservationsGrowth.toFixed(1)}%`,
         icon: <Activity size={20} />,
+        growthIcon: isPositiveGrowth ? <TrendingUp size={14} className="mr-1" /> : <TrendingDown size={14} className="mr-1" />,
         color: "bg-green-100",
-        textColor: "text-green-600"
+        textColor: isPositiveGrowth ? "text-green-600" : "text-red-600"
       }
     ];
   }, [operator?.data]);
 
   // Status color mapping
   const statusColors = {
-    "Confirmado": "bg-green-100 text-green-800",
-    "Pendente": "bg-yellow-100 text-yellow-800",
-    "Cancelado": "bg-red-100 text-red-800"
+    "confirmed": "bg-green-100 text-green-800",
+    "pending": "bg-yellow-100 text-yellow-800",
+    "cancelled": "bg-red-100 text-red-800"
   };
 
   const toggleSidebar = () => {
@@ -365,7 +401,7 @@ const AdminPanel = () => {
                   {/* Status das Reservas */}
                   <Card className="lg:col-span-1">
                     <CardHeader className="p-4 md:p-6">
-                      <CardTitle>Status das Reservas</CardTitle>
+                      <CardTitle>Estado das Reservas</CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 md:p-6 pt-0">
                       <div className="space-y-3 md:space-y-4">
@@ -397,7 +433,7 @@ const AdminPanel = () => {
               </>
             )}
             
-            {/* Operator Statistics */}
+            {/* Operator Statistics - UPDATED */}
             {userType === 'operator' && operator?.data && (
               <>
                 {/* Estatísticas Principais - Operator */}
@@ -416,7 +452,7 @@ const AdminPanel = () => {
                         </div>
                         <div className="mt-3 md:mt-4">
                           <span className={`text-xs inline-flex items-center font-medium ${stat.textColor}`}>
-                            <TrendingUp size={14} className="mr-1" />
+                            {stat.growthIcon}
                             {stat.percentagem}
                           </span>
                           <span className="text-xs ml-1 text-gray-500">vs mês anterior</span>
@@ -428,10 +464,10 @@ const AdminPanel = () => {
                 
                 {/* Quadras e Reservas - Operator */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
-                  {/* Quadras Populares */}
+                  {/* Quadras Populares - UPDATED */}
                   <Card className="lg:col-span-1">
                     <CardHeader className="p-4 md:p-6">
-                      <CardTitle>Quadras Populares</CardTitle>
+                      <CardTitle>Quadras Populares (Mês Atual)</CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 md:p-6 pt-0">
                       <div className="space-y-3 md:space-y-4">
@@ -439,7 +475,22 @@ const AdminPanel = () => {
                           <div key={index} className="flex flex-col">
                             <div className="flex justify-between mb-1">
                               <span className="text-sm font-medium">{field.name}</span>
-                              <span className="text-sm text-gray-500">{field.reservations} reservas</span>
+                              <div className="flex items-center">
+                                <span className="text-sm text-gray-500 mr-2">{field.reservations} reservas</span>
+                                {field.growth > 0 ? (
+                                  <span className="text-xs text-green-600 flex items-center">
+                                    <TrendingUp size={12} className="mr-1" />
+                                    {field.growth}%
+                                  </span>
+                                ) : field.growth < 0 ? (
+                                  <span className="text-xs text-red-600 flex items-center">
+                                    <TrendingDown size={12} className="mr-1" />
+                                    {field.growth}%
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-gray-600">0%</span>
+                                )}
+                              </div>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-2">
                               <div 
@@ -465,23 +516,20 @@ const AdminPanel = () => {
                             <tr>
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quadra</th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço</th>
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-200">
-                            {operator.data.recentReservations.map((reservation, index) => (
+                            {operator?.data?.recentReservations.map((reservation, index) => (
                               <tr key={index}>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">{reservation.Client.name}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm">{reservation.Field.name}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm">{formatDate(reservation.createdAt)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">{reservation?.client?.name}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm">{reservation?.field?.name}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm">Kz {reservation?.price.toLocaleString()}</td>
                                 <td className="px-3 py-2 whitespace-nowrap text-sm">
-                                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                    reservation.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
-                                    reservation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                    'bg-red-100 text-red-800'
-                                  }`}>
-                                    {reservation.status}
+                                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[reservation?.status]}`}>
+                                    {reservation?.status === 'confirmed' ? 'Confirmado' : 
+                                     reservation?.status === 'pending' ? 'Pendente' : 'Cancelado'}
                                   </span>
                                 </td>
                               </tr>
@@ -509,14 +557,14 @@ const AdminPanel = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                          {operator.data.scheduledFields.map((schedule, index) => (
+                          {operator?.data?.scheduledFields.map((schedule, index) => (
                             <tr key={index}>
-                              <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">{schedule.Field.name}</td>
+                              <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">{schedule?.name}</td>
                               <td className="px-3 py-2 whitespace-nowrap text-sm">
-                                {schedule.Field.FieldAddresses?.City?.name}, {schedule.Field.FieldAddresses?.Province?.name}
+                                {schedule?.address?.city?.name}, {schedule?.address?.province?.name}
                               </td>
                               <td className="px-3 py-2 whitespace-nowrap text-sm">
-                                {formatTime(schedule.FieldAvailability.startTime)} - {formatTime(schedule.FieldAvailability.endTime)}
+                                {formatTime(schedule?.availability?.startTime)} - {formatTime(schedule?.availability?.endTime)}
                               </td>
                             </tr>
                           ))}

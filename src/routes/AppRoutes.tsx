@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import * as React from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { lazy, Suspense } from 'react';
 
@@ -16,35 +16,60 @@ const UserBooking = lazy(() => import('../layouts/UserBookingsSection'));
 const AdminPanel = lazy(() => import('../pages/dashboard/AdminPanel'));
 const NotFound = lazy(() => import('../pages/dashboard/NotFound'));
 
-export function AppRoutes(): React.ReactElement {
-  return (
-        <Suspense
-          fallback={
-            <div className="flex justify-center items-center h-screen">
-                <div className="w-10 h-10 border-4 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
-            </div>
-          }
-        >
-        <Routes>
-          {/* Rotas públicas */}
-          <Route path="/courtdetails" element={<CourtDetails />} />
+// Hook para salvar a última rota visitada
+const useSaveLastVisitedRoute = () => {
+  const location = useLocation();
+  React.useEffect(() => {
+    if (location.pathname !== "/login" && location.pathname !== "/logout") {
+      localStorage.setItem("lastVisitedRoute", location.pathname);
+    }
+  }, [location.pathname]);
+};
 
-          {/* Rotas protegidas */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/edit-profile" element={<EditProfile />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/booking" element={<Booking />} />
-            <Route path="/userbooking" element={<UserBooking />} />
-          </Route>
-          {/* Página 404 */}
-          <Route path="/notfound" element={<NotFound />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
+// Hook para redirecionar para a última rota após reload
+const useRedirectToLastRoute = () => {
+  const navigate = useNavigate();
+  React.useEffect(() => {
+    const lastRoute = localStorage.getItem("lastVisitedRoute");
+    if (lastRoute && lastRoute !== "/login") {
+      navigate(lastRoute);
+    }
+  }, []);
+};
+
+export function AppRoutes(): React.ReactElement {
+  useSaveLastVisitedRoute();
+  useRedirectToLastRoute();
+
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-screen">
+          <div className="w-10 h-10 border-4 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
+        </div>
+      }
+    >
+      <Routes>
+        {/* Rotas públicas */}
+        <Route path="/courtdetails" element={<CourtDetails />} />
+
+        {/* Rotas protegidas */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/booking" element={<Booking />} />
+          <Route path="/userbooking" element={<UserBooking />} />
+        </Route>
+        {/* Página 404 */}
+        <Route path="/notfound" element={<NotFound />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 }
+

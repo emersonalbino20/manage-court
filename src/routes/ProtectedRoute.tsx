@@ -14,7 +14,7 @@ export function ProtectedRoute(): React.ReactElement {
   const location = useLocation();
 
   // Rotas públicas para usuários não autenticados
-  const publicRoutes = ["/", "/login", "/register", "/forgot-password"];
+  const publicRoutes = ["/", "/login", "/register", "/forgot-password", "/reset-password"];
 
   // Se não houver token, permitir apenas rotas públicas
   if (!token) {

@@ -19,6 +19,7 @@ import FeedbackDialog from '@/_components/FeedbackDialog'; // Ajuste o caminho c
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from '@/components/ui/label';
 
+
 const UserBookingsSection = () => {
   
   const { data: myResevations } = useGetClientResevationsQuery();
@@ -27,22 +28,31 @@ const UserBookingsSection = () => {
   const { data: cityData } = useGetCitiesQuery();
 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const  [erro, setErro] = useState('');
+  const [erro, setErro] = useState('');
   const [bookingToCancel, setBookingToCancel] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [cancellationReason, setCancellationReason] = useState("");
+  const [reasonError, setReasonError] = useState(false);
 
   const [id, setId] = useState('');
   const {mutate: cancelReservations} = usePatchCancelReservationClient();
   const handleCancelBooking = (bookingId) => {
-     cancelReservations({id: bookingId, status: "cancelled", cancellationReason: cancellationReason},{
+    // Validate that cancellation reason is provided
+    if (!cancellationReason.trim()) {
+      setReasonError(true);
+      return;
+    }
+    
+    cancelReservations({id: bookingId, status: "cancelled", cancellationReason: cancellationReason},{
       onSuccess: (response) => {
         setIsSuccess(true);
         setFeedbackMessage("A sua reserva foi cancelada!");
         setDialogOpen(true);
         setIsCancelDialogOpen(false);
+        setCancellationReason(""); // Reset reason after successful cancellation
+        setReasonError(false);
       },
       onError: (error) => {
         setErro(error);
@@ -51,7 +61,6 @@ const UserBookingsSection = () => {
         setFeedbackMessage("Erro ao cancelar a sua reserva");
         console.log(error);
       }})
-    
   };
 
   const handleCloseDialog = () => {
@@ -61,6 +70,8 @@ const UserBookingsSection = () => {
   const openCancelDialog = (booking) => {
     setBookingToCancel(booking);
     setId(booking.id);
+    setCancellationReason(""); // Clear any previous reason
+    setReasonError(false); // Reset error state
     setIsCancelDialogOpen(true);
   };
 
@@ -202,31 +213,29 @@ const UserBookingsSection = () => {
                    
           <div className="flex-grow space-y-3">
             <div className="space-y-1">
-              <Label htmlFor="cancellation-reason" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="cancellation-reason" className="text-sm font-medium text-gray-700 flex items-center">
                 Motivo do cancelamento
+                <span className="text-red-500 ml-1">*</span>
               </Label>
               <Textarea 
                 id="cancellation-reason"
-                placeholder="Descreva o motivo do cancelamento (opcional)"
+                placeholder="Descreva o motivo do cancelamento (obrigatório)"
                 value={cancellationReason}
-                onChange={(e) => setCancellationReason(e.target.value)}
-                className="w-full min-h-24 resize-y border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 transition-all rounded-md"
+                onChange={(e) => {
+                  setCancellationReason(e.target.value);
+                  setReasonError(e.target.value.trim() === '');
+                }}
+                className={`w-full min-h-24 resize-y border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 transition-all rounded-md ${
+                  reasonError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                }`}
+                required
               />
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-5 bg-amber-50 p-4 rounded-lg border border-amber-100">
-          <div className="flex items-start">
-            <div className="flex-shrink-0 pt-0.5">
-              <AlertCircle className="h-5 w-5 text-amber-500" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-amber-800">Política de cancelamento</h3>
-              <p className="mt-1 text-sm text-amber-700">
-                Cancelamentos com até 24h de antecedência são processados sem custos adicionais. 
-                Cancelamentos posteriores podem estar sujeitos às políticas da instalação.
-              </p>
+              {reasonError && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  O motivo do cancelamento é obrigatório
+                </p>
+              )}
             </div>
           </div>
         </div>

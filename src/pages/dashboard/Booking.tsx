@@ -1,24 +1,30 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Calendar } from '@/components/ui/calendar';
-import { Clock, CheckCircle, User, Calendar as CalendarIcon, MapPin, CreditCard, Info, LogIn, UserPlus } from 'lucide-react';
+import { Clock, CheckCircle, User, Calendar as CalendarIcon, MapPin, CreditCard, Info, LogIn, UserPlus, Home } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Booking = () => {
   const [step, setStep] = useState(1);
   const [date, setDate] = useState(null);
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [authMode, setAuthMode] = useState('login');
 
   const goToNextStep = () => {
     if (step < 3) {
       setStep(step + 1);
+    }
+    
+    if (step === 2) {
+      setShowConfirmDialog(true);
     }
   };
   
@@ -26,6 +32,17 @@ const Booking = () => {
     if (step > 1) {
       setStep(step - 1);
     }
+  };
+  
+  const closeDialog = () => {
+    setShowConfirmDialog(false);
+  };
+  
+  const goToHomePage = () => {
+    // Navigate to home page - this would typically use a router
+    // For example with Next.js: router.push('/');
+    console.log("Navigating to home page");
+    // You can replace this with the actual navigation logic
   };
   
   const renderAuthStep = () => {
@@ -167,12 +184,23 @@ const Booking = () => {
 
   const handleBookingConfirmation = () => {
     setBookingConfirmed(true);
+    closeDialog();
   };
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
       <Card className="border-none shadow-md">
-        <CardHeader>
+        <CardHeader className="relative">
+        <Link to={'/courtdetails'}>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="absolute left-4 top-4" 
+            onClick={goToHomePage}
+          >
+            <Home className="h-4 w-4" />
+          </Button>
+          </Link>
           <CardTitle className="text-xl md:text-2xl text-center">Agendamento de Quadra</CardTitle>
           <CardDescription className="text-center">Complete o passo a passo para realizar sua reserva</CardDescription>
         </CardHeader>
@@ -209,32 +237,34 @@ const Booking = () => {
           <div className="min-h-64">
             {step === 1 && renderAuthStep()}
             {step === 2 && renderCourtSelectionStep()}
-            {step === 3 && (
-              <Dialog open={true}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Reserva Pendente</DialogTitle>
-                    <DialogDescription>
-                      Sua reserva foi recebida e está pendente de confirmação.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Quadra:</span>
-                      <span>{selectedCourt === 'tennis' ? 'Quadra de Tênis' : 'Quadra de Futsal'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Valor:</span>
-                      <span>Kz {selectedCourt === 'tennis' ? '80,00' : '120,00'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Estado:</span>
-                      <span className="text-yellow-600 font-medium">Pendente</span>
-                    </div>
+            
+            <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Reserva Pendente</DialogTitle>
+                  <DialogDescription>
+                    Sua reserva foi recebida e está pendente de confirmação.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span>Quadra:</span>
+                    <span>{selectedCourt === 'tennis' ? 'Quadra de Tênis' : 'Quadra de Futsal'}</span>
                   </div>
-                </DialogContent>
-              </Dialog>
-            )}
+                  <div className="flex justify-between">
+                    <span>Valor:</span>
+                    <span>Kz {selectedCourt === 'tennis' ? '80,00' : '120,00'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Estado:</span>
+                    <span className="text-yellow-600 font-medium">Pendente</span>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={closeDialog}>Fechar</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">

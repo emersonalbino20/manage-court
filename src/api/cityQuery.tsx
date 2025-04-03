@@ -31,8 +31,7 @@ export const usePostCity = () => {
   const { mutate, isLoading } = useMutation({
     mutationFn: auxPostCity,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cities'] });
-      console.log('success');
+      queryClient.invalidateQueries({ queryKey: ['cities-province'] });
     },
     onError: (error) => {
         console.log(error);
@@ -46,8 +45,7 @@ export const usePutCity = () => {
   const { mutate } = useMutation({
     mutationFn: auxPutCity,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cities'] });
-      console.log('success');
+      queryClient.invalidateQueries({ queryKey: ['cities-province'] });
     },
     onError: (error) => {
         console.log(error);

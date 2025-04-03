@@ -62,7 +62,7 @@ const ManageReservations = () => {
       patchReservation({
         id: reservationId,
         status: "cancelled",
-        cancellationReason: cancellationReason || "Reserva cancelada pelo usuário"
+        cancellationReason: cancellationReason || 'Reserva confirmada pela assistência da QuadraWeb.'
         
       }, {
         onSuccess: () => {
@@ -88,7 +88,7 @@ const ManageReservations = () => {
       patchReservation({
         id: reservationId,
         status: "confirmed",
-        cancellationReason: cancellationReason || "Reserva confirmada pelo usuário"
+        cancellationReason: cancellationReason || "Reserva cancelada pela assistência da QuadraWeb."
         
       }, {
         onSuccess: () => {

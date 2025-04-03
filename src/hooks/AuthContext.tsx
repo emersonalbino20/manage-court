@@ -108,6 +108,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
   const logout = () => {
     setToken(null);
     setUser(null);
+    localStorage.removeItem("lastVisitedRoute"); 
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 

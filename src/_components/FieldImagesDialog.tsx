@@ -73,7 +73,7 @@ const FieldImagesDialog = ({ isOpen, onClose, fieldId }) => {
           uploadedImages.push(response.data.data.imageUrl);
         }
       } catch (error) {
-        console.error('Erro no upload da imagem:', error);
+        //console.error('Erro no upload da imagem:', error);
         setErro(error);
         setIsSuccess(false);
         setFeedbackMessage("Erro no upload da imagem:");

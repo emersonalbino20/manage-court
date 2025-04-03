@@ -35,6 +35,7 @@ import { getCurrentAngolaDate,  formatToAngolaTime, convertToUtc} from '@/utils/
 import FieldImageGallery from './FieldImageGallery'
 import { FaUserEdit } from "react-icons/fa";
 import { useRef } from "react";
+import { IoFootballOutline } from "react-icons/io5";
 
 const ContentHome = () => {
   const navigate = useNavigate();
@@ -48,12 +49,12 @@ const ContentHome = () => {
   const categories = [
     { id: 'destaques', name: 'Todas' },
     { id: 'Futebol', icon: <IoMdFootball />, name: 'Futebol' },
-    { id: 'Futsal', icon: <FaTrophy />, name: 'Futsal' },
+    { id: 'Futsal', icon: <IoFootballOutline />, name: 'Futsal' },
     { id: 'Basquete', icon: <FaBasketballBall />, name: 'Basquete' },
     { id: 'Vôlei', icon: <FaVolleyball />, name: 'Vôlei' },
     { id: 'Tênis', icon: <FaTableTennisPaddleBall />, name: 'Tênis' },
     { id: 'Hóquei', icon: <GiHockey />, name: 'Hóquei' },
-    { id: 'Basebol', icon: <FaBaseball />, name: 'Basebol' },
+    { id: 'Basebol', name: 'Basebol' },
     { id: 'Handebol', icon: <FaHandPaper />, name: 'Handebol' },
   ];
 
@@ -65,12 +66,14 @@ const ContentHome = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { data: provinceData } = useGetProvincesQuery();
+  //console.log(provinceData)
   const { data: cityData } = useGetCitiesQuery();
   const { data: typeData } = useGetCourtsTypeQuery();
   const { data: courtData, isLoading } = useGetCourtsQuery();
 
-     const [province, setProvince] = useState('');
-  const {data: cities} = useGetProvinceCityId(province);
+    const [province, setProvince] = useState('');
+    const {data: cities} = useGetProvinceCityId(province);
+    console.log(province)
 
   // Sync category nav with sport type filter
   useEffect(() => {
@@ -197,7 +200,7 @@ const ContentHome = () => {
                     <Link to={'/edit-profile'}>
                     <DropdownMenuItem className="cursor-pointer text-gray-600 flex items-center">
                       <FaUserEdit className="mr-2 h-4 w-4" /> 
-                        Meus dados
+                        Actualizar dados
                     </DropdownMenuItem>
                      </Link>
                     <DropdownMenuItem onClick={logout} className="cursor-pointer text-gray-600">
@@ -403,7 +406,8 @@ const ContentHome = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {filteredProducts?.map((product) => {
                   const cidade = cityData?.data?.data?.find(c => c.id === product.address.cityId);
-                  const province = provinceData?.data?.data?.find(c => c.id === product.address.provinceId);
+                  const provinces = provinceData?.data?.data?.find(c => c.id === product.address.provinceId);
+                  console.log(provinces)
                   let typeCourt = typeData?.data?.data?.find(t=>t.id==product.fieldTypeId)
                   const price = receiveCentFront(product.hourlyRate);
                   return (
@@ -417,7 +421,7 @@ const ContentHome = () => {
                       </div>
                       <CardContent className="p-4">
                         <h3 className="font-medium text-gray-900 mb-1">{typeCourt?.name} - {product?.name}</h3>
-                        <p className="text-sm text-gray-500">{cidade?.name || 'N/A'} - {province?.name || 'N/A'}</p>
+                        <p className="text-sm text-gray-500">{cidade?.name || 'N/A'} - {provinces?.name || 'N/A'}</p>
                         <div className="text-lg font-bold text-green-700 mt-1">{price}/Hora</div>
                         <Link to={`/courtdetails?id=${product?.id}`}>
                           <Button className="w-full mt-3 bg-green-700 hover:bg-green-600">

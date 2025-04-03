@@ -4,11 +4,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { format, parse, isBefore, startOfDay } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-
+import {calcularPrecoReserva} from '@/utils/methods'
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 // Ícones
 import { 
-  CalendarIcon, CalendarCheck, Clock, MapPin, ArrowLeft, CheckCircle, Calendar, AlertTriangle, 
-  ShoppingCart, Search, Menu, X, ChevronDown, ChevronLeft, ChevronRight, User, Heart, Eye, EyeOff 
+  CalendarIcon, CalendarCheck, Clock, Home, MapPin, ArrowLeft, CheckCircle, Calendar, AlertTriangle, 
+  ShoppingCart, Search, Menu, X, LogOut, ChevronDown, ChevronLeft, ChevronRight, User, Heart, Eye, EyeOff 
 } from 'lucide-react';
 import { PiCourtBasketballFill } from "react-icons/pi";
 
@@ -59,6 +65,7 @@ import L from "leaflet";
 import { getCurrentAngolaDate, formatToAngolaTime, convertToUtc, receiveCentFront, sendCoinBeck } from '@/utils/methods';
 import { useAuth } from "@/hooks/AuthContext";
 import { Navigation } from "swiper/modules";
+import { FaUserEdit } from "react-icons/fa";
 
 import {useFieldImages} from '@/api/fieldImagesQuery';
 
@@ -195,7 +202,40 @@ const CourtDetails = () => {
                                 <span>AgendaQuadra</span> 
                             </div> 
                         </Link> 
-                        <div className="flex items-center space-x-3"> </div> 
+                        <div className="flex items-center space-x-3">
+              <Link to="/booking">
+                <p className="underline cursor-pointer">Como agendar?</p>
+              </Link>
+             {token ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="p-2">
+                      <User size={20} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                   <Link to={'/'}>
+                  <DropdownMenuItem >
+                    <Home className="mr-2 h-4 w-4" />
+                    <span>Página Inicial</span>
+                  </DropdownMenuItem>
+                  </Link>
+                    <Link to={'/edit-profile'}>
+                    <DropdownMenuItem className="cursor-pointer text-gray-600 flex items-center">
+                      <FaUserEdit className="mr-2 h-4 w-4" /> 
+                        Actualizar dados
+                    </DropdownMenuItem>
+                     </Link>
+                    <DropdownMenuItem onClick={logout} className="cursor-pointer text-gray-600">
+                      <LogOut className="mr-2 h-4 w-4" /> Sair
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) :
+              (<Link to={'/Login'}>
+                                <Button variant="outline">Entrar</Button>
+                              </Link>)}
+              </div>
                     </div> 
                     {/* Search Bar Mobile */} 
                     {/* Main Navigation - Desktop */} 
@@ -297,15 +337,19 @@ const CourtDetails = () => {
                             <Card className="overflow-hidden p-0 border border-gray-200"> 
                                 {/* Image carousel */} 
                                 <div className="relative pt-[60%]"> 
-                                    {cover?.data?.fieldImages?.map((img, index) => {
-                                        console.log(img.url)
+                                    {cover?.data?.fieldImages?.length > 0 ?
+                                        cover?.data?.fieldImages?.map((img, index) => {
                                         return( 
                                         <div key={index} className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${ 
                                             index === currentImageIndex ? 'opacity-100' : 'opacity-0 pointer-events-none' 
                                         }`} > 
                                             <img src={img?.url} alt={`Quadra de Futebol ${index + 1}`} className="absolute inset-0 w-full h-full object-cover" /> 
                                         </div> 
-                                    )})} 
+                                    )}) :
+                                        <div className={`absolute inset-0 w-full h-full transition-opacity duration-300`}> 
+                                            <img src={courtData?.data?.data?.thumbnailUrl} alt={`Quadra`} className="absolute inset-0 w-full h-full object-cover" /> 
+                                        </div> 
+                                    } 
                                     {/* Navigation arrows */} 
                                     <div className="absolute inset-0 flex items-center justify-between p-4"> 
                                         <Button onClick={goToPrevious} variant="ghost" className="bg-white rounded-full p-2" > 

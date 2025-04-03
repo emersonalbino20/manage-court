@@ -1,46 +1,7 @@
 import React, { useState } from 'react';
 import { Upload } from 'lucide-react';
 import axios from 'axios';
-const token = localStorage.getItem("token");
-
-// Função para upload de imagens
-const handleImageUpload = async (files: File[]) => {
-  const uploadedImages = [];
-
-  // Validações
-  for (const file of files) {
-    // Verificar tamanho máximo (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert(`A imagem ${file.name} excede o tamanho máximo de 5MB`);
-      continue;
-    }
-
-    // Criar FormData para upload
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      // Upload para a rota de uploads
-      const mytoken = localStorage.getItem("token");
-      const response = await axios.post('http://localhost:3000/uploads/images', formData, {
-        headers: {
-          'Authorization': `Bearer ${mytoken}`, 
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      // Adicionar URL da imagem uploadada
-      if (response.data.data?.imageUrl) {
-        uploadedImages.push(response.data.data.imageUrl);
-      }
-    } catch (error) {
-      console.log('Erro no upload da imagem:', error);
-      alert(`Erro no upload da imagem ${file.name}`);
-    }
-  }
-
-  return uploadedImages;
-};
+import FeedbackDialog from '@/_components/FeedbackDialog';
 
 // Componente de Upload de Imagens
 const ImageUploader = ({ 
@@ -48,19 +9,64 @@ const ImageUploader = ({
   maxImages = 1 
 }) => {
   const [images, setImages] = useState([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
+
+  const handleImageUpload = async (files) => {
+    const uploadedImages = [];
+
+    for (const file of files) {
+      // Verificar tamanho máximo (5MB)
+      if (file.size > 3 * 1024 * 1024) {
+        setIsSuccess(false);
+        setFeedbackMessage(`A imagem ${file.name} excede o tamanho máximo de 3MB`);
+        setDialogOpen(true);
+        continue;
+      }
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const mytoken = localStorage.getItem("token");
+        const response = await axios.post('http://localhost:3000/uploads/images', formData, {
+          headers: {
+            'Authorization': `Bearer ${mytoken}`, 
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
+        if (response.data.data?.imageUrl) {
+          uploadedImages.push(response.data.data.imageUrl);
+        }
+      } catch (error) {
+        setIsSuccess(false);
+        setFeedbackMessage(`Erro ao carregar a imagem`);
+        setDialogOpen(true);
+      }
+    }
+
+    return uploadedImages;
+  };
 
   const handleFileChange = async (event) => {
     const files = Array.from(event.target.files);
     
-    // Limitar número de imagens
     if (images.length + files.length > maxImages) {
-      alert(`Você pode fazer upload de no máximo ${maxImages} imagem`);
+      //alert();
+        setIsSuccess(false);
+        setFeedbackMessage(`Você pode fazer upload de no máximo ${maxImages} imagem`);
+        setDialogOpen(true);
       return;
     }
 
     const uploadedImages = await handleImageUpload(files);
     
-    // Atualizar estado local e chamar callback
     const newImages = [...images, ...uploadedImages];
     setImages(newImages);
     onImageUpload(newImages);
@@ -91,7 +97,7 @@ const ImageUploader = ({
           Fazer Upload de Imagens
         </label>
         <span className="text-sm text-gray-500">
-          (Máx. {maxImages} imagens, 5MB cada)
+          (Máx. {maxImages} imagem, 3MB cada)
         </span>
       </div>
       
@@ -114,6 +120,14 @@ const ImageUploader = ({
           ))}
         </div>
       )}
+
+      {/* Feedback Dialog */}
+      <FeedbackDialog 
+        isOpen={dialogOpen}
+        onClose={handleCloseDialog}
+        success={isSuccess}
+        message={feedbackMessage}
+      />
     </div>
   );
 };

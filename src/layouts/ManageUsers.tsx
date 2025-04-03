@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import {
   useGetUsersQuery,
   usePostUsers,
-  usePutUser
+  usePutUser,
+  usePatchUser
 } from '@/api/userQuery';
 import FeedbackDialog from '@/_components/FeedbackDialog';
 import { useForm } from "react-hook-form";
@@ -73,22 +74,24 @@ const ManageUsers = () => {
   };
 
   //Patch
-  /*const { mutate: patchUser } = usePatchUser();
+  const { mutate: patchUser } = usePatchUser();
 
-  const handleSubmitPatchUser = (id) => {
-    patchUser({ id: id, isDeleted: true }, {
+  const handleSubmitPatchUser = (user) => {
+    console.log(user)
+    patchUser({ id: user.id, isDeleted: true }, {
       onSuccess: () => {
         setIsSuccess(true);
         setFeedbackMessage("O usuário foi deletado com sucesso!");
         setDialogOpen(true);
       },
       onError: (error) => {
+        setErro(error)
         setIsSuccess(false);
         setFeedbackMessage("Não foi possível deletar o usuário. Tente novamente mais tarde.");
         setDialogOpen(true);
       }
     });
-  };*/
+  };
 
   // Função para abrir o diálogo de confirmação
   const openDeleteDialog = (usuario) => {
@@ -490,12 +493,12 @@ return (
                         >
                           <Edit size={16} />
                         </button>
-                        {/*<button
-                          onClick={() => openDeleteDialog(usuario)}
+                        <button
+                          onClick={() => handleSubmitPatchUser(usuario)}
                           className="text-red-600 hover:text-red-800"
                         >
                           <Trash2 size={16} />
-                        </button>*/}
+                        </button>
                       </td>
                     </tr>
                   )})}

@@ -81,12 +81,14 @@ const ForgotPassword = () => {
                 Verifique sua caixa de entrada e siga as instruções enviadas para o email {form.getValues().email}.
                 O link expirará em 10 minutos.
               </p>
+              <Link to={'/'}>
               <Button 
                 className="mt-4 bg-gray-200 text-gray-800 hover:bg-gray-300"
                 onClick={() => setRequestSent(false)}
               >
-                Enviar para outro email
+                Voltar pra Login
               </Button>
+              </Link>
             </div>
           ) : (
             <Form {...form}>

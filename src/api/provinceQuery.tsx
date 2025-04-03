@@ -67,7 +67,7 @@ export const useGetProvincesQuery = () => {
 
 export const useGetProvinceCityId = (id) => {
   const { data, isFetched } = useQuery({
-    queryKey: ['pronvincias-cidades', id],
+    queryKey: ['cities-province', id],
     queryFn: () => axios.get(`http://localhost:3000/provinces/${id}/cities`),
     enabled: !!id,
   });

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  useGetProvincesQuery
+  useGetProvincesQuery, useGetProvinceCityId
 } from '@/api/provinceQuery';
 import {
   useGetCitiesQuery
@@ -71,7 +71,7 @@ const formCourt = useForm({
 
   // Dados da API
   const { data: courtData } = useGetCourtsQuery();
-  console.log(courtData)
+
   // Estados para controlar o diálogo
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -105,6 +105,8 @@ const closeImagesDialog = () => {
   const { data: typeData } = useGetCourtsTypeQuery();
   const { data: provinceData } = useGetProvincesQuery();
   const { data: cityData } = useGetCitiesQuery();
+  const [province, setProvince] = useState('');
+  const {data: cities} = useGetProvinceCityId(province);
 
   const { mutate: mutateCourt } = usePostCourt();
   const { mutate: putCourt } = usePutCourt();
@@ -212,7 +214,7 @@ const closeImagesDialog = () => {
         address: {
           street: data?.address?.street,
           cityId: data?.address?.cityId,
-          provinceId: data?.address?.provinceId,
+          provinceId: province,
           latitude: data?.address?.latitude,
           longitude: data?.address?.longitude
         },
@@ -454,12 +456,31 @@ const closeImagesDialog = () => {
                       />
                     </div>
                     <div>
+                    <div>
+                    <Label className="block text-sm font-medium text-gray-700 mb-1">Província</Label>
+                     <select
+                             onChange={(e) => {
+                                      setProvince(parseInt(e.target.value))
+                                    }}
+                           className="w-full p-2 border border-gray-300 rounded-md"
+                            
+                          >
+                             <option value="">Selecione a província</option>
+                              {provinceData?.data?.data?.map((cidade)=>{
+                                return(
+                                    <option key={cidade?.id} value={cidade.id}>{cidade?.name}</option>
+                                  )}
+                                )}
+                          </select>
+                          </div>
+                    </div>
+                    <div>
                      <FormField
                     control={formCourt.control}
                     name="address.cityId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="block text-sm font-medium text-gray-700 mb-1">Cidade / Província</FormLabel>
+                        <FormLabel className="block text-sm font-medium text-gray-700 mb-1">Cidade</FormLabel>
                         <FormControl>
                           <select
                             {...field}
@@ -470,10 +491,10 @@ const closeImagesDialog = () => {
                             
                           >
                              <option value="">Selecione a cidade</option>
-                              {cityData?.data?.data?.map((cidade)=>{
+                              {cities?.data?.data?.map((cidade)=>{
                                 const provincia = provinceData?.data?.data?.find(p => p.id === cidade?.provinceId);
                                 return(
-                                    <option key={cidade?.id} value={`${cidade?.id}`}>{cidade?.name} ({provincia ? provincia?.name : 'Desconhecida'})</option>
+                                    <option key={cidade?.id} value={`${cidade?.id}`}>{cidade?.name}</option>
                                   )}
                                 )}
                           </select>

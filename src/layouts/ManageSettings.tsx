@@ -17,6 +17,7 @@ import {
   usePostProvince,
   usePutProvince,
   useGetProvincesQuery,
+  useGetProvinceCityId
 } from '@/api/provinceQuery';
 import {
   usePostCity,
@@ -179,6 +180,7 @@ function submitCity(data: any, event: React.FormEvent<HTMLFormElement> | undefin
   }}
 
 const [novaCidade, setNovaCidade] = useState({ nome: '', fk_provincia: '' });
+
 React.useEffect(() => {
   if (novaCidade?.fk_provincia) {
     formCity.setValue('provinceId', parseInt(novaCidade.fk_provincia, 10));
@@ -195,6 +197,7 @@ React.useEffect(() => {
   const { data: courtData } = useGetCourtsTypeQuery();
   const { data: provinceData } = useGetProvincesQuery();
   const { data: cityData } = useGetCitiesQuery();
+  const {data: cities} = useGetProvinceCityId(novaCidade.fk_provincia);
 
   const editarTipoCampo = (tipo) => {
     setEditandoTipo(tipo)
@@ -207,12 +210,12 @@ React.useEffect(() => {
     formProvince.setValue("name", province.name);
   };
   
-  const editarCidade = (cidade, pr) => {
-    console.log(`cidade: ${cidade.id}, provincia: ${pr}`)
+  const editarCidade = (cidade,pr) => {
     setEditandoCidade(cidade)
     formCity.setValue("id", cidade.id);
     formCity.setValue("provinceId", pr);
     formCity.setValue("name", cidade.name);
+    
   };
 
 
@@ -464,7 +467,7 @@ React.useEffect(() => {
                   <div>
                     <Label htmlFor="cidade-provincia">Província</Label>
                     <Select 
-                      value={novaCidade.fk_provincia} 
+                 
                       onValueChange={(value) => setNovaCidade({...novaCidade, fk_provincia: value})}
                     >
                       <SelectTrigger>
@@ -531,20 +534,18 @@ React.useEffect(() => {
                       <thead>
                         <tr>
                           <th className="text-left pb-2 text-xs font-medium text-gray-500 uppercase">Nome</th>
-                          <th className="text-left pb-2 text-xs font-medium text-gray-500 uppercase">Província</th>
                           <th className="text-right pb-2 text-xs font-medium text-gray-500 uppercase">Ações</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {cityData?.data?.data?.map((cidade) => {
-                          const provincia = provinceData?.data?.data?.find(p => p.id === cidade?.provinceId);
+                        {cities?.data?.data?.map((cidade) => {
+                          const provincia = provinceData?.data?.data?.find(p => p.id === novaCidade?.fk_provincia);
                           return (
                             <tr key={cidade.id}>
                               <td className="py-2">{cidade.name}</td>
-                              <td className="py-2">{provincia ? provincia?.name : 'Desconhecida'}</td>
                               <td className="py-2 text-right">
                                 <button
-                                  onClick={() => editarCidade(cidade, provincia.id)}
+                                  onClick={() => editarCidade(cidade, parseInt(novaCidade.fk_provincia))}
                                   className="text-blue-600 hover:text-blue-800 mr-2"
                                 >
                                   <Edit size={16} />

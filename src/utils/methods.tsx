@@ -36,3 +36,20 @@ export function sendCoinBeck(cents) {
   const value = Math.round(cents * 100); // Convert to cents
   return parseInt(value); // Returns the formatted value with two decimal places
 }
+
+export function calcularPrecoReserva(precoPorHora: number, inicio: string, fim: string): number {
+    // Converter horário para minutos
+    const [h1, m1, s1] = inicio.split(":").map(Number);
+    const [h2, m2, s2] = fim.split(":").map(Number);
+
+    const minutosInicio = h1 * 60 + m1 + s1 / 60;
+    const minutosFim = h2 * 60 + m2 + s2 / 60;
+
+    // Calcular duração em minutos
+    const duracaoMinutos = minutosFim - minutosInicio;
+
+    // Calcular preço a pagar proporcional
+    const precoTotal = (precoPorHora / 60) * duracaoMinutos;
+
+    return precoTotal;
+}

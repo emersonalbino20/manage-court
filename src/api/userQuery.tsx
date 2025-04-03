@@ -47,6 +47,17 @@ export const auxPostForgotPassword = (data) => {
   return axios.post(`http://localhost:3000/auth/forgot-password`, data);
 };
 
+export const auxPatchUser = (data) => {
+  const mytoken = localStorage.getItem("token");
+  return axios.patch(`http://localhost:3000/users/${data?.id}`, {
+  isDeleted: data?.isDeleted
+},{
+      headers: {
+        Authorization: `Bearer ${mytoken}`, 
+        "Content-Type": "application/json",
+      },
+    });
+};
 
 //main functions
 export const usePostClient = () => {
@@ -55,6 +66,22 @@ export const usePostClient = () => {
     mutationFn: auxPostClient,
     onSuccess: () => {
 //      queryClient.invalidateQueries({ queryKey: ['client'] });
+      console.log('success');
+    },
+    onError: (error) => {
+      console.log(variables)
+        console.log(error);
+    }
+  });
+  return { mutate, isLoading };
+};
+
+export const usePatchUser = () => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, variables} = useMutation({
+    mutationFn: auxPatchUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       console.log('success');
     },
     onError: (error) => {

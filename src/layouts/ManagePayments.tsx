@@ -84,7 +84,7 @@ const ManagePayments = () => {
       patchPaymentStatus({
         id: paymentId,
         status: "failed",
-        cancellationReason: cancellationReason || "Pagamento cancelado pelo usuário"
+        cancellationReason: cancellationReason || "Pagamento cancelado pela assistência da QuadraWeb."
       }, {
         onSuccess: () => {
           setIsSuccess(true);
@@ -109,7 +109,7 @@ const ManagePayments = () => {
       patchPaymentStatus({
         id: paymentId,
         status: "success",
-        cancellationReason: "Pagamento confirmado com sucesso"
+        cancellationReason: "Pagamento confirmado pela assistência da QuadraWeb."
       }, {
         onSuccess: () => {
           setIsSuccess(true);

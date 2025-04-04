@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import FeedbackDialog from '@/_components/FeedbackDialog';
+import { Link } from 'react-router-dom';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,6 +18,12 @@ const requestResetSchema = z.object({
 
 // Componente de solicitação de reset de senha
 const ForgotPassword = () => {
+ 
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [erro, setErro] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
 
@@ -25,6 +33,10 @@ const ForgotPassword = () => {
       email: "",
     },
   });
+
+   const handleCloseDialog = () => {
+      setDialogOpen(false);
+    };
 
   const onSubmit = async (data: { email: string }) => {
     setIsSubmitting(true);
@@ -47,8 +59,11 @@ const ForgotPassword = () => {
       // Mostrar mensagem de sucesso
       setRequestSent(true);
     } catch (error) {
-      console.error('Erro ao solicitar redefinição de senha:', error);
-      alert('Ocorreu um erro ao solicitar a redefinição de senha. Por favor, tente novamente.');
+        //console.log(error)
+        setErro(error)
+        setIsSuccess(false);
+        setFeedbackMessage("Ocorreu um erro ao solicitar a redefinição de senha. Por favor, tente novamente.");
+        setDialogOpen(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -81,10 +96,9 @@ const ForgotPassword = () => {
                 Verifique sua caixa de entrada e siga as instruções enviadas para o email {form.getValues().email}.
                 O link expirará em 10 minutos.
               </p>
-              <Link to={'/'}>
+              <Link to={'/login'}>
               <Button 
                 className="mt-4 bg-gray-200 text-gray-800 hover:bg-gray-300"
-                onClick={() => setRequestSent(false)}
               >
                 Voltar pra Login
               </Button>
@@ -121,12 +135,12 @@ const ForgotPassword = () => {
                 </Button>
 
                 <div className="text-center mt-4">
-                  <a 
-                    href="/login" 
+                  <Link 
+                    to={'/login'}
                     className="text-sm text-green-600 hover:text-green-700"
                   >
                     Voltar para o login
-                  </a>
+                  </Link>
                 </div>
               </form>
             </Form>
@@ -137,6 +151,14 @@ const ForgotPassword = () => {
       <p className="mt-8 text-center text-sm text-gray-500">
         © 2025 AgendaQuadra. Todos os direitos reservados.
       </p>
+
+      {/* Feedback Dialog */}
+      <FeedbackDialog 
+        isOpen={dialogOpen}
+        onClose={handleCloseDialog}
+        success={isSuccess}
+        message={feedbackMessage}
+      />
     </div>
   );
 };

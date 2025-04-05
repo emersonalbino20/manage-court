@@ -55,8 +55,8 @@ const formCourt = useForm({
     hourlyRate: 0,
     address: {
       street: '',
-      cityId: 1,
-      provinceId: 1,
+      cityId: '',
+      provinceId: '',
       latitude: 0,
       longitude: 0
     },
@@ -463,7 +463,7 @@ const closeImagesDialog = () => {
                                       setProvince(parseInt(e.target.value))
                                     }}
                            className="w-full p-2 border border-gray-300 rounded-md"
-                            
+                            required
                           >
                              <option value="">Selecione a província</option>
                               {provinceData?.data?.data?.map((cidade)=>{
@@ -488,11 +488,11 @@ const closeImagesDialog = () => {
                                       field.onChange(parseInt(e.target.value));
                                     }}
                            className="w-full p-2 border border-gray-300 rounded-md"
-                            
+                            required
                           >
-                             <option value="">Selecione a cidade</option>
+                           
                               {cities?.data?.data?.map((cidade)=>{
-                                const provincia = provinceData?.data?.data?.find(p => p.id === cidade?.provinceId);
+                                console.log(cidade)
                                 return(
                                     <option key={cidade?.id} value={`${cidade?.id}`}>{cidade?.name}</option>
                                   )}
